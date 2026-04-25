@@ -1,0 +1,20 @@
+# Node
+node_modules/
+.env
+.env.local
+
+# Built React (regenerated)
+plugin/assets/dist/
+
+# PHP
+vendor/
+composer.lock
+
+# Editor
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Logs
+*.log
