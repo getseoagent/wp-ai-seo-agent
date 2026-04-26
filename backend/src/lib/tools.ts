@@ -106,7 +106,7 @@ export const tools: Tool[] = [
       type: "object",
       properties: {
         post_ids:    { type: "array", items: { type: "integer" }, minItems: 1, maxItems: 20, description: "WordPress post IDs to propose rewrites for" },
-        style_hints: { type: "string", maxLength: 1024, description: "Optional natural-language style guidance, e.g. 'more aggressive, no emoji, include brand WPilot'" },
+        style_hints: { type: "string", maxLength: 1024, description: "Optional natural-language style guidance, e.g. 'more aggressive tone, no emojis, include the brand name'" },
       },
       required: ["post_ids"],
       additionalProperties: false,
@@ -149,7 +149,7 @@ export async function dispatchTool(
       const settled = await Promise.allSettled(ids.map(async (id) => {
         const summary = await wp.getPostSummary(id, signal);
         if (!summary) throw new CraftError("post_not_found", `post ${id} not found or not publish`);
-        return craft.composeRewrite(summary, trimmedHints || undefined);
+        return craft.composeRewrite(summary, trimmedHints || undefined, signal);
       }));
 
       const proposals: RewriteProposal[] = [];

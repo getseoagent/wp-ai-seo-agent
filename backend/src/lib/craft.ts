@@ -29,7 +29,7 @@ export class CraftError extends Error {
 }
 
 export type CraftDeps = {
-  composeRewrite: (summary: PostSummary, styleHints: string | undefined) => Promise<RewriteProposal>;
+  composeRewrite: (summary: PostSummary, styleHints: string | undefined, signal?: AbortSignal) => Promise<RewriteProposal>;
 };
 
 const MODEL = "claude-sonnet-4-6";
@@ -41,7 +41,7 @@ const MAX_HINTS_LEN = 1024;
 
 type SdkLike = {
   messages: {
-    create: (req: any) => Promise<{
+    create: (req: any, opts?: { signal?: AbortSignal }) => Promise<{
       content: Array<{ type: string; text?: string }>;
       usage?: { input_tokens?: number; output_tokens?: number; cache_read_input_tokens?: number };
     }>;
@@ -93,6 +93,7 @@ export async function composeRewrite(
   styleHints: string | undefined,
   apiKey: string,
   sdkOverride?: SdkLike,
+  signal?: AbortSignal,
 ): Promise<RewriteProposal> {
   const sdk: SdkLike = sdkOverride ?? (new Anthropic({ apiKey }) as unknown as SdkLike);
   const trimmedHints = styleHints && styleHints.length > MAX_HINTS_LEN
@@ -118,7 +119,7 @@ export async function composeRewrite(
   while (attempt < 2) {
     attempt++;
     try {
-      const resp = await sdk.messages.create({ ...baseRequest, messages });
+      const resp = await sdk.messages.create({ ...baseRequest, messages }, signal ? { signal } : undefined);
       const text = resp.content?.find?.((b: any) => b.type === "text")?.text ?? "";
       try {
         const proposal = parseProposal(text, summary.id);
@@ -159,6 +160,6 @@ export async function composeRewrite(
 
 export function makeDefaultCraft(apiKey: string): CraftDeps {
   return {
-    composeRewrite: (summary, hints) => composeRewrite(summary, hints, apiKey),
+    composeRewrite: (summary, hints, signal) => composeRewrite(summary, hints, apiKey, undefined, signal),
   };
 }

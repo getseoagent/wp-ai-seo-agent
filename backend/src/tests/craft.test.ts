@@ -40,12 +40,12 @@ const validProposal = {
 
 function makeFakeSdk(responses: Array<string | Error>) {
   let idx = 0;
-  const calls: any[] = [];
+  const calls: Array<{ req: any; opts?: any }> = [];
   return {
     sdk: {
       messages: {
-        create: async (req: any) => {
-          calls.push(req);
+        create: async (req: any, opts?: any) => {
+          calls.push({ req, opts });
           const next = responses[idx++];
           if (next instanceof Error) throw next;
           return {
@@ -65,7 +65,7 @@ describe("composeRewrite", () => {
     const result = await composeRewrite(baseSummary, undefined, "fake-key", sdk as any);
 
     expect(calls.length).toBe(1);
-    const req = calls[0];
+    const req = calls[0].req;
     expect(req.model).toBe("claude-sonnet-4-6");
     expect(req.temperature).toBe(0.3);
     expect(req.system).toBeDefined();
@@ -80,15 +80,15 @@ describe("composeRewrite", () => {
   it("includes <additional_constraints> when styleHints provided", async () => {
     const { sdk, calls } = makeFakeSdk([JSON.stringify(validProposal)]);
     await composeRewrite(baseSummary, "more aggressive", "k", sdk as any);
-    expect(calls[0].messages[0].content).toContain("<additional_constraints>");
-    expect(calls[0].messages[0].content).toContain("more aggressive");
+    expect(calls[0].req.messages[0].content).toContain("<additional_constraints>");
+    expect(calls[0].req.messages[0].content).toContain("more aggressive");
   });
 
   it("truncates styleHints to 1024 chars in user message", async () => {
     const { sdk, calls } = makeFakeSdk([JSON.stringify(validProposal)]);
     const long = "X".repeat(2000);
     await composeRewrite(baseSummary, long, "k", sdk as any);
-    const msg: string = calls[0].messages[0].content;
+    const msg: string = calls[0].req.messages[0].content;
     const m = msg.match(/<additional_constraints>(.*?)<\/additional_constraints>/s);
     expect(m).not.toBeNull();
     expect(m![1].length).toBeLessThanOrEqual(1024);
@@ -108,7 +108,7 @@ describe("composeRewrite", () => {
       reason: "invalid_json",
     });
     expect(calls.length).toBe(2);
-    expect(calls[1].messages.length).toBeGreaterThan(calls[0].messages.length);
+    expect(calls[1].req.messages.length).toBeGreaterThan(calls[0].req.messages.length);
   });
 
   it("succeeds on retry after one invalid JSON", async () => {
@@ -150,5 +150,13 @@ describe("composeRewrite", () => {
     const result = await composeRewrite(baseSummary, undefined, "k", sdk as any);
     expect(calls.length).toBe(2);
     expect(result.post_id).toBe(42);
+  });
+
+  it("forwards AbortSignal to the SDK", async () => {
+    const ac = new AbortController();
+    const { sdk, calls } = makeFakeSdk([JSON.stringify(validProposal)]);
+    await composeRewrite(baseSummary, undefined, "k", sdk as any, ac.signal);
+    expect(calls.length).toBe(1);
+    expect(calls[0].opts?.signal).toBe(ac.signal);
   });
 });

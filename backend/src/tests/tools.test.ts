@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { tools, dispatchTool } from "../lib/tools";
 import type { WpClient } from "../lib/wp-client";
 import type { CraftDeps, RewriteProposal } from "../lib/craft";
+import { CraftError } from "../lib/craft";
 
 const fakeWp = {
   listPosts:       async (args: any) => ({ posts: [{ id: 1, post_title: "t", slug: "s", status: "publish", modified: "x" }], next_cursor: null, total: 1 }),
@@ -133,7 +134,7 @@ describe("propose_seo_rewrites tool", () => {
   it("partial result when craft throws on one", async () => {
     const craft: CraftDeps = {
       composeRewrite: async (s) => {
-        if (s.id === 2) throw new (await import("../lib/craft")).CraftError("api_error", "boom");
+        if (s.id === 2) throw new CraftError("api_error", "boom");
         return stubProposal(s.id);
       },
     };
