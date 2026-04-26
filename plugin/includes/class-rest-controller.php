@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace SeoAgent;
 
 use SeoAgent\Adapters;
+use SeoAgent\History_Store;
 
 final class REST_Controller
 {
@@ -65,6 +66,17 @@ final class REST_Controller
             'callback'            => static fn(): \WP_REST_Response =>
                 new \WP_REST_Response(self::handle_get_taxonomy_terms('post_tag')),
             'permission_callback' => [self::class, 'permit_admin_or_secret'],
+        ]);
+
+        register_rest_route('seoagent/v1', '/post/(?P<id>\d+)/seo-fields', [
+            'methods'             => 'POST',
+            'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
+                return new \WP_REST_Response(self::handle_update_seo_fields(
+                    (int) $req['id'],
+                    $req->get_json_params() ?? []
+                ));
+            },
+            'permission_callback' => [self::class, 'permit_admin_or_write_secret'],
         ]);
     }
 
@@ -213,6 +225,100 @@ final class REST_Controller
             'slug'  => (string) $t->slug,
             'count' => (int) $t->count,
         ], $loader($taxonomy));
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     * @return array{job_id: string, results: list<array<string,mixed>>}
+     */
+    public static function handle_update_seo_fields(
+        int $post_id,
+        array $params,
+        ?Adapters\Seo_Fields_Adapter $adapter = null,
+        ?History_Store $store = null,
+        ?\Closure $uuid = null
+    ): array {
+        $adapter ??= Adapters\Adapter_Factory::make(Adapters\Adapter_Factory::detect());
+        $store   ??= new History_Store($GLOBALS['wpdb']);
+        $uuid    ??= static fn(): string => wp_generate_uuid4();
+
+        $job_id  = (string) ($params['job_id'] ?? $uuid());
+        $fields  = is_array($params['fields'] ?? null) ? (array) $params['fields'] : [];
+        $user_id = function_exists('get_current_user_id') ? (get_current_user_id() ?: null) : null;
+
+        $results = [];
+        foreach ($fields as $field => $value) {
+            if (!is_string($field) || !is_string($value)) {
+                continue; // schema rejects null already
+            }
+            if (!$adapter->supports($field)) {
+                $store->insert([
+                    'post_id' => $post_id, 'job_id' => $job_id, 'field' => $field,
+                    'before_value' => null, 'after_value' => null,
+                    'status' => 'skipped_failed', 'reason' => 'adapter does not support field',
+                    'user_id' => $user_id,
+                ]);
+                $results[] = ['field' => $field, 'status' => 'skipped_failed', 'before' => null, 'after' => null, 'reason' => 'adapter does not support field'];
+                continue;
+            }
+
+            $before = self::adapter_get($adapter, $field, $post_id);
+            $after  = wp_kses_post($value);
+
+            if ($before === $after) {
+                $store->insert([
+                    'post_id' => $post_id, 'job_id' => $job_id, 'field' => $field,
+                    'before_value' => $before, 'after_value' => $after,
+                    'status' => 'skipped_unchanged', 'reason' => null,
+                    'user_id' => $user_id,
+                ]);
+                $results[] = ['field' => $field, 'status' => 'skipped_unchanged', 'before' => $before, 'after' => $after];
+                continue;
+            }
+
+            try {
+                self::adapter_set($adapter, $field, $post_id, $after);
+                $store->insert([
+                    'post_id' => $post_id, 'job_id' => $job_id, 'field' => $field,
+                    'before_value' => $before, 'after_value' => $after,
+                    'status' => 'applied', 'reason' => null,
+                    'user_id' => $user_id,
+                ]);
+                $results[] = ['field' => $field, 'status' => 'applied', 'before' => $before, 'after' => $after];
+            } catch (\Throwable $e) {
+                $store->insert([
+                    'post_id' => $post_id, 'job_id' => $job_id, 'field' => $field,
+                    'before_value' => $before, 'after_value' => $after,
+                    'status' => 'skipped_failed', 'reason' => $e->getMessage(),
+                    'user_id' => $user_id,
+                ]);
+                $results[] = ['field' => $field, 'status' => 'skipped_failed', 'before' => $before, 'after' => null, 'reason' => $e->getMessage()];
+            }
+        }
+
+        return ['job_id' => $job_id, 'results' => $results];
+    }
+
+    private static function adapter_get(Adapters\Seo_Fields_Adapter $adapter, string $field, int $post_id): ?string
+    {
+        return match ($field) {
+            'title'         => $adapter->get_seo_title($post_id),
+            'description'   => $adapter->get_seo_description($post_id),
+            'focus_keyword' => $adapter->get_focus_keyword($post_id),
+            'og_title'      => $adapter->get_og_title($post_id),
+            default         => null,
+        };
+    }
+
+    private static function adapter_set(Adapters\Seo_Fields_Adapter $adapter, string $field, int $post_id, string $value): void
+    {
+        match ($field) {
+            'title'         => $adapter->set_seo_title($post_id, $value),
+            'description'   => $adapter->set_seo_description($post_id, $value),
+            'focus_keyword' => $adapter->set_focus_keyword($post_id, $value),
+            'og_title'      => $adapter->set_og_title($post_id, $value),
+            default         => null,
+        };
     }
 
     /**

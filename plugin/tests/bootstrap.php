@@ -90,3 +90,13 @@ if (!function_exists('current_user_can')) {
         return (bool) ($GLOBALS['_seoagent_test_caps'] ?? false);
     }
 }
+
+if (!function_exists('wp_kses_post')) {
+    function wp_kses_post(string $s): string { return strip_tags($s, '<strong><em><a><br>'); }
+}
+if (!function_exists('wp_generate_uuid4')) {
+    function wp_generate_uuid4(): string { return 'fixed-test-uuid'; }
+}
+if (!function_exists('get_current_user_id')) {
+    function get_current_user_id(): int { return $GLOBALS['_seoagent_test_user_id'] ?? 0; }
+}
