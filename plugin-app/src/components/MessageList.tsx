@@ -1,14 +1,85 @@
 export type Message = { role: "user" | "assistant"; text: string };
 
+const containerStyle: React.CSSProperties = {
+  background: "#fff",
+  border: "1px solid #c3c4c7",
+  borderRadius: 6,
+  boxShadow: "0 1px 1px rgba(0,0,0,0.04)",
+  padding: 16,
+  minHeight: 280,
+  marginBottom: 12,
+  display: "flex",
+  flexDirection: "column",
+  gap: 10,
+};
+
+const bubbleBase: React.CSSProperties = {
+  maxWidth: "78%",
+  padding: "8px 12px",
+  borderRadius: 10,
+  lineHeight: 1.45,
+  fontSize: 14,
+  whiteSpace: "pre-wrap",
+  wordBreak: "break-word",
+};
+
+const userBubble: React.CSSProperties = {
+  ...bubbleBase,
+  alignSelf: "flex-end",
+  background: "#2271b1",
+  color: "#fff",
+  borderBottomRightRadius: 2,
+};
+
+const assistantBubble: React.CSSProperties = {
+  ...bubbleBase,
+  alignSelf: "flex-start",
+  background: "#f0f6fc",
+  color: "#1d2327",
+  border: "1px solid #dbe4ec",
+  borderBottomLeftRadius: 2,
+};
+
+const emptyHintStyle: React.CSSProperties = {
+  margin: "auto",
+  color: "#646970",
+  fontStyle: "italic",
+  fontSize: 13,
+};
+
+const rowBase: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 2,
+};
+
+const labelBase: React.CSSProperties = {
+  fontSize: 11,
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
+  color: "#646970",
+  fontWeight: 600,
+};
+
 export function MessageList({ messages }: { messages: Message[] }) {
   return (
-    <div style={{ border: "1px solid #ccc", padding: 12, minHeight: 240, marginBottom: 8 }}>
-      {messages.map((m, i) => (
-        <div key={i} style={{ marginBottom: 8 }}>
-          <strong>{m.role}:</strong>
-          <div style={{ whiteSpace: "pre-wrap" }}>{m.text}</div>
-        </div>
-      ))}
+    <div style={containerStyle}>
+      {messages.length === 0 ? (
+        <div style={emptyHintStyle}>No messages yet — say hi to test the pipe.</div>
+      ) : (
+        messages.map((m, i) => {
+          const isUser = m.role === "user";
+          return (
+            <div
+              key={i}
+              style={{ ...rowBase, alignItems: isUser ? "flex-end" : "flex-start" }}
+            >
+              <div style={labelBase}>{isUser ? "You" : "Agent"}</div>
+              <div style={isUser ? userBubble : assistantBubble}>{m.text}</div>
+            </div>
+          );
+        })
+      )}
     </div>
   );
 }

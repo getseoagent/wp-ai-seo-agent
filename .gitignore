@@ -9,6 +9,10 @@ plugin/assets/dist/
 # PHP
 vendor/
 composer.lock
+.phpunit.result.cache
+
+# TypeScript incremental
+*.tsbuildinfo
 
 # Editor
 .vscode/
