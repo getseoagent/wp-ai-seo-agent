@@ -6,6 +6,7 @@ export type ListPostsArgs = {
   status?: string;
   after?: string;
   before?: string;
+  slugs?: string[];
   limit?: number;
   cursor?: number;
 };
@@ -27,7 +28,12 @@ export function createWpClient(cfg: Cfg) {
     const url = new URL(`${cfg.baseUrl}/wp-json/seoagent/v1${path}`);
     if (query) {
       for (const [k, v] of Object.entries(query)) {
-        if (v !== undefined && v !== null && v !== "") url.searchParams.set(k, String(v));
+        if (v === undefined || v === null || v === "") continue;
+        if (Array.isArray(v)) {
+          if (v.length > 0) url.searchParams.set(k, v.join(","));
+        } else {
+          url.searchParams.set(k, String(v));
+        }
       }
     }
     const res = await fetch(url, {

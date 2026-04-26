@@ -116,4 +116,26 @@ final class RestControllerToolsTest extends TestCase
         $this->assertCount(2, $payload);
         $this->assertSame(['id' => 3, 'name' => 'News', 'slug' => 'news', 'count' => 12], $payload[0]);
     }
+
+    public function test_list_posts_with_slugs_filter(): void
+    {
+        $captured = null;
+        $fake_query = static function (array $args) use (&$captured): array {
+            $captured = $args;
+            return ['posts' => [], 'total' => 0];
+        };
+        REST_Controller::handle_list_posts(['slugs' => 'long-tail-keywords,seo-101'], $fake_query);
+        $this->assertSame(['long-tail-keywords', 'seo-101'], $captured['post_name__in']);
+    }
+
+    public function test_list_posts_slugs_handles_array_input(): void
+    {
+        $captured = null;
+        $fake_query = static function (array $args) use (&$captured): array {
+            $captured = $args;
+            return ['posts' => [], 'total' => 0];
+        };
+        REST_Controller::handle_list_posts(['slugs' => ['a', 'b', 'c']], $fake_query);
+        $this->assertSame(['a', 'b', 'c'], $captured['post_name__in']);
+    }
 }

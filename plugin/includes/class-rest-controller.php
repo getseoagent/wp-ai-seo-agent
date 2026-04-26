@@ -117,6 +117,14 @@ final class REST_Controller
         if (!empty($params['tag']))      $args['tag']           = (string) $params['tag'];
         if (!empty($params['after']))    $args['date_query'][] = ['after'  => (string) $params['after']];
         if (!empty($params['before']))   $args['date_query'][] = ['before' => (string) $params['before']];
+        if (!empty($params['slugs'])) {
+            $raw = $params['slugs'];
+            $list = is_array($raw) ? $raw : explode(',', (string) $raw);
+            $list = array_values(array_filter(array_map(static fn($s) => sanitize_title((string) $s), $list)));
+            if (!empty($list)) {
+                $args['post_name__in'] = $list;
+            }
+        }
 
         $query_fn ??= static function (array $args): array {
             $q = new \WP_Query($args);

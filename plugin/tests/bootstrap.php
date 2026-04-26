@@ -66,3 +66,7 @@ if (!function_exists('update_post_meta')) {
 if (!function_exists('wp_strip_all_tags')) {
     function wp_strip_all_tags(string $s): string { return strip_tags($s); }
 }
+
+if (!function_exists('sanitize_title')) {
+    function sanitize_title(string $s): string { return strtolower(trim(preg_replace('/[^a-z0-9-]+/i', '-', $s) ?? '', '-')); }
+}
