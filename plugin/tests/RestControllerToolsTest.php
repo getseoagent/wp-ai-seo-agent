@@ -72,6 +72,11 @@ final class RestControllerToolsTest extends TestCase
             public function get_focus_keyword(int $id): ?string   { return 'K'; }
             public function get_og_title(int $id): ?string        { return 'OG'; }
             public function name(): string { return 'rank-math'; }
+            public function set_seo_title(int $id, string $value): void {}
+            public function set_seo_description(int $id, string $value): void {}
+            public function set_focus_keyword(int $id, string $value): void {}
+            public function set_og_title(int $id, string $value): void {}
+            public function supports(string $field): bool { return true; }
         };
 
         $payload = REST_Controller::handle_get_post_summary(7, $loader, $adapter);

@@ -33,4 +33,25 @@ final class FallbackAdapterTest extends TestCase
         $adapter = new Fallback_Adapter(static fn(int $id): ?string => null);
         $this->assertSame('none', $adapter->name());
     }
+
+    public function test_supports_returns_false_for_all_fields(): void
+    {
+        $adapter = new Fallback_Adapter(static fn(int $id): ?string => null);
+        $this->assertFalse($adapter->supports('title'));
+        $this->assertFalse($adapter->supports('description'));
+        $this->assertFalse($adapter->supports('focus_keyword'));
+        $this->assertFalse($adapter->supports('og_title'));
+        $this->assertFalse($adapter->supports('anything-else'));
+    }
+
+    public function test_setters_are_no_ops(): void
+    {
+        $adapter = new Fallback_Adapter(static fn(int $id): ?string => null);
+        // No exception, no side effect
+        $adapter->set_seo_title(1, 'x');
+        $adapter->set_seo_description(1, 'x');
+        $adapter->set_focus_keyword(1, 'x');
+        $adapter->set_og_title(1, 'x');
+        $this->assertTrue(true);
+    }
 }

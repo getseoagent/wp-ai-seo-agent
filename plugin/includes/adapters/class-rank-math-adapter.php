@@ -49,4 +49,11 @@ final class Rank_Math_Adapter implements Seo_Fields_Adapter
         if ($value === null || $value === '') return null;
         return $value;
     }
+
+    public function set_seo_title(int $post_id, string $value): void { /* Task 4 */ }
+    public function set_seo_description(int $post_id, string $value): void { /* Task 4 */ }
+    public function set_focus_keyword(int $post_id, string $value): void { /* Task 4 */ }
+    public function set_og_title(int $post_id, string $value): void { /* Task 4 */ }
+
+    public function supports(string $field): bool { return false; /* Task 4 */ }
 }
