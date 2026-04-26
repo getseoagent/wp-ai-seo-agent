@@ -400,4 +400,207 @@ final class RestControllerToolsTest extends TestCase
         self::assertCount(1, $result);
         self::assertSame('j1', $result[0]['id']);
     }
+
+    public function test_handle_rollback_by_job_id_unwinds_all_non_rolled_back(): void
+    {
+        // 2 rows for jA (post 42 and post 43, both applied, neither rolled back),
+        // 1 row for jB (must NOT be touched).
+        $rows_by_id = [
+            17 => (object) ['id' => 17, 'post_id' => 42, 'job_id' => 'jA', 'field' => 'title',       'before_value' => 'OldA', 'after_value' => 'NewA', 'status' => 'applied', 'reason' => null, 'user_id' => 1, 'created_at' => 'x', 'rolled_back_at' => null],
+            18 => (object) ['id' => 18, 'post_id' => 43, 'job_id' => 'jA', 'field' => 'description', 'before_value' => 'OldB', 'after_value' => 'NewB', 'status' => 'applied', 'reason' => null, 'user_id' => 1, 'created_at' => 'y', 'rolled_back_at' => null],
+            19 => (object) ['id' => 19, 'post_id' => 44, 'job_id' => 'jB', 'field' => 'title',       'before_value' => 'OldC', 'after_value' => 'NewC', 'status' => 'applied', 'reason' => null, 'user_id' => 1, 'created_at' => 'z', 'rolled_back_at' => null],
+        ];
+        // job-id mode pulls non-rolled-back rows for jA only:
+        $job_rows_for = [
+            'jA' => [$rows_by_id[17], $rows_by_id[18]],
+            'jB' => [$rows_by_id[19]],
+        ];
+        $writes        = [];
+        $rows_inserted = [];
+        $marked_ids    = [];
+        $adapter       = self::adapter_with_state(['title' => 'NewA', 'description' => 'NewB'], $writes);
+        $store         = self::store_with_history_rows($rows_by_id, $rows_inserted, $marked_ids, $job_rows_for);
+
+        $payload = REST_Controller::handle_rollback(
+            ['job_id' => 'jA'],
+            $adapter,
+            $store,
+            static fn(): string => 'rb-job',
+            static fn(): string => '2026-04-26 12:00:00'
+        );
+
+        self::assertSame('rb-job', $payload['job_id']);
+        self::assertCount(2, $payload['results']);
+        self::assertSame('rolled_back', $payload['results'][0]['status']);
+        self::assertSame('rolled_back', $payload['results'][1]['status']);
+        // jB row 19 must remain untouched: only ids 17 and 18 should appear in $marked_ids.
+        $marked_id_set = array_map(static fn(array $m): int => $m['id'], $marked_ids);
+        self::assertEqualsCanonicalizing([17, 18], $marked_id_set);
+        self::assertNotContains(19, $marked_id_set);
+    }
+
+    public function test_handle_rollback_history_ids_path_still_works(): void
+    {
+        $original = (object) ['id' => 50, 'post_id' => 42, 'job_id' => 'jX', 'field' => 'title', 'before_value' => 'Old', 'after_value' => 'New', 'status' => 'applied', 'reason' => null, 'user_id' => 1, 'created_at' => 'x', 'rolled_back_at' => null];
+        $writes        = [];
+        $rows_inserted = [];
+        $marked_ids    = [];
+        $adapter       = self::adapter_with_state(['title' => 'New'], $writes);
+        $store         = self::store_with_history_rows([50 => $original], $rows_inserted, $marked_ids);
+
+        $payload = REST_Controller::handle_rollback(
+            ['history_ids' => [50]],
+            $adapter,
+            $store,
+            static fn(): string => 'rb-job-2',
+            static fn(): string => '2026-04-26 12:00:00'
+        );
+
+        self::assertSame('rb-job-2', $payload['job_id']);
+        self::assertCount(1, $payload['results']);
+        self::assertSame('rolled_back', $payload['results'][0]['status']);
+        self::assertSame([['id' => 50, 'at' => '2026-04-26 12:00:00']], $marked_ids);
+    }
+
+    public function test_handle_rollback_requires_one_of_history_ids_or_job_id(): void
+    {
+        $writes        = [];
+        $rows_inserted = [];
+        $marked_ids    = [];
+        $adapter       = self::adapter_with_state([], $writes);
+        $store         = self::store_with_history_rows([], $rows_inserted, $marked_ids);
+
+        $payload = REST_Controller::handle_rollback(
+            [], // neither history_ids nor job_id
+            $adapter,
+            $store,
+            static fn(): string => 'rb-job-3',
+            static fn(): string => '2026-04-26 12:00:00'
+        );
+
+        self::assertArrayHasKey('error', $payload);
+        self::assertSame([], $payload['results']);
+        // No writes, no inserts, no marks should occur.
+        self::assertSame([], $writes);
+        self::assertSame([], $rows_inserted);
+        self::assertSame([], $marked_ids);
+    }
+
+    public function test_handle_rollback_rejects_both_history_ids_and_job_id(): void
+    {
+        $writes        = [];
+        $rows_inserted = [];
+        $marked_ids    = [];
+        $adapter       = self::adapter_with_state([], $writes);
+        $store         = self::store_with_history_rows([], $rows_inserted, $marked_ids);
+
+        $payload = REST_Controller::handle_rollback(
+            ['history_ids' => [1], 'job_id' => 'jA'],
+            $adapter,
+            $store,
+            static fn(): string => 'rb-job-4',
+            static fn(): string => '2026-04-26 12:00:00'
+        );
+
+        self::assertArrayHasKey('error', $payload);
+        self::assertSame([], $payload['results']);
+        self::assertSame([], $writes);
+        self::assertSame([], $rows_inserted);
+        self::assertSame([], $marked_ids);
+    }
+
+    /**
+     * Build an adapter that reads from $state and writes via Rank_Math_Adapter's writer-injection seam.
+     * Mirrors the helper in RestControllerWritesTest so the rollback tests can stand alone here.
+     * @param array<string, ?string> $state
+     * @param array<int, array{post_id: int, key: string, value: string}> $writes
+     */
+    private static function adapter_with_state(array $state, array &$writes): \SeoAgent\Adapters\Seo_Fields_Adapter
+    {
+        $reader = static function (int $id, string $key) use (&$state): ?string {
+            $field = match ($key) {
+                'rank_math_title' => 'title',
+                'rank_math_description' => 'description',
+                'rank_math_focus_keyword' => 'focus_keyword',
+                'rank_math_facebook_title' => 'og_title',
+                default => null,
+            };
+            return $state[$field] ?? null;
+        };
+        $writer = static function (int $id, string $key, string $value) use (&$state, &$writes): void {
+            $writes[] = ['post_id' => $id, 'key' => $key, 'value' => $value];
+            $field = match ($key) {
+                'rank_math_title' => 'title',
+                'rank_math_description' => 'description',
+                'rank_math_focus_keyword' => 'focus_keyword',
+                'rank_math_facebook_title' => 'og_title',
+                default => null,
+            };
+            if ($field !== null) $state[$field] = $value;
+        };
+        return new \SeoAgent\Adapters\Rank_Math_Adapter($reader, $writer);
+    }
+
+    /**
+     * History store with seeded rows-by-id and optional job-id -> rows mapping for
+     * find_by_job_not_rolled_back. Captures inserts and mark_rolled_back calls.
+     *
+     * @param array<int, object> $rows_by_id
+     * @param array<int, array<string, mixed>> $inserted
+     * @param array<int, array{id:int, at:string}> $marked
+     * @param array<string, list<object>> $job_rows
+     */
+    private static function store_with_history_rows(
+        array $rows_by_id,
+        array &$inserted,
+        array &$marked,
+        array $job_rows = []
+    ): \SeoAgent\History_Store {
+        $db = new class($rows_by_id, $inserted, $marked, $job_rows) {
+            public string $prefix = 'wp_';
+            public array $queries = [];
+            public function __construct(
+                public array $rows_by_id,
+                public array &$inserted_ref,
+                public array &$marked_ref,
+                public array $job_rows
+            ) {}
+            public function prepare(string $sql, ...$args): string {
+                $i = 0;
+                return preg_replace_callback('/%d|%s/', function ($m) use ($args, &$i): string {
+                    $val = $args[$i++] ?? '';
+                    return $m[0] === '%d' ? (string) (int) $val : "'" . (string) $val . "'";
+                }, $sql) ?? $sql;
+            }
+            public function insert(string $table, array $data): int {
+                $this->inserted_ref[] = $data;
+                return 1;
+            }
+            public function get_results(string $sql): array {
+                // find_by_job_not_rolled_back: SELECT ... WHERE job_id = '...' AND rolled_back_at IS NULL
+                if (preg_match("/job_id = '([^']+)'/", $sql, $m) && str_contains($sql, 'rolled_back_at IS NULL')) {
+                    return $this->job_rows[$m[1]] ?? [];
+                }
+                return [];
+            }
+            public function get_row(string $sql): ?object {
+                if (preg_match('/WHERE id = (\d+)/', $sql, $m)) {
+                    $id = (int) $m[1];
+                    return $this->rows_by_id[$id] ?? null;
+                }
+                return null;
+            }
+            public function update(string $table, array $data, array $where): int {
+                if (isset($data['rolled_back_at'], $where['id'])) {
+                    $this->marked_ref[] = ['id' => (int) $where['id'], 'at' => (string) $data['rolled_back_at']];
+                }
+                return 1;
+            }
+            public function query(string $sql): int|bool {
+                $this->queries[] = $sql;
+                return 1;
+            }
+        };
+        return new \SeoAgent\History_Store($db);
+    }
 }

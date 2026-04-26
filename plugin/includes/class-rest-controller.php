@@ -470,48 +470,87 @@ final class REST_Controller
         $uuid    ??= static fn(): string => wp_generate_uuid4();
         $now     ??= static fn(): string => current_time('mysql');
 
+        $job_id_in = isset($params['job_id']) && is_string($params['job_id']) && $params['job_id'] !== ''
+            ? (string) $params['job_id']
+            : null;
         $raw_ids = is_array($params['history_ids'] ?? null) ? (array) $params['history_ids'] : [];
+
+        // Require exactly one of {history_ids, job_id}. Mirror Plan 3a's tool-return shape:
+        // a 200 response with an `error` key + empty results so callers can branch on isset().
+        if ($job_id_in === null && count($raw_ids) === 0) {
+            return ['error' => 'rollback requires history_ids or job_id', 'job_id' => '', 'results' => []];
+        }
+        if ($job_id_in !== null && count($raw_ids) > 0) {
+            return ['error' => 'rollback accepts only one of history_ids or job_id', 'job_id' => '', 'results' => []];
+        }
+
+        // job-id mode: resolve to the still-in-effect history rows for that job.
+        if ($job_id_in !== null) {
+            $rows    = $store->find_by_job_not_rolled_back($job_id_in);
+            $raw_ids = array_map(static fn(object $r): int => (int) $r->id, $rows);
+        }
+
         $ids     = array_slice($raw_ids, 0, self::ROLLBACK_MAX_IDS);
         $job_id  = $uuid();
         $user_id = function_exists('get_current_user_id') ? (get_current_user_id() ?: null) : null;
 
+        // Wrap the batch in a wpdb transaction for crash safety. Per-row failures are
+        // still recorded as status='failed' (Plan 3a semantics); the transaction only
+        // protects against a fatal exception or DB outage mid-loop.
+        $wpdb = $GLOBALS['wpdb'] ?? null;
+        $can_tx = is_object($wpdb) && method_exists($wpdb, 'query');
+        if ($can_tx) {
+            $wpdb->query('START TRANSACTION');
+        }
+
         $results = [];
-        foreach ($ids as $raw_id) {
-            $id  = (int) $raw_id;
-            $row = $store->get($id);
-            if ($row === null) {
-                $results[] = ['history_id' => $id, 'status' => 'not_found'];
-                continue;
+        try {
+            foreach ($ids as $raw_id) {
+                $id  = (int) $raw_id;
+                $row = $store->get($id);
+                if ($row === null) {
+                    $results[] = ['history_id' => $id, 'status' => 'not_found'];
+                    continue;
+                }
+                if (!empty($row->rolled_back_at)) {
+                    $results[] = ['history_id' => $id, 'status' => 'skipped', 'reason' => 'already rolled back'];
+                    continue;
+                }
+                $field = (string) ($row->field ?? '');
+                if (!$adapter->supports($field)) {
+                    $results[] = ['history_id' => $id, 'status' => 'skipped', 'reason' => 'adapter does not support field'];
+                    continue;
+                }
+                try {
+                    $post_id    = (int) ($row->post_id ?? 0);
+                    $value      = (string) ($row->before_value ?? '');
+                    $before_now = self::adapter_get($adapter, $field, $post_id);
+                    self::adapter_set($adapter, $field, $post_id, $value);
+                    $store->insert([
+                        'post_id'      => $post_id,
+                        'job_id'       => $job_id,
+                        'field'        => $field,
+                        'before_value' => $before_now,
+                        'after_value'  => $value,
+                        'status'       => 'applied',
+                        'reason'       => 'rollback of #' . $id,
+                        'user_id'      => $user_id,
+                    ]);
+                    $store->mark_rolled_back($id, $now());
+                    $results[] = ['history_id' => $id, 'status' => 'rolled_back'];
+                } catch (\Throwable $e) {
+                    // Per-row failures are non-fatal: record and continue.
+                    $results[] = ['history_id' => $id, 'status' => 'failed', 'reason' => $e->getMessage()];
+                }
             }
-            if (!empty($row->rolled_back_at)) {
-                $results[] = ['history_id' => $id, 'status' => 'skipped', 'reason' => 'already rolled back'];
-                continue;
+            if ($can_tx) {
+                $wpdb->query('COMMIT');
             }
-            $field = (string) ($row->field ?? '');
-            if (!$adapter->supports($field)) {
-                $results[] = ['history_id' => $id, 'status' => 'skipped', 'reason' => 'adapter does not support field'];
-                continue;
+        } catch (\Throwable $e) {
+            if ($can_tx) {
+                $wpdb->query('ROLLBACK');
             }
-            try {
-                $post_id    = (int) ($row->post_id ?? 0);
-                $value      = (string) ($row->before_value ?? '');
-                $before_now = self::adapter_get($adapter, $field, $post_id);
-                self::adapter_set($adapter, $field, $post_id, $value);
-                $store->insert([
-                    'post_id'      => $post_id,
-                    'job_id'       => $job_id,
-                    'field'        => $field,
-                    'before_value' => $before_now,
-                    'after_value'  => $value,
-                    'status'       => 'applied',
-                    'reason'       => 'rollback of #' . $id,
-                    'user_id'      => $user_id,
-                ]);
-                $store->mark_rolled_back($id, $now());
-                $results[] = ['history_id' => $id, 'status' => 'rolled_back'];
-            } catch (\Throwable $e) {
-                $results[] = ['history_id' => $id, 'status' => 'failed', 'reason' => $e->getMessage()];
-            }
+            throw $e;
         }
 
         return ['job_id' => $job_id, 'results' => $results];

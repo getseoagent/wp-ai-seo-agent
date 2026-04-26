@@ -85,6 +85,34 @@ final class HistoryStoreTest extends TestCase
         $this->assertSame(17, $captured['where']['id']);
     }
 
+    public function test_find_by_job_not_rolled_back_excludes_rolled_back(): void
+    {
+        // Seed 3 rows for job jA. Row #1 has rolled_back_at set; rows #2 and #3 do not.
+        // The fake DB filters server-side so the assertion is on what the SQL would return.
+        $rows = [
+            (object) ['id' => 1, 'post_id' => 10, 'job_id' => 'jA', 'field' => 'title', 'before_value' => 'a', 'after_value' => 'b', 'status' => 'applied', 'reason' => null, 'user_id' => null, 'created_at' => '2026-04-26 10:00:00', 'rolled_back_at' => '2026-04-26 10:30:00'],
+            (object) ['id' => 2, 'post_id' => 11, 'job_id' => 'jA', 'field' => 'title', 'before_value' => 'a', 'after_value' => 'b', 'status' => 'applied', 'reason' => null, 'user_id' => null, 'created_at' => '2026-04-26 10:01:00', 'rolled_back_at' => null],
+            (object) ['id' => 3, 'post_id' => 12, 'job_id' => 'jA', 'field' => 'title', 'before_value' => 'a', 'after_value' => 'b', 'status' => 'applied', 'reason' => null, 'user_id' => null, 'created_at' => '2026-04-26 10:02:00', 'rolled_back_at' => null],
+        ];
+        $captured_sql = null;
+        $db = self::fake_db(get_results: function (string $sql) use ($rows, &$captured_sql): array {
+            $captured_sql = $sql;
+            // Mimic the WHERE rolled_back_at IS NULL filter so the fake matches the SQL semantics.
+            return array_values(array_filter($rows, static fn(object $r): bool => $r->rolled_back_at === null));
+        });
+        $store = new History_Store($db);
+
+        $result = $store->find_by_job_not_rolled_back('jA');
+
+        $this->assertCount(2, $result);
+        $this->assertIsObject($result[0]);
+        $this->assertObjectHasProperty('id', $result[0]);
+        $this->assertSame(2, $result[0]->id);
+        $this->assertSame(3, $result[1]->id);
+        $this->assertStringContainsString('rolled_back_at IS NULL', $captured_sql);
+        $this->assertStringContainsString("'jA'", $captured_sql);
+    }
+
     private static function fake_db(
         ?\Closure $insert = null,
         ?\Closure $get_results = null,

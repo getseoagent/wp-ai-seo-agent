@@ -40,6 +40,22 @@ final class History_Store
         return (array) $this->db->get_results($sql);
     }
 
+    /**
+     * Returns every row for $job_id whose `rolled_back_at` is NULL, ordered by id ASC.
+     * Used by handle_rollback's job-id mode to enumerate writes still in effect.
+     *
+     * @return list<object>
+     */
+    public function find_by_job_not_rolled_back(string $job_id): array
+    {
+        $table = $this->db->prefix . 'seoagent_history';
+        $sql = $this->db->prepare(
+            "SELECT * FROM {$table} WHERE job_id = %s AND rolled_back_at IS NULL ORDER BY id ASC",
+            $job_id
+        );
+        return (array) $this->db->get_results($sql);
+    }
+
     public function get(int $id): ?object
     {
         $table = $this->db->prefix . 'seoagent_history';
