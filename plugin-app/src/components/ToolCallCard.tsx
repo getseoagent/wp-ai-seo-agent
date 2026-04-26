@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { RewriteCard } from "./RewriteCard";
 
 export type ToolCall = {
   id: string;
@@ -61,7 +62,9 @@ export function ToolCallCard({ call }: { call: ToolCall }) {
           {call.result !== undefined && (
             <>
               <div style={{ marginTop: 8 }}><strong>result</strong></div>
-              <div>{JSON.stringify(call.result, null, 2)}</div>
+              {call.name === "propose_seo_rewrites"
+                ? <RewriteCard result={call.result} />
+                : <div>{JSON.stringify(call.result, null, 2)}</div>}
             </>
           )}
         </div>
