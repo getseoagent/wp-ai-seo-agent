@@ -54,3 +54,7 @@ if (!function_exists('wp_remote_post')) {
         return ['response' => ['code' => 200], 'body' => ''];
     }
 }
+
+if (!function_exists('wp_strip_all_tags')) {
+    function wp_strip_all_tags(string $s): string { return strip_tags($s); }
+}

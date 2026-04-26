@@ -43,6 +43,18 @@ final class REST_Controller
             },
             'permission_callback' => [self::class, 'permit_admin'],
         ]);
+
+        register_rest_route('seoagent/v1', '/post/(?P<id>\d+)/summary', [
+            'methods'             => 'GET',
+            'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
+                $payload = self::handle_get_post_summary((int) $req['id']);
+                if ($payload === null) {
+                    return new \WP_REST_Response(['error' => 'post not found'], 404);
+                }
+                return new \WP_REST_Response($payload);
+            },
+            'permission_callback' => [self::class, 'permit_admin'],
+        ]);
     }
 
     public static function permit_admin(): bool
@@ -95,6 +107,33 @@ final class REST_Controller
         $next_cursor = ($cursor + count($posts) < $result['total']) ? $cursor + count($posts) : null;
 
         return ['posts' => $posts, 'next_cursor' => $next_cursor, 'total' => $result['total']];
+    }
+
+    /**
+     * @param \Closure(int): ?object $loader
+     * @return array<string, mixed>|null
+     */
+    public static function handle_get_post_summary(int $id, ?\Closure $loader = null, ?Adapters\Seo_Fields_Adapter $adapter = null): ?array
+    {
+        $loader  ??= static fn(int $id): ?object => get_post($id) ?: null;
+        $adapter ??= Adapters\Adapter_Factory::make(Adapters\Adapter_Factory::detect());
+        $post = $loader($id);
+        if ($post === null) return null;
+
+        return [
+            'id'         => (int) $post->ID,
+            'post_title' => (string) $post->post_title,
+            'slug'       => (string) $post->post_name,
+            'status'     => (string) $post->post_status,
+            'modified'   => (string) $post->post_modified,
+            'word_count' => str_word_count(wp_strip_all_tags((string) $post->post_content)),
+            'current_seo' => [
+                'title'       => $adapter->get_seo_title($id),
+                'description' => $adapter->get_seo_description($id),
+                'focus_kw'    => $adapter->get_focus_keyword($id),
+                'og_title'    => $adapter->get_og_title($id),
+            ],
+        ];
     }
 
     /**

@@ -59,4 +59,34 @@ final class RestControllerToolsTest extends TestCase
         $this->assertSame(50, $payload['next_cursor']);
         $this->assertSame(200, $payload['total']);
     }
+
+    public function test_get_post_summary_uses_provided_adapter_and_loader(): void
+    {
+        $loader = static fn(int $id): ?object => $id === 7
+            ? (object) ['ID' => 7, 'post_title' => 'Hello', 'post_name' => 'hello', 'post_status' => 'publish', 'post_modified' => '2026-04-26 10:00:00', 'post_content' => 'one two three four five']
+            : null;
+
+        $adapter = new class implements \SeoAgent\Adapters\Seo_Fields_Adapter {
+            public function get_seo_title(int $id): ?string       { return 'T'; }
+            public function get_seo_description(int $id): ?string { return 'D'; }
+            public function get_focus_keyword(int $id): ?string   { return 'K'; }
+            public function get_og_title(int $id): ?string        { return 'OG'; }
+            public function name(): string { return 'rank-math'; }
+        };
+
+        $payload = REST_Controller::handle_get_post_summary(7, $loader, $adapter);
+
+        $this->assertSame(7, $payload['id']);
+        $this->assertSame('Hello', $payload['post_title']);
+        $this->assertSame(5, $payload['word_count']);
+        $this->assertSame(['title' => 'T', 'description' => 'D', 'focus_kw' => 'K', 'og_title' => 'OG'], $payload['current_seo']);
+    }
+
+    public function test_get_post_summary_returns_null_when_post_missing(): void
+    {
+        $loader = static fn(int $id): ?object => null;
+        $adapter = new \SeoAgent\Adapters\Fallback_Adapter(static fn(int $id): ?string => null);
+        $payload = REST_Controller::handle_get_post_summary(999, $loader, $adapter);
+        $this->assertNull($payload);
+    }
 }
