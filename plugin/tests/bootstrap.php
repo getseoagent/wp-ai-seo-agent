@@ -70,6 +70,9 @@ if (!function_exists('wp_strip_all_tags')) {
 if (!function_exists('sanitize_title')) {
     function sanitize_title(string $s): string { return strtolower(trim(preg_replace('/[^a-z0-9-]+/i', '-', $s) ?? '', '-')); }
 }
+if (!function_exists('sanitize_key')) {
+    function sanitize_key(string $s): string { return strtolower(preg_replace('/[^a-z0-9_\-]/', '', $s) ?? ''); }
+}
 
 if (!class_exists('WP_REST_Request')) {
     class WP_REST_Request implements \ArrayAccess {

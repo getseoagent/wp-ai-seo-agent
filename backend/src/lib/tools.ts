@@ -9,18 +9,19 @@ export type Tool = {
 export const tools: Tool[] = [
   {
     name: "list_posts",
-    description: "List published posts with optional category/tag/date filters. Returns id, post_title, slug, status, modified.",
+    description: "List WordPress posts (or pages or any post type) with optional category/tag/date/slug filters. Default post_type is 'post'; pass 'page' for pages or 'any' for everything. Returns id, post_title, slug, status, modified.",
     input_schema: {
       type: "object",
       properties: {
-        category: { type: "string", description: "Category slug" },
-        tag:      { type: "string", description: "Tag slug" },
-        status:   { type: "string", description: "Post status, default 'publish'" },
-        after:    { type: "string", description: "Only posts modified after this ISO date (e.g. '2026-01-01')" },
-        before:   { type: "string", description: "Only posts modified before this ISO date" },
-        slugs:    { type: "array", items: { type: "string" }, description: "Fetch only posts whose slug is in this list (e.g. extracted from a list of URLs)" },
-        limit:    { type: "integer", description: "Max items, default 20, max 50" },
-        cursor:   { type: "integer", description: "Offset for pagination" },
+        post_type: { type: "string", description: "Post type: 'post' (default), 'page', 'any', or any custom post type slug" },
+        category:  { type: "string", description: "Category slug (post_type=post only)" },
+        tag:       { type: "string", description: "Tag slug (post_type=post only)" },
+        status:    { type: "string", description: "Post status, default 'publish'" },
+        after:     { type: "string", description: "Only items modified after this ISO date (e.g. '2026-01-01')" },
+        before:    { type: "string", description: "Only items modified before this ISO date" },
+        slugs:     { type: "array", items: { type: "string" }, description: "Fetch only items whose slug is in this list (e.g. extracted from a list of URLs)" },
+        limit:     { type: "integer", description: "Max items, default 20, max 50" },
+        cursor:    { type: "integer", description: "Offset for pagination" },
       },
       additionalProperties: false,
     },

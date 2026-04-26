@@ -156,8 +156,12 @@ final class REST_Controller
     {
         $limit  = max(1, min(self::LIST_POSTS_MAX_LIMIT, (int) ($params['limit'] ?? 20)));
         $cursor = max(0, (int) ($params['cursor'] ?? 0));
+        $post_type_raw = $params['post_type'] ?? 'post';
+        $post_type = is_array($post_type_raw)
+            ? array_values(array_filter(array_map(static fn($s) => sanitize_key((string) $s), $post_type_raw)))
+            : sanitize_key((string) $post_type_raw);
         $args = [
-            'post_type'      => 'post',
+            'post_type'      => $post_type,
             'post_status'    => $params['status'] ?? 'publish',
             'posts_per_page' => $limit,
             'paged'          => intdiv($cursor, $limit) + 1,

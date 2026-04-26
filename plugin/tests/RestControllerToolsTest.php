@@ -117,6 +117,39 @@ final class RestControllerToolsTest extends TestCase
         $this->assertSame(['id' => 3, 'name' => 'News', 'slug' => 'news', 'count' => 12], $payload[0]);
     }
 
+    public function test_list_posts_post_type_default_post(): void
+    {
+        $captured = null;
+        $fake_query = static function (array $args) use (&$captured): array {
+            $captured = $args;
+            return ['posts' => [], 'total' => 0];
+        };
+        REST_Controller::handle_list_posts([], $fake_query);
+        $this->assertSame('post', $captured['post_type']);
+    }
+
+    public function test_list_posts_post_type_page(): void
+    {
+        $captured = null;
+        $fake_query = static function (array $args) use (&$captured): array {
+            $captured = $args;
+            return ['posts' => [], 'total' => 0];
+        };
+        REST_Controller::handle_list_posts(['post_type' => 'page'], $fake_query);
+        $this->assertSame('page', $captured['post_type']);
+    }
+
+    public function test_list_posts_post_type_array(): void
+    {
+        $captured = null;
+        $fake_query = static function (array $args) use (&$captured): array {
+            $captured = $args;
+            return ['posts' => [], 'total' => 0];
+        };
+        REST_Controller::handle_list_posts(['post_type' => ['post', 'page']], $fake_query);
+        $this->assertSame(['post', 'page'], $captured['post_type']);
+    }
+
     public function test_list_posts_with_slugs_filter(): void
     {
         $captured = null;
