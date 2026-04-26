@@ -7,7 +7,11 @@ final class History_Store
 {
     public function __construct(private readonly object $db) {}
 
-    /** @param array<string, mixed> $row */
+    /**
+     * @param array<string, mixed> $row
+     * @return int rows affected (1 on success, 0 on failure) — NOT insert id;
+     *             use $wpdb->insert_id directly if a caller needs the new row id
+     */
     public function insert(array $row): int
     {
         $table = $this->db->prefix . 'seoagent_history';
