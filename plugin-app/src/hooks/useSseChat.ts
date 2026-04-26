@@ -2,6 +2,8 @@ import { useCallback, useRef, useState } from "react";
 
 export type SseEvent =
   | { type: "text"; delta: string }
+  | { type: "tool_call"; id: string; name: string; args: unknown }
+  | { type: "tool_result"; id: string; result: unknown }
   | { type: "error"; message: string }
   | { type: "done" };
 
@@ -25,11 +27,14 @@ export function parseSseChunks(buffer: string): { events: SseEvent[]; remainder:
 type Args = {
   endpoint: string;
   nonce: string;
+  sessionId: string;
   onDelta: (delta: string) => void;
+  onToolCall: (id: string, name: string, args: unknown) => void;
+  onToolResult: (id: string, result: unknown) => void;
   onError: (message: string) => void;
 };
 
-export function useSseChat({ endpoint, nonce, onDelta, onError }: Args) {
+export function useSseChat({ endpoint, nonce, sessionId, onDelta, onToolCall, onToolResult, onError }: Args) {
   const [busy, setBusy] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -47,7 +52,7 @@ export function useSseChat({ endpoint, nonce, onDelta, onError }: Args) {
             "x-wp-nonce": nonce,
           },
           credentials: "same-origin",
-          body: JSON.stringify({ message }),
+          body: JSON.stringify({ session_id: sessionId, message }),
           signal: ac.signal,
         });
         if (!res.ok || !res.body) {
@@ -65,7 +70,10 @@ export function useSseChat({ endpoint, nonce, onDelta, onError }: Args) {
           buf = remainder;
           for (const ev of events) {
             if (ev.type === "text") onDelta(ev.delta);
+            else if (ev.type === "tool_call") onToolCall(ev.id, ev.name, ev.args);
+            else if (ev.type === "tool_result") onToolResult(ev.id, ev.result);
             else if (ev.type === "error") onError(ev.message);
+            // 'done' is ignored — the stream ending IS the done signal
           }
         }
       } catch (err) {
@@ -77,7 +85,7 @@ export function useSseChat({ endpoint, nonce, onDelta, onError }: Args) {
         abortRef.current = null;
       }
     },
-    [endpoint, nonce, busy, onDelta, onError]
+    [endpoint, nonce, sessionId, busy, onDelta, onToolCall, onToolResult, onError]
   );
 
   const cancel = useCallback(() => abortRef.current?.abort(), []);

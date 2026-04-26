@@ -38,4 +38,16 @@ describe("parseSseChunks", () => {
     expect(events[1]).toEqual({ type: "done" });
     expect(remainder).toBe("");
   });
+
+  it("parses tool_call event", () => {
+    const buf = 'event: tool_call\ndata: {"type":"tool_call","id":"tu_1","name":"list_posts","args":{"limit":5}}\n\n';
+    const { events } = parseSseChunks(buf);
+    expect(events[0]).toEqual({ type: "tool_call", id: "tu_1", name: "list_posts", args: { limit: 5 } });
+  });
+
+  it("parses tool_result event", () => {
+    const buf = 'event: tool_result\ndata: {"type":"tool_result","id":"tu_1","result":{"posts":[]}}\n\n';
+    const { events } = parseSseChunks(buf);
+    expect(events[0]).toEqual({ type: "tool_result", id: "tu_1", result: { posts: [] } });
+  });
 });
