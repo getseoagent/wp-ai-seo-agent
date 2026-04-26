@@ -1,4 +1,9 @@
+import { ToolCallCard, type ToolCall } from "./ToolCallCard";
+
 export type Message = { role: "user" | "assistant"; text: string };
+export type ChatItem =
+  | { kind: "message"; message: Message }
+  | { kind: "tool"; tool: ToolCall };
 
 const containerStyle: React.CSSProperties = {
   background: "#fff",
@@ -61,21 +66,19 @@ const labelBase: React.CSSProperties = {
   fontWeight: 600,
 };
 
-export function MessageList({ messages }: { messages: Message[] }) {
+export function MessageList({ items }: { items: ChatItem[] }) {
   return (
     <div style={containerStyle}>
-      {messages.length === 0 ? (
+      {items.length === 0 ? (
         <div style={emptyHintStyle}>No messages yet — say hi to test the pipe.</div>
       ) : (
-        messages.map((m, i) => {
-          const isUser = m.role === "user";
+        items.map((it, i) => {
+          if (it.kind === "tool") return <ToolCallCard key={i} call={it.tool} />;
+          const isUser = it.message.role === "user";
           return (
-            <div
-              key={i}
-              style={{ ...rowBase, alignItems: isUser ? "flex-end" : "flex-start" }}
-            >
+            <div key={i} style={{ ...rowBase, alignItems: isUser ? "flex-end" : "flex-start" }}>
               <div style={labelBase}>{isUser ? "You" : "Agent"}</div>
-              <div style={isUser ? userBubble : assistantBubble}>{m.text}</div>
+              <div style={isUser ? userBubble : assistantBubble}>{it.message.text}</div>
             </div>
           );
         })
