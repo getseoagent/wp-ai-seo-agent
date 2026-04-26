@@ -79,7 +79,7 @@ final class RestControllerToolsTest extends TestCase
         $this->assertSame(7, $payload['id']);
         $this->assertSame('Hello', $payload['post_title']);
         $this->assertSame(5, $payload['word_count']);
-        $this->assertSame(['title' => 'T', 'description' => 'D', 'focus_kw' => 'K', 'og_title' => 'OG'], $payload['current_seo']);
+        $this->assertSame(['title' => 'T', 'description' => 'D', 'focus_keyword' => 'K', 'og_title' => 'OG'], $payload['current_seo']);
     }
 
     public function test_get_post_summary_returns_null_when_post_missing(): void
@@ -88,5 +88,16 @@ final class RestControllerToolsTest extends TestCase
         $adapter = new \SeoAgent\Adapters\Fallback_Adapter(static fn(int $id): ?string => null);
         $payload = REST_Controller::handle_get_post_summary(999, $loader, $adapter);
         $this->assertNull($payload);
+    }
+
+    public function test_get_post_summary_word_count_is_unicode_aware(): void
+    {
+        $loader = static fn(int $id): ?object => (object) [
+            'ID' => 1, 'post_title' => 'x', 'post_name' => 'x', 'post_status' => 'publish', 'post_modified' => 'x',
+            'post_content' => 'pożyczka 5000 zł na żądanie',
+        ];
+        $adapter = new \SeoAgent\Adapters\Fallback_Adapter(static fn(int $id): ?string => null);
+        $payload = REST_Controller::handle_get_post_summary(1, $loader, $adapter);
+        $this->assertSame(5, $payload['word_count']);
     }
 }

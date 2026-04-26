@@ -126,14 +126,22 @@ final class REST_Controller
             'slug'       => (string) $post->post_name,
             'status'     => (string) $post->post_status,
             'modified'   => (string) $post->post_modified,
-            'word_count' => str_word_count(wp_strip_all_tags((string) $post->post_content)),
+            'word_count' => self::word_count_unicode(wp_strip_all_tags((string) $post->post_content)),
             'current_seo' => [
-                'title'       => $adapter->get_seo_title($id),
-                'description' => $adapter->get_seo_description($id),
-                'focus_kw'    => $adapter->get_focus_keyword($id),
-                'og_title'    => $adapter->get_og_title($id),
+                'title'         => $adapter->get_seo_title($id),
+                'description'   => $adapter->get_seo_description($id),
+                'focus_keyword' => $adapter->get_focus_keyword($id),
+                'og_title'      => $adapter->get_og_title($id),
             ],
         ];
+    }
+
+    private static function word_count_unicode(string $text): int
+    {
+        $trimmed = trim($text);
+        if ($trimmed === '') return 0;
+        $parts = preg_split('/\s+/u', $trimmed);
+        return is_array($parts) ? count($parts) : 0;
     }
 
     /**
