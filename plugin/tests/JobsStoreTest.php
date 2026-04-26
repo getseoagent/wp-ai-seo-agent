@@ -35,6 +35,15 @@ final class JobsStoreTest extends TestCase
                 if (preg_match('/id = \'([^\']+)\'/', $sql, $m) && isset($this->rows[$m[1]])) {
                     return (object) $this->rows[$m[1]];
                 }
+                // Support find_running_for_user-style query: WHERE user_id = N AND status = 'running'
+                if (preg_match('/status = \'running\'/', $sql)) {
+                    $userId = preg_match('/user_id = (\d+)/', $sql, $m) ? (int) $m[1] : null;
+                    foreach ($this->rows as $row) {
+                        if ($row['status'] !== 'running') continue;
+                        if ($userId !== null && (int) $row['user_id'] !== $userId) continue;
+                        return (object) $row;
+                    }
+                }
                 return null;
             }
 

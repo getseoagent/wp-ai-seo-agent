@@ -76,7 +76,7 @@ final class Jobs_Store
             "SELECT * FROM {$this->table()} WHERE user_id = %d AND status = 'running' ORDER BY started_at DESC LIMIT 1",
             $user_id
         );
-        $rows = (array) $this->db->get_results($sql);
-        return $rows[0] ?? null;
+        $row = $this->db->get_row($sql);
+        return is_object($row) ? $row : null;
     }
 }
