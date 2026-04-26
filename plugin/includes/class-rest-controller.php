@@ -30,21 +30,24 @@ final class REST_Controller
         return current_user_can('manage_options');
     }
 
-    public static function proxy_chat(\WP_REST_Request $request): void
+    /**
+     * Streaming SSE proxy. Bypasses WP_REST_Response on purpose: REST infra
+     * buffers responses, which would defeat token-by-token delivery. Any
+     * non-streaming endpoint must use the standard `return new WP_REST_Response`
+     * form instead of duplicating this exit-based path.
+     */
+    public static function proxy_chat(\WP_REST_Request $request): never
     {
         $message = (string) $request->get_param('message');
         if ($message === '') {
             wp_send_json_error(['error' => 'message required'], 400);
-            return;
         }
 
         $api_key = Settings::get_api_key();
         if ($api_key === null) {
             wp_send_json_error(['error' => 'api key not set'], 400);
-            return;
         }
 
-        // Stream from backend to browser, byte-for-byte.
         @ini_set('output_buffering', '0');
         @ini_set('zlib.output_compression', '0');
         while (ob_get_level() > 0) {
@@ -55,16 +58,14 @@ final class REST_Controller
         header('X-Accel-Buffering: no');
 
         $url = Backend_Client::backend_url() . '/chat';
-        $payload = wp_json_encode([
-            'message' => $message,
-            'api_key' => $api_key,
-        ]);
+        $payload = wp_json_encode(['message' => $message]);
 
         $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
                 'X-Shared-Secret: ' . Backend_Client::shared_secret(),
+                'X-Anthropic-Key: ' . $api_key,
             ],
             CURLOPT_POST           => true,
             CURLOPT_POSTFIELDS     => $payload,

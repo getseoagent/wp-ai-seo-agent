@@ -7,10 +7,10 @@ export type SseEvent =
 
 export function parseSseChunks(buffer: string): { events: SseEvent[]; remainder: string } {
   const events: SseEvent[] = [];
-  const parts = buffer.split("\n\n");
+  const parts = buffer.split(/\r?\n\r?\n/);
   const remainder = parts.pop() ?? "";
   for (const part of parts) {
-    const dataLine = part.split("\n").find((l) => l.startsWith("data: "));
+    const dataLine = part.split(/\r?\n/).find((l) => l.startsWith("data: "));
     if (!dataLine) continue;
     const json = dataLine.slice("data: ".length);
     try {

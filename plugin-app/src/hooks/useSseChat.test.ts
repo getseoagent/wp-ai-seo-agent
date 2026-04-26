@@ -27,4 +27,15 @@ describe("parseSseChunks", () => {
     const { events } = parseSseChunks(buf);
     expect(events[0]).toEqual({ type: "error", message: "oops" });
   });
+
+  it("accepts CRLF line endings", () => {
+    const buf =
+      'event: text\r\ndata: {"type":"text","delta":"Hi"}\r\n\r\n' +
+      'event: done\r\ndata: {"type":"done"}\r\n\r\n';
+    const { events, remainder } = parseSseChunks(buf);
+    expect(events.length).toBe(2);
+    expect(events[0]).toEqual({ type: "text", delta: "Hi" });
+    expect(events[1]).toEqual({ type: "done" });
+    expect(remainder).toBe("");
+  });
 });
