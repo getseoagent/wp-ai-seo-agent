@@ -16,6 +16,8 @@ export const tools: Tool[] = [
         category: { type: "string", description: "Category slug" },
         tag:      { type: "string", description: "Tag slug" },
         status:   { type: "string", description: "Post status, default 'publish'" },
+        after:    { type: "string", description: "Only posts modified after this ISO date (e.g. '2026-01-01')" },
+        before:   { type: "string", description: "Only posts modified before this ISO date" },
         limit:    { type: "integer", description: "Max items, default 20, max 50" },
         cursor:   { type: "integer", description: "Offset for pagination" },
       },

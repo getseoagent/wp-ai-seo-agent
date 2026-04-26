@@ -36,7 +36,7 @@ describe("runAgent", () => {
   it("yields text and done on a single end_turn turn", async () => {
     const client = scriptedClient([{ deltas: ["Hi", "!"], stop: "end_turn" }]);
     const events: any[] = [];
-    for await (const ev of runAgent({ apiKey: "k", messages: [{ role: "user", content: "hello" }], wp: fakeWp, signal: new AbortController().signal, client, tools })) {
+    for await (const ev of runAgent({ messages:[{ role: "user", content: "hello" }], wp: fakeWp, signal: new AbortController().signal, client, tools })) {
       events.push(ev);
     }
     expect(events.map(e => e.type)).toEqual(["text", "text", "done"]);
@@ -49,7 +49,7 @@ describe("runAgent", () => {
       { deltas: ["Found 1 post."], stop: "end_turn" },
     ]);
     const events: any[] = [];
-    for await (const ev of runAgent({ apiKey: "k", messages: [{ role: "user", content: "list my posts" }], wp: fakeWp, signal: new AbortController().signal, client, tools })) {
+    for await (const ev of runAgent({ messages:[{ role: "user", content: "list my posts" }], wp: fakeWp, signal: new AbortController().signal, client, tools })) {
       events.push(ev);
     }
     expect(events.map(e => e.type)).toEqual(["text", "tool_call", "tool_result", "text", "done"]);
@@ -62,7 +62,7 @@ describe("runAgent", () => {
     const client = scriptedClient([{ deltas: ["A"], stop: "tool_use", toolCalls: [{ id: "tu_1", name: "list_posts", input: {} }] }]);
     ac.abort();
     const events: any[] = [];
-    for await (const ev of runAgent({ apiKey: "k", messages: [{ role: "user", content: "x" }], wp: fakeWp, signal: ac.signal, client, tools })) {
+    for await (const ev of runAgent({ messages:[{ role: "user", content: "x" }], wp: fakeWp, signal: ac.signal, client, tools })) {
       events.push(ev);
     }
     expect(events.find(e => e.type === "error")).toBeDefined();
@@ -73,7 +73,7 @@ describe("runAgent", () => {
     const scripts = Array.from({ length: 20 }, () => ({ deltas: [], toolCalls: [tool], stop: "tool_use" as const }));
     const client = scriptedClient(scripts);
     const events: any[] = [];
-    for await (const ev of runAgent({ apiKey: "k", messages: [{ role: "user", content: "x" }], wp: fakeWp, signal: new AbortController().signal, client, tools, maxIterations: 3 })) {
+    for await (const ev of runAgent({ messages:[{ role: "user", content: "x" }], wp: fakeWp, signal: new AbortController().signal, client, tools, maxIterations: 3 })) {
       events.push(ev);
     }
     const errors = events.filter(e => e.type === "error");
@@ -87,7 +87,7 @@ describe("runAgent", () => {
       { deltas: ["Recovered"], stop: "end_turn" },
     ]);
     const events: any[] = [];
-    for await (const ev of runAgent({ apiKey: "k", messages: [{ role: "user", content: "x" }], wp: fakeWp, signal: new AbortController().signal, client, tools })) {
+    for await (const ev of runAgent({ messages:[{ role: "user", content: "x" }], wp: fakeWp, signal: new AbortController().signal, client, tools })) {
       events.push(ev);
     }
     expect(events.map(e => e.type)).toEqual(["tool_call", "tool_result", "text", "done"]);
@@ -103,7 +103,7 @@ describe("runAgent", () => {
       { deltas: ["Done"], stop: "end_turn" },
     ]);
     const events: any[] = [];
-    for await (const ev of runAgent({ apiKey: "k", messages: [{ role: "user", content: "x" }], wp: fakeWp, signal: new AbortController().signal, client, tools })) {
+    for await (const ev of runAgent({ messages:[{ role: "user", content: "x" }], wp: fakeWp, signal: new AbortController().signal, client, tools })) {
       events.push(ev);
     }
     expect(events.map(e => e.type)).toEqual([
@@ -125,7 +125,7 @@ describe("runAgent", () => {
       },
     };
     const events: any[] = [];
-    for await (const ev of runAgent({ apiKey: "k", messages: [{ role: "user", content: "x" }], wp: fakeWp, signal: new AbortController().signal, client: throwingClient, tools })) {
+    for await (const ev of runAgent({ messages:[{ role: "user", content: "x" }], wp: fakeWp, signal: new AbortController().signal, client: throwingClient, tools })) {
       events.push(ev);
     }
     expect(events.length).toBe(1);

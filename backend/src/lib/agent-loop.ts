@@ -25,7 +25,6 @@ export interface AgentClient {
 }
 
 export type RunAgentArgs = {
-  apiKey: string;
   messages: Message[];
   wp: WpClient;
   signal: AbortSignal;

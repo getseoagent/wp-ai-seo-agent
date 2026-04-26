@@ -46,7 +46,6 @@ export function mountChat(app: Hono, deps: ChatDeps): void {
       let assistantText = "";
       try {
         for await (const ev of runAgent({
-          apiKey,
           messages,
           wp: deps.wp,
           signal: ac.signal,
