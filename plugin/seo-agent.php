@@ -25,6 +25,7 @@ require_once SEO_AGENT_DIR . 'includes/class-settings.php';
 require_once SEO_AGENT_DIR . 'includes/class-admin-page.php';
 require_once SEO_AGENT_DIR . 'includes/class-rest-controller.php';
 require_once SEO_AGENT_DIR . 'includes/class-history-store.php';
+require_once SEO_AGENT_DIR . 'includes/class-jobs-store.php';
 require_once SEO_AGENT_DIR . 'includes/class-backend-client.php';
 
 foreach (glob(SEO_AGENT_DIR . 'includes/adapters/interface-*.php') as $file) {
@@ -55,6 +56,27 @@ register_activation_hook(__FILE__, static function (): void {
     ) {$charset_collate};";
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     dbDelta($sql);
+
+    $jobs_table = $wpdb->prefix . 'seoagent_jobs';
+    $jobs_sql = "CREATE TABLE {$jobs_table} (
+        id                   VARCHAR(36)  NOT NULL,
+        user_id              BIGINT       NOT NULL DEFAULT 0,
+        tool_name            VARCHAR(64)  NOT NULL,
+        status               VARCHAR(32)  NOT NULL,
+        total                INT          NOT NULL,
+        done                 INT          NOT NULL DEFAULT 0,
+        failed_count         INT          NOT NULL DEFAULT 0,
+        style_hints          TEXT         NULL,
+        params_json          LONGTEXT     NULL,
+        started_at           DATETIME     NOT NULL,
+        finished_at          DATETIME     NULL,
+        cancel_requested_at  DATETIME     NULL,
+        last_progress_at     DATETIME     NULL,
+        PRIMARY KEY (id),
+        INDEX idx_user_status (user_id, status),
+        INDEX idx_started (started_at)
+    ) {$charset_collate};";
+    dbDelta($jobs_sql);
 });
 
 add_action('plugins_loaded', static function (): void {

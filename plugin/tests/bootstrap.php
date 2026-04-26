@@ -7,6 +7,7 @@ require_once dirname(__DIR__) . '/includes/class-settings.php';
 require_once dirname(__DIR__) . '/includes/class-backend-client.php';
 require_once dirname(__DIR__) . '/includes/class-rest-controller.php';
 require_once dirname(__DIR__) . '/includes/class-history-store.php';
+require_once dirname(__DIR__) . '/includes/class-jobs-store.php';
 
 foreach (glob(dirname(__DIR__) . '/includes/adapters/interface-*.php') as $adapter_file) {
     require_once $adapter_file;
@@ -116,5 +117,5 @@ if (!function_exists('get_current_user_id')) {
     function get_current_user_id(): int { return $GLOBALS['_seoagent_test_user_id'] ?? 0; }
 }
 if (!function_exists('current_time')) {
-    function current_time(string $type): string { return $type === 'mysql' ? '2026-04-26 12:00:00' : (string) time(); }
+    function current_time(string $type, bool $gmt = false): string { return $type === 'mysql' ? '2026-04-26 12:00:00' : (string) time(); }
 }
