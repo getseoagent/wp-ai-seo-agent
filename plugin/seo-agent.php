@@ -26,6 +26,13 @@ require_once SEO_AGENT_DIR . 'includes/class-admin-page.php';
 require_once SEO_AGENT_DIR . 'includes/class-rest-controller.php';
 require_once SEO_AGENT_DIR . 'includes/class-backend-client.php';
 
+foreach (glob(SEO_AGENT_DIR . 'includes/adapters/interface-*.php') as $file) {
+    require_once $file;
+}
+foreach (glob(SEO_AGENT_DIR . 'includes/adapters/class-*.php') as $file) {
+    require_once $file;
+}
+
 add_action('plugins_loaded', static function (): void {
     \SeoAgent\Settings::init();
     \SeoAgent\Admin_Page::init();

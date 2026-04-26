@@ -6,6 +6,13 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once dirname(__DIR__) . '/includes/class-settings.php';
 require_once dirname(__DIR__) . '/includes/class-backend-client.php';
 
+foreach (glob(dirname(__DIR__) . '/includes/adapters/interface-*.php') as $adapter_file) {
+    require_once $adapter_file;
+}
+foreach (glob(dirname(__DIR__) . '/includes/adapters/class-*.php') as $adapter_file) {
+    require_once $adapter_file;
+}
+
 if (!defined('ABSPATH')) {
     define('ABSPATH', __DIR__);
 }

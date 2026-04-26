@@ -1,0 +1,13 @@
+<?php
+declare(strict_types=1);
+
+namespace SeoAgent\Adapters;
+
+interface Seo_Fields_Adapter
+{
+    public function get_seo_title(int $post_id): ?string;
+    public function get_seo_description(int $post_id): ?string;
+    public function get_focus_keyword(int $post_id): ?string;
+    public function get_og_title(int $post_id): ?string;
+    public function name(): string;
+}
