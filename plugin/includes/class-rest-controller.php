@@ -205,6 +205,8 @@ final class REST_Controller
         $url = Backend_Client::backend_url() . '/chat';
         $payload = wp_json_encode(['message' => $message]);
 
+        ignore_user_abort(false);
+
         $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_HTTPHEADER => [
@@ -215,6 +217,9 @@ final class REST_Controller
             CURLOPT_POST           => true,
             CURLOPT_POSTFIELDS     => $payload,
             CURLOPT_WRITEFUNCTION  => static function ($ch, string $chunk): int {
+                if (connection_aborted()) {
+                    return 0; // returning != strlen aborts the cURL transfer
+                }
                 echo $chunk;
                 @ob_flush();
                 @flush();
@@ -222,6 +227,10 @@ final class REST_Controller
             },
             CURLOPT_RETURNTRANSFER => false,
             CURLOPT_TIMEOUT        => 0,
+            CURLOPT_NOPROGRESS     => false,
+            CURLOPT_PROGRESSFUNCTION => static function (): int {
+                return connection_aborted() ? 1 : 0; // non-zero aborts
+            },
         ]);
 
         $ok = curl_exec($ch);
