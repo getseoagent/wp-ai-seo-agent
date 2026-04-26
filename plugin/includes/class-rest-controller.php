@@ -21,10 +21,8 @@ final class REST_Controller
             'callback'            => [self::class, 'proxy_chat'],
             'permission_callback' => [self::class, 'permit_admin'],
             'args'                => [
-                'message' => [
-                    'type'     => 'string',
-                    'required' => true,
-                ],
+                'message'    => ['type' => 'string', 'required' => true],
+                'session_id' => ['type' => 'string', 'required' => true],
             ],
         ]);
 
@@ -183,9 +181,13 @@ final class REST_Controller
      */
     public static function proxy_chat(\WP_REST_Request $request): never
     {
-        $message = (string) $request->get_param('message');
+        $message    = (string) $request->get_param('message');
+        $session_id = (string) $request->get_param('session_id');
         if ($message === '') {
             wp_send_json_error(['error' => 'message required'], 400);
+        }
+        if ($session_id === '') {
+            wp_send_json_error(['error' => 'session_id required'], 400);
         }
 
         $api_key = Settings::get_api_key();
@@ -203,7 +205,7 @@ final class REST_Controller
         header('X-Accel-Buffering: no');
 
         $url = Backend_Client::backend_url() . '/chat';
-        $payload = wp_json_encode(['message' => $message]);
+        $payload = wp_json_encode(['message' => $message, 'session_id' => $session_id]);
 
         ignore_user_abort(false);
 
