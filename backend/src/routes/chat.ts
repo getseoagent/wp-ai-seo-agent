@@ -6,6 +6,7 @@ import { runAgent, type AgentClient, type Message } from "../lib/agent-loop";
 import type { Tool } from "../lib/tools";
 import type { WpClient } from "../lib/wp-client";
 import type { createSessionStore } from "../lib/sessions";
+import { makeDefaultCraft } from "../lib/craft";
 
 type ChatDeps = {
   makeClient: (apiKey: string) => AgentClient;
@@ -35,6 +36,7 @@ export function mountChat(app: Hono, deps: ChatDeps): void {
     const messages: Message[] = deps.sessionStore.get(body.session_id);
 
     const client = deps.makeClient(apiKey);
+    const craft = makeDefaultCraft(apiKey);
     const ac = new AbortController();
 
     return stream(c, async (s) => {
@@ -51,6 +53,7 @@ export function mountChat(app: Hono, deps: ChatDeps): void {
           signal: ac.signal,
           client,
           tools: deps.tools,
+          craft,
         })) {
           if (ev.type === "text") assistantText += ev.delta;
           await s.write(sseFormat(ev));

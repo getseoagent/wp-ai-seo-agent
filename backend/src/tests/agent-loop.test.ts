@@ -113,6 +113,55 @@ describe("runAgent", () => {
     expect(events[2]).toMatchObject({ id: "tu_2" });
   });
 
+  it("propagates craft deps through to dispatchTool", async () => {
+    // propose_seo_rewrites requires CraftDeps. Without it, dispatchTool throws
+    // "craft deps required". With it threaded through, fakeCraft.composeRewrite is called.
+    let composeRewriteCalls = 0;
+    const fakeCraft = {
+      composeRewrite: async (_summary: any, _hints: any, _signal?: AbortSignal) => {
+        composeRewriteCalls++;
+        return {
+          post_id: 7,
+          intent: "informational" as const,
+          primary_keyword: { text: "kw", volume: null, source: "llm_estimate" as const },
+          synonym: "kw2",
+          title:         { old: null, new: "New Title", length: 9 },
+          description:   { old: null, new: "New Desc",  length: 8 },
+          focus_keyword: { old: null, new: "kw" },
+          reasoning: "because",
+        };
+      },
+    };
+    const wpWithSummary = {
+      ...fakeWp,
+      getPostSummary: async () => ({
+        id: 7, post_title: "t", slug: "s", status: "publish", modified: "x",
+        seo_title: null, seo_description: null, seo_focus_keyword: null,
+        categories: [], tags: [], content_preview: "preview",
+      } as any),
+    } as unknown as WpClient;
+    const client = scriptedClient([
+      { deltas: [], toolCalls: [{ id: "tu_1", name: "propose_seo_rewrites", input: { post_ids: [7] } }], stop: "tool_use" },
+      { deltas: ["Done"], stop: "end_turn" },
+    ]);
+    const events: any[] = [];
+    for await (const ev of runAgent({
+      messages: [{ role: "user", content: "x" }],
+      wp: wpWithSummary,
+      signal: new AbortController().signal,
+      client,
+      tools,
+      craft: fakeCraft,
+    })) {
+      events.push(ev);
+    }
+    expect(composeRewriteCalls).toBe(1);
+    const toolResult = events.find(e => e.type === "tool_result") as any;
+    expect(toolResult).toBeDefined();
+    expect(toolResult.result?.proposals?.length).toBe(1);
+    expect(toolResult.result?.failures?.length).toBe(0);
+  });
+
   it("emits error and returns when stream throws non-abort error", async () => {
     const throwingClient: AgentClient = {
       stream() {

@@ -1,6 +1,7 @@
 import { dispatchTool, type Tool } from "./tools";
 import type { WpClient } from "./wp-client";
 import type { SseEvent } from "./sse";
+import type { CraftDeps } from "./craft";
 
 export type AssistantBlock =
   | { type: "text"; text: string }
@@ -32,6 +33,7 @@ export type RunAgentArgs = {
   tools: Tool[];
   model?: string;
   maxIterations?: number;
+  craft?: CraftDeps;
 };
 
 export async function* runAgent(args: RunAgentArgs): AsyncGenerator<SseEvent> {
@@ -72,7 +74,7 @@ export async function* runAgent(args: RunAgentArgs): AsyncGenerator<SseEvent> {
       yield { type: "tool_call", id: tu.id, name: tu.name, args: tu.input };
       let resultJson: string;
       try {
-        const result = await dispatchTool(tu.name, tu.input, args.wp, args.signal);
+        const result = await dispatchTool(tu.name, tu.input, args.wp, args.signal, args.craft);
         resultJson = JSON.stringify(result);
         yield { type: "tool_result", id: tu.id, result };
       } catch (err) {
