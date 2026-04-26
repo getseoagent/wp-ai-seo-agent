@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "test": "bun test",
-    "start": "bun run src/index.ts"
+    "start": "bun run src/index.ts",
+    "eval": "bun run eval/run.ts"
   },
   "dependencies": {
     "hono": "^4.6.0",
