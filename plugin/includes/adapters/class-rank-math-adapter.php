@@ -26,6 +26,11 @@ final class Rank_Math_Adapter implements Seo_Fields_Adapter
             $value = get_post_meta($post_id, $key, true);
             return is_string($value) ? $value : null;
         };
+        // Default writer treats strict `=== false` as failure. Note that
+        // update_post_meta also returns false when the meta exists with the
+        // same value (no-op). Callers must pre-check value-unchanged before
+        // invoking the setter, or this throws spuriously. Task 7's handler
+        // does that pre-check via the audit's `before === after` short-circuit.
         $this->writer = $writer ?? static function (int $post_id, string $key, string $value): void {
             $ok = update_post_meta($post_id, $key, $value);
             if ($ok === false) {
