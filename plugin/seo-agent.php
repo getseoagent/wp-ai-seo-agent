@@ -24,6 +24,7 @@ define('SEO_AGENT_URL', plugin_dir_url(__FILE__));
 require_once SEO_AGENT_DIR . 'includes/class-settings.php';
 require_once SEO_AGENT_DIR . 'includes/class-admin-page.php';
 require_once SEO_AGENT_DIR . 'includes/class-rest-controller.php';
+require_once SEO_AGENT_DIR . 'includes/class-history-store.php';
 require_once SEO_AGENT_DIR . 'includes/class-backend-client.php';
 
 foreach (glob(SEO_AGENT_DIR . 'includes/adapters/interface-*.php') as $file) {

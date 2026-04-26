@@ -6,6 +6,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once dirname(__DIR__) . '/includes/class-settings.php';
 require_once dirname(__DIR__) . '/includes/class-backend-client.php';
 require_once dirname(__DIR__) . '/includes/class-rest-controller.php';
+require_once dirname(__DIR__) . '/includes/class-history-store.php';
 
 foreach (glob(dirname(__DIR__) . '/includes/adapters/interface-*.php') as $adapter_file) {
     require_once $adapter_file;
