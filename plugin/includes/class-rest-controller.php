@@ -218,6 +218,7 @@ final class REST_Controller
             'status'     => (string) $post->post_status,
             'modified'   => (string) $post->post_modified,
             'word_count' => self::word_count_unicode(wp_strip_all_tags((string) $post->post_content)),
+            'content_preview' => self::content_preview((string) $post->post_content, 500),
             'current_seo' => [
                 'title'         => $adapter->get_seo_title($id),
                 'description'   => $adapter->get_seo_description($id),
@@ -233,6 +234,24 @@ final class REST_Controller
         if ($trimmed === '') return 0;
         $parts = preg_split('/\s+/u', $trimmed);
         return is_array($parts) ? count($parts) : 0;
+    }
+
+    /**
+     * Strip HTML, shortcodes, and scripts from post content; cap to N words.
+     * Returns up to N words joined with single spaces, no trailing whitespace.
+     */
+    private static function content_preview(string $raw, int $max_words): string
+    {
+        if (function_exists('strip_shortcodes')) {
+            $raw = strip_shortcodes($raw);
+        }
+        $stripped = wp_strip_all_tags($raw, true);
+        $stripped = trim((string) preg_replace('/\s+/u', ' ', $stripped));
+        if ($stripped === '') return '';
+
+        $words = preg_split('/\s+/u', $stripped) ?: [];
+        if (count($words) <= $max_words) return implode(' ', $words);
+        return implode(' ', array_slice($words, 0, $max_words));
     }
 
     /**

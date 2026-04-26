@@ -106,6 +106,50 @@ final class RestControllerToolsTest extends TestCase
         $this->assertSame(5, $payload['word_count']);
     }
 
+    public function test_handle_get_post_summary_includes_content_preview(): void
+    {
+        $post = (object) [
+            'ID' => 42,
+            'post_title' => 'Title',
+            'post_name' => 'slug',
+            'post_status' => 'publish',
+            'post_modified' => '2026-01-01 00:00:00',
+            'post_content' => str_repeat('word ', 600) . 'tail',
+        ];
+        $loader = static fn(int $id): ?object => $id === 42 ? $post : null;
+        $adapter = new \SeoAgent\Adapters\Fallback_Adapter(static fn(int $id): ?string => null);
+
+        $result = REST_Controller::handle_get_post_summary(42, $loader, $adapter);
+
+        self::assertIsArray($result);
+        self::assertArrayHasKey('content_preview', $result);
+        self::assertIsString($result['content_preview']);
+        $word_count = str_word_count($result['content_preview']);
+        self::assertLessThanOrEqual(500, $word_count, 'content_preview should cap at 500 words');
+        self::assertGreaterThan(0, $word_count, 'content_preview should not be empty for a post with content');
+        self::assertStringNotContainsString('tail', $result['content_preview']);
+    }
+
+    public function test_handle_get_post_summary_content_preview_strips_html_and_shortcodes(): void
+    {
+        $post = (object) [
+            'ID' => 43,
+            'post_title' => 'T',
+            'post_name' => 's',
+            'post_status' => 'publish',
+            'post_modified' => '2026-01-01 00:00:00',
+            'post_content' => '<p>Hello <strong>world</strong></p>[shortcode foo="bar"]<script>alert(1)</script>tail',
+        ];
+        $loader = static fn(int $id): ?object => $id === 43 ? $post : null;
+        $adapter = new \SeoAgent\Adapters\Fallback_Adapter(static fn(int $id): ?string => null);
+        $result = REST_Controller::handle_get_post_summary(43, $loader, $adapter);
+
+        self::assertStringNotContainsString('<', $result['content_preview']);
+        self::assertStringNotContainsString('[shortcode', $result['content_preview']);
+        self::assertStringNotContainsString('alert', $result['content_preview']);
+        self::assertStringContainsString('Hello world', $result['content_preview']);
+    }
+
     public function test_get_taxonomy_terms_maps_fields(): void
     {
         $loader = static fn(string $tax): array => [

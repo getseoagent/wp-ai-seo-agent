@@ -18,6 +18,7 @@ export type PostListItem = {
 export type PostSummary = {
   id: number; post_title: string; slug: string; status: string; modified: string;
   word_count: number;
+  content_preview: string;
   current_seo: { title: string|null; description: string|null; focus_keyword: string|null; og_title: string|null };
 };
 

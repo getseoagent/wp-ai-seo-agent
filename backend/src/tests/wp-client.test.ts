@@ -32,6 +32,27 @@ describe("WpClient", () => {
     expect(calls[0].url).toBe("https://site.example/wp-json/seoagent/v1/post/42/summary");
   });
 
+  it("getPostSummary round-trips content_preview field", async () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = (async () => new Response(JSON.stringify({
+      id: 42,
+      post_title: "Title",
+      slug: "slug",
+      status: "publish",
+      modified: "2026-01-01 00:00:00",
+      word_count: 5,
+      content_preview: "preview text",
+      current_seo: { title: null, description: null, focus_keyword: null, og_title: null },
+    }), { status: 200, headers: { "content-type": "application/json" } })) as typeof fetch;
+    try {
+      const wp = createWpClient({ baseUrl: "https://site.example", sharedSecret: "s", writeSecret: "test-write" });
+      const result = await wp.getPostSummary(42);
+      expect(result?.content_preview).toBe("preview text");
+    } finally {
+      globalThis.fetch = original;
+    }
+  });
+
   it("throws on non-2xx", async () => {
     globalThis.fetch = (async () => new Response("nope", { status: 500 })) as typeof fetch;
     const wp = createWpClient({ baseUrl: "https://site.example", sharedSecret: "s", writeSecret: "test-write" });
