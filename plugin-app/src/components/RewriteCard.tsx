@@ -69,6 +69,7 @@ const newTextStyle: React.CSSProperties = {
   fontWeight: 500,
   fontSize: 12,
   display: "block",
+  textDecoration: "none",
 };
 
 const lengthAnnotationStyle: React.CSSProperties = {
@@ -133,10 +134,10 @@ function isProposalShape(v: unknown): boolean {
 function tryFormat(result: unknown): { proposals: FormattedProposal[]; failures: FormattedFailure[] } | null {
   if (!result || typeof result !== "object") return null;
   const r = result as Record<string, unknown>;
-  const rawProposals = Array.isArray(r.proposals) ? r.proposals : [];
+  const rawProposalsAll = Array.isArray(r.proposals) ? r.proposals : [];
   const rawFailures = Array.isArray(r.failures) ? r.failures : [];
-  // Light shape sanity check on the first proposal (if any) — abort on malformed.
-  if (rawProposals.length > 0 && !isProposalShape(rawProposals[0])) return null;
+  // Filter to valid proposals — render the well-formed ones, drop the malformed.
+  const rawProposals = rawProposalsAll.filter(isProposalShape);
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return formatRewriteCard({ proposals: rawProposals as any, failures: rawFailures as any });
@@ -152,8 +153,8 @@ function FieldRow({ field }: { field: ProposalField }) {
         {field.label}
         {field.lengthAnnotation && <span style={lengthAnnotationStyle}>{field.lengthAnnotation}</span>}
       </div>
-      {field.oldText !== "" && <span style={oldTextStyle}>{field.oldText}</span>}
-      <span style={newTextStyle}>{field.newText}</span>
+      {field.oldText !== "" && <del style={oldTextStyle}>{field.oldText}</del>}
+      <ins style={newTextStyle}>{field.newText}</ins>
     </div>
   );
 }
