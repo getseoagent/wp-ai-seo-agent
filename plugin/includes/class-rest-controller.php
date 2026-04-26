@@ -31,7 +31,7 @@ final class REST_Controller
             'callback'            => static function (): \WP_REST_Response {
                 return new \WP_REST_Response(self::handle_detect_seo_plugin());
             },
-            'permission_callback' => [self::class, 'permit_admin'],
+            'permission_callback' => [self::class, 'permit_admin_or_secret'],
         ]);
 
         register_rest_route('seoagent/v1', '/posts', [
@@ -39,7 +39,7 @@ final class REST_Controller
             'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
                 return new \WP_REST_Response(self::handle_list_posts($req->get_query_params()));
             },
-            'permission_callback' => [self::class, 'permit_admin'],
+            'permission_callback' => [self::class, 'permit_admin_or_secret'],
         ]);
 
         register_rest_route('seoagent/v1', '/post/(?P<id>\d+)/summary', [
@@ -51,26 +51,43 @@ final class REST_Controller
                 }
                 return new \WP_REST_Response($payload);
             },
-            'permission_callback' => [self::class, 'permit_admin'],
+            'permission_callback' => [self::class, 'permit_admin_or_secret'],
         ]);
 
         register_rest_route('seoagent/v1', '/categories', [
             'methods'             => 'GET',
             'callback'            => static fn(): \WP_REST_Response =>
                 new \WP_REST_Response(self::handle_get_taxonomy_terms('category')),
-            'permission_callback' => [self::class, 'permit_admin'],
+            'permission_callback' => [self::class, 'permit_admin_or_secret'],
         ]);
         register_rest_route('seoagent/v1', '/tags', [
             'methods'             => 'GET',
             'callback'            => static fn(): \WP_REST_Response =>
                 new \WP_REST_Response(self::handle_get_taxonomy_terms('post_tag')),
-            'permission_callback' => [self::class, 'permit_admin'],
+            'permission_callback' => [self::class, 'permit_admin_or_secret'],
         ]);
     }
 
     public static function permit_admin(): bool
     {
         return current_user_can('manage_options');
+    }
+
+    /**
+     * Accepts either an admin user (browser→WP path) or a request carrying
+     * the shared-secret header (backend→WP path). Plan 4 replaces the
+     * shared-secret leg with HS256 JWT.
+     */
+    public static function permit_admin_or_secret(\WP_REST_Request $request): bool
+    {
+        if (current_user_can('manage_options')) {
+            return true;
+        }
+        $expected = Backend_Client::shared_secret();
+        if ($expected === '') {
+            return false;
+        }
+        return hash_equals($expected, (string) $request->get_header('x-shared-secret'));
     }
 
     /** @return array{name: string} */
