@@ -250,8 +250,17 @@ final class REST_Controller
         if ($stripped === '') return '';
 
         $words = preg_split('/\s+/u', $stripped) ?: [];
-        if (count($words) <= $max_words) return implode(' ', $words);
-        return implode(' ', array_slice($words, 0, $max_words));
+        $result = count($words) <= $max_words
+            ? implode(' ', $words)
+            : implode(' ', array_slice($words, 0, $max_words));
+
+        // Character backstop: protects CJK / unsegmented languages where preg_split('/\s+/u')
+        // returns a single "word" that bypasses the word cap.
+        $max_chars = $max_words * 10;
+        if (function_exists('mb_substr') && mb_strlen($result) > $max_chars) {
+            $result = mb_substr($result, 0, $max_chars);
+        }
+        return $result;
     }
 
     /**

@@ -150,6 +150,29 @@ final class RestControllerToolsTest extends TestCase
         self::assertStringContainsString('Hello world', $result['content_preview']);
     }
 
+    public function test_handle_get_post_summary_content_preview_caps_unsegmented_text(): void
+    {
+        // CJK / Thai-style content has no spaces. Word-cap alone returns the entire body.
+        // The character backstop must clamp it.
+        $body = str_repeat('文', 8000); // 8000 Chinese characters, no spaces
+        $post = (object) [
+            'ID' => 44,
+            'post_title' => 'T',
+            'post_name' => 's',
+            'post_status' => 'publish',
+            'post_modified' => '2026-01-01 00:00:00',
+            'post_content' => $body,
+        ];
+        $loader = static fn(int $id): ?object => $id === 44 ? $post : null;
+        $adapter = new \SeoAgent\Adapters\Fallback_Adapter(static fn(int $id): ?string => null);
+        $result = REST_Controller::handle_get_post_summary(44, $loader, $adapter);
+
+        self::assertNotNull($result);
+        // 500 words * 10 chars/word = 5000 char budget
+        self::assertLessThanOrEqual(5000, mb_strlen($result['content_preview']));
+        self::assertGreaterThan(0, mb_strlen($result['content_preview']));
+    }
+
     public function test_get_taxonomy_terms_maps_fields(): void
     {
         $loader = static fn(string $tax): array => [
