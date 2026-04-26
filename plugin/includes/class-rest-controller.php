@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace SeoAgent;
 
+use SeoAgent\Adapters;
+
 final class REST_Controller
 {
     public static function init(): void
@@ -23,11 +25,25 @@ final class REST_Controller
                 ],
             ],
         ]);
+
+        register_rest_route('seoagent/v1', '/detect-seo-plugin', [
+            'methods'             => 'GET',
+            'callback'            => static function (): \WP_REST_Response {
+                return new \WP_REST_Response(self::handle_detect_seo_plugin());
+            },
+            'permission_callback' => [self::class, 'permit_admin'],
+        ]);
     }
 
     public static function permit_admin(): bool
     {
         return current_user_can('manage_options');
+    }
+
+    /** @return array{name: string} */
+    public static function handle_detect_seo_plugin(): array
+    {
+        return ['name' => Adapters\Adapter_Factory::detect()];
     }
 
     /**
