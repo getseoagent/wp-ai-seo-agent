@@ -10,6 +10,7 @@ final class REST_Controller
 {
     private const LIST_POSTS_MAX_LIMIT = 50;
     private const HISTORY_MAX_LIMIT = 100;
+    private const ROLLBACK_MAX_IDS = 50;
 
     public static function init(): void
     {
@@ -90,6 +91,14 @@ final class REST_Controller
                 return new \WP_REST_Response(self::handle_get_history($params));
             },
             'permission_callback' => [self::class, 'permit_admin_or_secret'],
+        ]);
+
+        register_rest_route('seoagent/v1', '/rollback', [
+            'methods'             => 'POST',
+            'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
+                return new \WP_REST_Response(self::handle_rollback($req->get_json_params() ?? []));
+            },
+            'permission_callback' => [self::class, 'permit_admin_or_write_secret'],
         ]);
     }
 
@@ -348,6 +357,75 @@ final class REST_Controller
         ], $raw);
 
         return ['rows' => $rows, 'next_cursor' => count($rows) === $limit ? $cursor + $limit : null, 'total' => count($rows)];
+    }
+
+    /**
+     * Reverse one or more recorded writes. Audit is immutable: originals are
+     * never overwritten, the reversal itself is a NEW row (status=applied,
+     * reason='rollback of #N'), and the original row is stamped with
+     * `rolled_back_at` as a forensic marker. Reversals are themselves
+     * rollback-able by the same mechanism.
+     *
+     * @param array<string, mixed> $params
+     * @return array{job_id: string, results: list<array<string,mixed>>}
+     */
+    public static function handle_rollback(
+        array $params,
+        ?Adapters\Seo_Fields_Adapter $adapter = null,
+        ?History_Store $store = null,
+        ?\Closure $uuid = null,
+        ?\Closure $now = null
+    ): array {
+        $adapter ??= Adapters\Adapter_Factory::make(Adapters\Adapter_Factory::detect());
+        $store   ??= new History_Store($GLOBALS['wpdb']);
+        $uuid    ??= static fn(): string => wp_generate_uuid4();
+        $now     ??= static fn(): string => current_time('mysql');
+
+        $raw_ids = is_array($params['history_ids'] ?? null) ? (array) $params['history_ids'] : [];
+        $ids     = array_slice($raw_ids, 0, self::ROLLBACK_MAX_IDS);
+        $job_id  = $uuid();
+        $user_id = function_exists('get_current_user_id') ? (get_current_user_id() ?: null) : null;
+
+        $results = [];
+        foreach ($ids as $raw_id) {
+            $id  = (int) $raw_id;
+            $row = $store->get($id);
+            if ($row === null) {
+                $results[] = ['history_id' => $id, 'status' => 'not_found'];
+                continue;
+            }
+            if (!empty($row->rolled_back_at)) {
+                $results[] = ['history_id' => $id, 'status' => 'skipped', 'reason' => 'already rolled back'];
+                continue;
+            }
+            $field = (string) ($row->field ?? '');
+            if (!$adapter->supports($field)) {
+                $results[] = ['history_id' => $id, 'status' => 'skipped', 'reason' => 'adapter does not support field'];
+                continue;
+            }
+            try {
+                $post_id    = (int) ($row->post_id ?? 0);
+                $value      = (string) ($row->before_value ?? '');
+                $before_now = self::adapter_get($adapter, $field, $post_id);
+                self::adapter_set($adapter, $field, $post_id, $value);
+                $store->insert([
+                    'post_id'      => $post_id,
+                    'job_id'       => $job_id,
+                    'field'        => $field,
+                    'before_value' => $before_now,
+                    'after_value'  => $value,
+                    'status'       => 'applied',
+                    'reason'       => 'rollback of #' . $id,
+                    'user_id'      => $user_id,
+                ]);
+                $store->mark_rolled_back($id, $now());
+                $results[] = ['history_id' => $id, 'status' => 'rolled_back'];
+            } catch (\Throwable $e) {
+                $results[] = ['history_id' => $id, 'status' => 'failed', 'reason' => $e->getMessage()];
+            }
+        }
+
+        return ['job_id' => $job_id, 'results' => $results];
     }
 
     private static function adapter_get(Adapters\Seo_Fields_Adapter $adapter, string $field, int $post_id): ?string

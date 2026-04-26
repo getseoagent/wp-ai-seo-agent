@@ -100,3 +100,6 @@ if (!function_exists('wp_generate_uuid4')) {
 if (!function_exists('get_current_user_id')) {
     function get_current_user_id(): int { return $GLOBALS['_seoagent_test_user_id'] ?? 0; }
 }
+if (!function_exists('current_time')) {
+    function current_time(string $type): string { return $type === 'mysql' ? '2026-04-26 12:00:00' : (string) time(); }
+}

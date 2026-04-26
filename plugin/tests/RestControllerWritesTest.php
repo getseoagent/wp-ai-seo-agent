@@ -249,4 +249,128 @@ final class RestControllerWritesTest extends TestCase
     {
         return self::store_with_rows($rows);
     }
+
+    public function test_rollback_reverses_applied_row_and_marks_original(): void
+    {
+        $original = (object) ['id' => 17, 'post_id' => 42, 'job_id' => 'j1', 'field' => 'title', 'before_value' => 'Old', 'after_value' => 'New', 'status' => 'applied', 'reason' => null, 'user_id' => 1, 'created_at' => 'x', 'rolled_back_at' => null];
+        $writes = [];
+        $rows_inserted = [];
+        $marked_ids = [];
+        $adapter = self::adapter_with_state(['title' => 'New'], $writes);
+        $store = self::store_with_history_rows([17 => $original], $rows_inserted, $marked_ids);
+
+        $payload = REST_Controller::handle_rollback(
+            ['history_ids' => [17]],
+            $adapter,
+            $store,
+            static fn(): string => 'rollback-job',
+            static fn(): string => '2026-04-26 12:00:00'
+        );
+
+        $this->assertSame('rollback-job', $payload['job_id']);
+        $this->assertSame('rolled_back', $payload['results'][0]['status']);
+        $this->assertSame([['post_id' => 42, 'key' => 'rank_math_title', 'value' => 'Old']], $writes);
+        $this->assertCount(1, $rows_inserted);
+        $this->assertSame('rollback of #17', $rows_inserted[0]['reason']);
+        $this->assertSame('applied', $rows_inserted[0]['status']);
+        $this->assertSame([['id' => 17, 'at' => '2026-04-26 12:00:00']], $marked_ids);
+    }
+
+    public function test_rollback_skips_already_rolled_back_row(): void
+    {
+        $original = (object) ['id' => 17, 'post_id' => 42, 'job_id' => 'j1', 'field' => 'title', 'before_value' => 'a', 'after_value' => 'b', 'status' => 'applied', 'reason' => null, 'user_id' => null, 'created_at' => 'x', 'rolled_back_at' => '2026-04-25 10:00:00'];
+        $rows_inserted = [];
+        $marked_ids = [];
+        $writes = [];
+        $adapter = self::adapter_with_state([], $writes);
+        $store = self::store_with_history_rows([17 => $original], $rows_inserted, $marked_ids);
+
+        $payload = REST_Controller::handle_rollback(
+            ['history_ids' => [17]],
+            $adapter,
+            $store,
+            static fn(): string => 'jb',
+            static fn(): string => 'now'
+        );
+
+        $this->assertSame('skipped', $payload['results'][0]['status']);
+        $this->assertSame('already rolled back', $payload['results'][0]['reason']);
+        $this->assertSame([], $writes);
+        $this->assertSame([], $rows_inserted);
+        $this->assertSame([], $marked_ids);
+    }
+
+    public function test_rollback_clamps_history_ids_to_50(): void
+    {
+        $rows_inserted = [];
+        $marked_ids = [];
+        $writes = [];
+        $adapter = self::adapter_with_state([], $writes);
+        // Empty rows_by_id map → every store->get() returns null → status='not_found'
+        $store = self::store_with_history_rows([], $rows_inserted, $marked_ids);
+
+        $payload = REST_Controller::handle_rollback(
+            ['history_ids' => range(1, 75)],
+            $adapter,
+            $store,
+            static fn(): string => 'jb',
+            static fn(): string => 'now'
+        );
+
+        $this->assertCount(50, $payload['results']);
+        $this->assertSame('not_found', $payload['results'][0]['status']);
+    }
+
+    /**
+     * Build a History_Store whose underlying db serves pre-seeded rows by id and
+     * captures inserts + updates. Keeps History_Store final-friendly: production
+     * History_Store, fake db, no subclassing.
+     *
+     * @param array<int, object> $rows_by_id
+     * @param array<int, array<string, mixed>> $inserted
+     * @param array<int, array{id:int, at:string}> $marked
+     */
+    private static function store_with_history_rows(array $rows_by_id, array &$inserted, array &$marked): \SeoAgent\History_Store
+    {
+        $db = new class($rows_by_id, $inserted, $marked) {
+            public string $prefix = 'wp_';
+            /**
+             * @param array<int, object> $rows_by_id
+             * @param array<int, array<string, mixed>> $inserted_ref
+             * @param array<int, array{id:int, at:string}> $marked_ref
+             */
+            public function __construct(
+                public array $rows_by_id,
+                public array &$inserted_ref,
+                public array &$marked_ref
+            ) {}
+            public function prepare(string $sql, ...$args): string {
+                // Substitute %d / %s placeholders with the args. Quote %s for shape parity.
+                $i = 0;
+                return preg_replace_callback('/%d|%s/', function ($m) use ($args, &$i): string {
+                    $val = $args[$i++] ?? '';
+                    return $m[0] === '%d' ? (string) (int) $val : "'" . (string) $val . "'";
+                }, $sql) ?? $sql;
+            }
+            public function insert(string $table, array $data): int {
+                $this->inserted_ref[] = $data;
+                return 1;
+            }
+            public function get_results(string $sql): array { return []; }
+            public function get_row(string $sql): ?object {
+                if (preg_match('/WHERE id = (\d+)/', $sql, $m)) {
+                    $id = (int) $m[1];
+                    return $this->rows_by_id[$id] ?? null;
+                }
+                return null;
+            }
+            public function update(string $table, array $data, array $where): int {
+                if (isset($data['rolled_back_at'], $where['id'])) {
+                    $this->marked_ref[] = ['id' => (int) $where['id'], 'at' => (string) $data['rolled_back_at']];
+                }
+                return 1;
+            }
+        };
+        return new \SeoAgent\History_Store($db);
+    }
 }
