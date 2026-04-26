@@ -80,4 +80,55 @@ describe("runAgent", () => {
     expect(errors.length).toBe(1);
     expect(errors[0].message).toMatch(/iteration cap/i);
   });
+
+  it("emits error tool_result and continues when dispatchTool throws", async () => {
+    const client = scriptedClient([
+      { deltas: [], toolCalls: [{ id: "tu_1", name: "bogus", input: {} }], stop: "tool_use" },
+      { deltas: ["Recovered"], stop: "end_turn" },
+    ]);
+    const events: any[] = [];
+    for await (const ev of runAgent({ apiKey: "k", messages: [{ role: "user", content: "x" }], wp: fakeWp, signal: new AbortController().signal, client, tools })) {
+      events.push(ev);
+    }
+    expect(events.map(e => e.type)).toEqual(["tool_call", "tool_result", "text", "done"]);
+    expect((events[1] as any).result).toMatchObject({ error: expect.stringContaining("unknown tool") });
+  });
+
+  it("groups multiple tool_uses in one iteration into a single user follow-up", async () => {
+    const client = scriptedClient([
+      { deltas: [], toolCalls: [
+        { id: "tu_1", name: "list_posts", input: { limit: 1 } },
+        { id: "tu_2", name: "get_categories", input: {} },
+      ], stop: "tool_use" },
+      { deltas: ["Done"], stop: "end_turn" },
+    ]);
+    const events: any[] = [];
+    for await (const ev of runAgent({ apiKey: "k", messages: [{ role: "user", content: "x" }], wp: fakeWp, signal: new AbortController().signal, client, tools })) {
+      events.push(ev);
+    }
+    expect(events.map(e => e.type)).toEqual([
+      "tool_call", "tool_result", "tool_call", "tool_result", "text", "done"
+    ]);
+    expect(events[0]).toMatchObject({ id: "tu_1" });
+    expect(events[2]).toMatchObject({ id: "tu_2" });
+  });
+
+  it("emits error and returns when stream throws non-abort error", async () => {
+    const throwingClient: AgentClient = {
+      stream() {
+        return {
+          async *[Symbol.asyncIterator]() {
+            throw new Error("network blew up");
+          },
+          async finalMessage() { throw new Error("should not be called"); },
+        };
+      },
+    };
+    const events: any[] = [];
+    for await (const ev of runAgent({ apiKey: "k", messages: [{ role: "user", content: "x" }], wp: fakeWp, signal: new AbortController().signal, client: throwingClient, tools })) {
+      events.push(ev);
+    }
+    expect(events.length).toBe(1);
+    expect(events[0]).toMatchObject({ type: "error", message: "network blew up" });
+  });
 });

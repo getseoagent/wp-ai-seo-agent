@@ -23,7 +23,7 @@ export type PostSummary = {
 export type Term = { id: number; name: string; slug: string; count: number };
 
 export function createWpClient(cfg: Cfg) {
-  async function call<T>(path: string, query?: Record<string, unknown>): Promise<T> {
+  async function call<T>(path: string, query?: Record<string, unknown>, signal?: AbortSignal): Promise<T> {
     const url = new URL(`${cfg.baseUrl}/wp-json/seoagent/v1${path}`);
     if (query) {
       for (const [k, v] of Object.entries(query)) {
@@ -33,19 +33,20 @@ export function createWpClient(cfg: Cfg) {
     const res = await fetch(url, {
       method: "GET",
       headers: { "x-shared-secret": cfg.sharedSecret },
+      signal,
     });
     if (!res.ok) throw new Error(`WP REST ${res.status} on ${path}`);
     return await res.json() as T;
   }
 
   return {
-    listPosts: (args: ListPostsArgs) =>
-      call<{ posts: PostListItem[]; next_cursor: number|null; total: number }>("/posts", args as Record<string, unknown>),
-    getPostSummary: (id: number) =>
-      call<PostSummary | null>(`/post/${id}/summary`),
-    getCategories: () => call<Term[]>("/categories"),
-    getTags:       () => call<Term[]>("/tags"),
-    detectSeoPlugin: () => call<{ name: string }>("/detect-seo-plugin"),
+    listPosts: (args: ListPostsArgs, signal?: AbortSignal) =>
+      call<{ posts: PostListItem[]; next_cursor: number|null; total: number }>("/posts", args as Record<string, unknown>, signal),
+    getPostSummary: (id: number, signal?: AbortSignal) =>
+      call<PostSummary | null>(`/post/${id}/summary`, undefined, signal),
+    getCategories: (signal?: AbortSignal) => call<Term[]>("/categories", undefined, signal),
+    getTags:       (signal?: AbortSignal) => call<Term[]>("/tags", undefined, signal),
+    detectSeoPlugin: (signal?: AbortSignal) => call<{ name: string }>("/detect-seo-plugin", undefined, signal),
   };
 }
 

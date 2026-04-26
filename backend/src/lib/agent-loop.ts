@@ -73,7 +73,7 @@ export async function* runAgent(args: RunAgentArgs): AsyncGenerator<SseEvent> {
       yield { type: "tool_call", id: tu.id, name: tu.name, args: tu.input };
       let resultJson: string;
       try {
-        const result = await dispatchTool(tu.name, tu.input, args.wp);
+        const result = await dispatchTool(tu.name, tu.input, args.wp, args.signal);
         resultJson = JSON.stringify(result);
         yield { type: "tool_result", id: tu.id, result };
       } catch (err) {

@@ -49,14 +49,14 @@ export const tools: Tool[] = [
   },
 ];
 
-export async function dispatchTool(name: string, input: unknown, wp: WpClient): Promise<unknown> {
+export async function dispatchTool(name: string, input: unknown, wp: WpClient, signal?: AbortSignal): Promise<unknown> {
   const args = (input ?? {}) as Record<string, unknown>;
   switch (name) {
-    case "list_posts":        return wp.listPosts(args);
-    case "get_post_summary":  return wp.getPostSummary(Number(args.id));
-    case "get_categories":    return wp.getCategories();
-    case "get_tags":          return wp.getTags();
-    case "detect_seo_plugin": return wp.detectSeoPlugin();
+    case "list_posts":        return wp.listPosts(args, signal);
+    case "get_post_summary":  return wp.getPostSummary(Number(args.id), signal);
+    case "get_categories":    return wp.getCategories(signal);
+    case "get_tags":          return wp.getTags(signal);
+    case "detect_seo_plugin": return wp.detectSeoPlugin(signal);
     default: throw new Error(`unknown tool: ${name}`);
   }
 }

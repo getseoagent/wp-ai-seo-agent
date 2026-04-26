@@ -37,4 +37,11 @@ describe("WpClient", () => {
     const wp = createWpClient({ baseUrl: "https://site.example", sharedSecret: "s" });
     await expect(wp.listPosts({})).rejects.toThrow(/500/);
   });
+
+  it("forwards abort signal to fetch", async () => {
+    const wp = createWpClient({ baseUrl: "https://site.example", sharedSecret: "s" });
+    const ac = new AbortController();
+    await wp.listPosts({}, ac.signal);
+    expect(calls[0].init.signal).toBe(ac.signal);
+  });
 });
