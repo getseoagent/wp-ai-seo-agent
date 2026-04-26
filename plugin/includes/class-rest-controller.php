@@ -90,6 +90,23 @@ final class REST_Controller
         return hash_equals($expected, (string) $request->get_header('x-shared-secret'));
     }
 
+    /**
+     * Mirror of permit_admin_or_secret but checks X-Write-Secret against
+     * SEO_AGENT_WRITE_SECRET. Used on write endpoints (Tasks 7, 9) to isolate
+     * code-bug blast radius — a leaked read-secret cannot enable writes.
+     */
+    public static function permit_admin_or_write_secret(\WP_REST_Request $request): bool
+    {
+        if (current_user_can('manage_options')) {
+            return true;
+        }
+        $expected = defined('SEO_AGENT_WRITE_SECRET') ? (string) SEO_AGENT_WRITE_SECRET : '';
+        if ($expected === '') {
+            return false;
+        }
+        return hash_equals($expected, (string) $request->get_header('x-write-secret'));
+    }
+
     /** @return array{name: string} */
     public static function handle_detect_seo_plugin(): array
     {
