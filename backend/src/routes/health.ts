@@ -1,5 +1,5 @@
 import { Hono } from "hono";
 
-export const health = new Hono();
-
-health.get("/health", (c) => c.json({ status: "ok" }));
+export function mountHealth(app: Hono): void {
+  app.get("/health", (c) => c.json({ status: "ok" }));
+}
