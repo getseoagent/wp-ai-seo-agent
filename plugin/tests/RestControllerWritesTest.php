@@ -218,24 +218,15 @@ final class RestControllerWritesTest extends TestCase
 
     public function test_get_history_clamps_limit(): void
     {
+        // Observable proof of the clamp: pass limit=9999, fake store returns 100 rows
+        // (the same as the clamp ceiling). Handler computes next_cursor only when
+        // returned-count === requested-limit; matching at exactly 100 means the
+        // handler asked for 100, which is the clamp ceiling.
         $rows = array_map(static fn(int $i) => (object) ['id' => $i, 'post_id' => 1, 'job_id' => 'x', 'field' => 'title', 'before_value' => null, 'after_value' => null, 'status' => 'applied', 'reason' => null, 'user_id' => null, 'created_at' => 'x', 'rolled_back_at' => null], range(1, 100));
-        $captured_limit = null;
-        $store = new class($rows, $captured_limit) extends \SeoAgent\History_Store {
-            /** @var list<object> */
-            public array $rows_ref;
-            public ?int $captured_limit_ref;
-            public function __construct(array $rows, ?int &$captured) {
-                parent::__construct(new \stdClass());
-                $this->rows_ref = $rows;
-                $this->captured_limit_ref = &$captured;
-            }
-            public function find_by_post(int $post_id, int $limit, int $cursor): array {
-                $this->captured_limit_ref = $limit;
-                return $this->rows_ref;
-            }
-        };
-        REST_Controller::handle_get_history(['post_id' => 1, 'limit' => 9999], $store);
-        $this->assertSame(100, $store->captured_limit_ref);
+        $store = self::store_with_rows($rows);
+        $payload = REST_Controller::handle_get_history(['post_id' => 1, 'limit' => 9999], $store);
+        $this->assertCount(100, $payload['rows']);
+        $this->assertSame(100, $payload['next_cursor']);
     }
 
     /** @param list<object> $rows */

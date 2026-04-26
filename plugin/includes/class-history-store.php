@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace SeoAgent;
 
-class History_Store
+final class History_Store
 {
     public function __construct(private readonly object $db) {}
 
