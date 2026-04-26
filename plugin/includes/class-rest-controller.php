@@ -55,6 +55,19 @@ final class REST_Controller
             },
             'permission_callback' => [self::class, 'permit_admin'],
         ]);
+
+        register_rest_route('seoagent/v1', '/categories', [
+            'methods'             => 'GET',
+            'callback'            => static fn(): \WP_REST_Response =>
+                new \WP_REST_Response(self::handle_get_taxonomy_terms('category')),
+            'permission_callback' => [self::class, 'permit_admin'],
+        ]);
+        register_rest_route('seoagent/v1', '/tags', [
+            'methods'             => 'GET',
+            'callback'            => static fn(): \WP_REST_Response =>
+                new \WP_REST_Response(self::handle_get_taxonomy_terms('post_tag')),
+            'permission_callback' => [self::class, 'permit_admin'],
+        ]);
     }
 
     public static function permit_admin(): bool
@@ -142,6 +155,24 @@ final class REST_Controller
         if ($trimmed === '') return 0;
         $parts = preg_split('/\s+/u', $trimmed);
         return is_array($parts) ? count($parts) : 0;
+    }
+
+    /**
+     * @param \Closure(string): list<object>|null $loader
+     * @return list<array{id:int, name:string, slug:string, count:int}>
+     */
+    public static function handle_get_taxonomy_terms(string $taxonomy, ?\Closure $loader = null): array
+    {
+        $loader ??= static function (string $tax): array {
+            $terms = get_terms(['taxonomy' => $tax, 'hide_empty' => false]);
+            return is_array($terms) ? $terms : [];
+        };
+        return array_map(static fn(object $t): array => [
+            'id'    => (int) $t->term_id,
+            'name'  => (string) $t->name,
+            'slug'  => (string) $t->slug,
+            'count' => (int) $t->count,
+        ], $loader($taxonomy));
     }
 
     /**

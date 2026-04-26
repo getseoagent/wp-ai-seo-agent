@@ -100,4 +100,15 @@ final class RestControllerToolsTest extends TestCase
         $payload = REST_Controller::handle_get_post_summary(1, $loader, $adapter);
         $this->assertSame(5, $payload['word_count']);
     }
+
+    public function test_get_taxonomy_terms_maps_fields(): void
+    {
+        $loader = static fn(string $tax): array => [
+            (object) ['term_id' => 3, 'name' => 'News', 'slug' => 'news', 'count' => 12],
+            (object) ['term_id' => 4, 'name' => 'Tutorials', 'slug' => 'tutorials', 'count' => 5],
+        ];
+        $payload = REST_Controller::handle_get_taxonomy_terms('category', $loader);
+        $this->assertCount(2, $payload);
+        $this->assertSame(['id' => 3, 'name' => 'News', 'slug' => 'news', 'count' => 12], $payload[0]);
+    }
 }
