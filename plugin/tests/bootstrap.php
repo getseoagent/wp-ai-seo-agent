@@ -56,6 +56,13 @@ if (!function_exists('wp_remote_post')) {
     }
 }
 
+if (!function_exists('update_post_meta')) {
+    function update_post_meta(int $post_id, string $key, $value): bool {
+        $GLOBALS['_postmeta_store'][$post_id][$key] = $value;
+        return true;
+    }
+}
+
 if (!function_exists('wp_strip_all_tags')) {
     function wp_strip_all_tags(string $s): string { return strip_tags($s); }
 }

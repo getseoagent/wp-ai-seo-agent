@@ -13,12 +13,24 @@ final class Rank_Math_Adapter implements Seo_Fields_Adapter
     /** @var \Closure(int, string): ?string */
     private \Closure $reader;
 
-    /** @param \Closure(int, string): ?string $reader */
-    public function __construct(?\Closure $reader = null)
+    /** @var \Closure(int, string, string): void */
+    private \Closure $writer;
+
+    /**
+     * @param \Closure(int, string): ?string|null $reader
+     * @param \Closure(int, string, string): void|null $writer
+     */
+    public function __construct(?\Closure $reader = null, ?\Closure $writer = null)
     {
         $this->reader = $reader ?? static function (int $post_id, string $key): ?string {
             $value = get_post_meta($post_id, $key, true);
             return is_string($value) ? $value : null;
+        };
+        $this->writer = $writer ?? static function (int $post_id, string $key, string $value): void {
+            $ok = update_post_meta($post_id, $key, $value);
+            if ($ok === false) {
+                throw new \RuntimeException(sprintf('update_post_meta failed for post %d, key %s', $post_id, $key));
+            }
         };
     }
 
@@ -50,10 +62,28 @@ final class Rank_Math_Adapter implements Seo_Fields_Adapter
         return $value;
     }
 
-    public function set_seo_title(int $post_id, string $value): void { /* Task 4 */ }
-    public function set_seo_description(int $post_id, string $value): void { /* Task 4 */ }
-    public function set_focus_keyword(int $post_id, string $value): void { /* Task 4 */ }
-    public function set_og_title(int $post_id, string $value): void { /* Task 4 */ }
+    public function set_seo_title(int $post_id, string $value): void
+    {
+        ($this->writer)($post_id, self::META_TITLE, $value);
+    }
 
-    public function supports(string $field): bool { return false; /* Task 4 */ }
+    public function set_seo_description(int $post_id, string $value): void
+    {
+        ($this->writer)($post_id, self::META_DESCRIPTION, $value);
+    }
+
+    public function set_focus_keyword(int $post_id, string $value): void
+    {
+        ($this->writer)($post_id, self::META_FOCUS_KW, $value);
+    }
+
+    public function set_og_title(int $post_id, string $value): void
+    {
+        ($this->writer)($post_id, self::META_OG_TITLE, $value);
+    }
+
+    public function supports(string $field): bool
+    {
+        return in_array($field, ['title', 'description', 'focus_keyword', 'og_title'], true);
+    }
 }
