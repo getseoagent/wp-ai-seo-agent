@@ -60,6 +60,27 @@ final class RestControllerToolsTest extends TestCase
         $this->assertSame(200, $payload['total']);
     }
 
+    public function test_handle_list_posts_includes_word_count(): void
+    {
+        $posts = [
+            (object) [
+                'ID' => 100, 'post_title' => 'A', 'post_name' => 'a', 'post_status' => 'publish',
+                'post_modified' => '2026-01-01 00:00:00',
+                'post_content' => str_repeat('word ', 50),
+            ],
+            (object) [
+                'ID' => 101, 'post_title' => 'B', 'post_name' => 'b', 'post_status' => 'publish',
+                'post_modified' => '2026-01-02 00:00:00',
+                'post_content' => '',
+            ],
+        ];
+        $query_fn = static fn(array $args): array => ['posts' => $posts, 'total' => 2];
+        $result = REST_Controller::handle_list_posts(['limit' => 50], $query_fn);
+        self::assertArrayHasKey('word_count', $result['posts'][0]);
+        self::assertSame(50, $result['posts'][0]['word_count']);
+        self::assertSame(0, $result['posts'][1]['word_count']);
+    }
+
     public function test_get_post_summary_uses_provided_adapter_and_loader(): void
     {
         $loader = static fn(int $id): ?object => $id === 7

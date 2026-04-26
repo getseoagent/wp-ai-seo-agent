@@ -193,6 +193,7 @@ final class REST_Controller
             'slug'       => (string) $p->post_name,
             'status'     => (string) $p->post_status,
             'modified'   => (string) $p->post_modified,
+            'word_count' => self::word_count_unicode(wp_strip_all_tags((string) ($p->post_content ?? ''))),
         ], $result['posts']);
 
         $next_cursor = ($cursor + count($posts) < $result['total']) ? $cursor + count($posts) : null;

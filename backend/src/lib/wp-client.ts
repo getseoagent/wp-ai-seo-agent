@@ -13,6 +13,7 @@ export type ListPostsArgs = {
 
 export type PostListItem = {
   id: number; post_title: string; slug: string; status: string; modified: string;
+  word_count: number;   // new in 3c
 };
 
 export type PostSummary = {

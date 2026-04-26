@@ -17,13 +17,29 @@ describe("WpClient", () => {
   afterEach(() => restoreFetch());
 
   it("listPosts forwards query params and shared-secret header", async () => {
-    const wp = createWpClient({ baseUrl: "https://site.example", sharedSecret: "s3cret", writeSecret: "test-write" });
-    await wp.listPosts({ category: "news", limit: 5 });
-    expect(calls.length).toBe(1);
-    expect(calls[0].url).toContain("/wp-json/seoagent/v1/posts");
-    expect(calls[0].url).toContain("category=news");
-    expect(calls[0].url).toContain("limit=5");
-    expect((calls[0].init.headers as Record<string,string>)["x-shared-secret"]).toBe("s3cret");
+    const original = globalThis.fetch;
+    globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
+      calls.push({ url: String(url), init: init ?? {} });
+      return new Response(JSON.stringify({
+        posts: [
+          { id: 1, post_title: "T", slug: "t", status: "publish", modified: "2026-01-01 00:00:00", word_count: 42 },
+        ],
+        next_cursor: null,
+        total: 1,
+      }), { status: 200, headers: { "content-type": "application/json" } });
+    }) as typeof fetch;
+    try {
+      const wp = createWpClient({ baseUrl: "https://site.example", sharedSecret: "s3cret", writeSecret: "test-write" });
+      const result = await wp.listPosts({ category: "news", limit: 5 });
+      expect(calls.length).toBe(1);
+      expect(calls[0].url).toContain("/wp-json/seoagent/v1/posts");
+      expect(calls[0].url).toContain("category=news");
+      expect(calls[0].url).toContain("limit=5");
+      expect((calls[0].init.headers as Record<string,string>)["x-shared-secret"]).toBe("s3cret");
+      expect(result.posts[0].word_count).toBe(42);
+    } finally {
+      globalThis.fetch = original;
+    }
   });
 
   it("getPostSummary uses path id", async () => {
