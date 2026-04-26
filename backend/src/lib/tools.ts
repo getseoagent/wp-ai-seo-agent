@@ -1,4 +1,5 @@
 import type { WpClient } from "./wp-client";
+import { CraftError, type CraftDeps, type RewriteProposal, type RewriteFailure } from "./craft";
 
 export type Tool = {
   name: string;
@@ -98,9 +99,28 @@ export const tools: Tool[] = [
       additionalProperties: false,
     },
   },
+  {
+    name: "propose_seo_rewrites",
+    description: "Preview SEO rewrites for up to 20 posts. Returns proposals + failures. Read-only — does not modify anything in WordPress. Use when the user asks for a preview, draft, or rewrite suggestion.",
+    input_schema: {
+      type: "object",
+      properties: {
+        post_ids:    { type: "array", items: { type: "integer" }, minItems: 1, maxItems: 20, description: "WordPress post IDs to propose rewrites for" },
+        style_hints: { type: "string", maxLength: 1024, description: "Optional natural-language style guidance, e.g. 'more aggressive, no emoji, include brand WPilot'" },
+      },
+      required: ["post_ids"],
+      additionalProperties: false,
+    },
+  },
 ];
 
-export async function dispatchTool(name: string, input: unknown, wp: WpClient, signal?: AbortSignal): Promise<unknown> {
+export async function dispatchTool(
+  name: string,
+  input: unknown,
+  wp: WpClient,
+  signal?: AbortSignal,
+  craft?: CraftDeps,
+): Promise<unknown> {
   const args = (input ?? {}) as Record<string, unknown>;
   switch (name) {
     case "list_posts":        return wp.listPosts(args, signal);
@@ -111,6 +131,43 @@ export async function dispatchTool(name: string, input: unknown, wp: WpClient, s
     case "update_seo_fields": return wp.updateSeoFields(Number(args.post_id), (args.fields ?? {}) as any, args.job_id as string | undefined, signal);
     case "get_history":       return wp.getHistory(args as any, signal);
     case "rollback":          return wp.rollback((args.history_ids ?? []) as number[], signal);
+    case "propose_seo_rewrites": {
+      const post_ids = args.post_ids;
+      const style_hints = args.style_hints;
+      if (!Array.isArray(post_ids) || post_ids.length === 0) {
+        throw new Error("propose_seo_rewrites: post_ids required");
+      }
+      if (post_ids.length > 20) {
+        return { error: "preview limit exceeded — for larger batches, use the bulk job (Plan 3c, not yet available)" };
+      }
+      if (!craft) {
+        throw new Error("propose_seo_rewrites: craft deps required");
+      }
+      const ids = post_ids.map((v) => Number(v));
+      const trimmedHints = typeof style_hints === "string" ? style_hints.slice(0, 1024) : "";
+
+      const settled = await Promise.allSettled(ids.map(async (id) => {
+        const summary = await wp.getPostSummary(id, signal);
+        if (!summary) throw new CraftError("post_not_found", `post ${id} not found or not publish`);
+        return craft.composeRewrite(summary, trimmedHints || undefined);
+      }));
+
+      const proposals: RewriteProposal[] = [];
+      const failures: RewriteFailure[]   = [];
+      settled.forEach((res, i) => {
+        if (res.status === "fulfilled") {
+          proposals.push(res.value);
+        } else {
+          const err = res.reason instanceof CraftError ? res.reason : null;
+          failures.push({
+            post_id: ids[i],
+            reason: err?.reason ?? "api_error",
+            detail: err?.detail ?? String(res.reason),
+          });
+        }
+      });
+      return { proposals, failures };
+    }
     default: throw new Error(`unknown tool: ${name}`);
   }
 }
