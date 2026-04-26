@@ -259,4 +259,145 @@ final class RestControllerToolsTest extends TestCase
         REST_Controller::handle_list_posts(['slugs' => ['a', 'b', 'c']], $fake_query);
         $this->assertSame(['a', 'b', 'c'], $captured['post_name__in']);
     }
+
+    private function makeFakeDb(): object
+    {
+        return new class {
+            public string $prefix = 'wp_';
+            public array $rows = [];
+            public array $insertCalls = [];
+            public array $updateCalls = [];
+
+            public function insert(string $table, array $row): int
+            {
+                $this->insertCalls[] = ['table' => $table, 'row' => $row];
+                $this->rows[$row['id']] = $row;
+                return 1;
+            }
+
+            public function update(string $table, array $data, array $where): int
+            {
+                $this->updateCalls[] = ['table' => $table, 'data' => $data, 'where' => $where];
+                if (isset($this->rows[$where['id']])) {
+                    $this->rows[$where['id']] = array_merge($this->rows[$where['id']], $data);
+                }
+                return 1;
+            }
+
+            public function get_row(string $sql): ?object
+            {
+                if (preg_match('/id = \'([^\']+)\'/', $sql, $m) && isset($this->rows[$m[1]])) {
+                    return (object) $this->rows[$m[1]];
+                }
+                // Support find_running_for_user-style query: WHERE user_id = N AND status = 'running'
+                if (preg_match('/status = \'running\'/', $sql)) {
+                    $userId = preg_match('/user_id = (\d+)/', $sql, $m) ? (int) $m[1] : null;
+                    foreach ($this->rows as $row) {
+                        if ($row['status'] !== 'running') continue;
+                        if ($userId !== null && (int) $row['user_id'] !== $userId) continue;
+                        return (object) $row;
+                    }
+                }
+                return null;
+            }
+
+            public function get_results(string $sql): array
+            {
+                $out = [];
+                foreach ($this->rows as $row) {
+                    if (preg_match('/status = \'running\'/', $sql) && $row['status'] !== 'running') continue;
+                    if (preg_match('/user_id = (\d+)/', $sql, $m) && (int)$row['user_id'] !== (int)$m[1]) continue;
+                    $out[] = (object) $row;
+                }
+                return $out;
+            }
+
+            public function prepare(string $sql, ...$args): string
+            {
+                foreach ($args as $a) {
+                    $sql = preg_replace('/%[ds]/', is_int($a) ? (string)$a : "'$a'", $sql, 1);
+                }
+                return $sql;
+            }
+
+            public function query(string $sql): int|bool { return 1; }
+        };
+    }
+
+    public function test_handle_create_job_inserts_and_returns_job(): void
+    {
+        $store = new \SeoAgent\Jobs_Store($this->makeFakeDb());
+        $params = [
+            'id' => 'abc', 'user_id' => 0, 'tool_name' => 'apply_style_to_batch',
+            'total' => 5, 'style_hints' => 'x', 'params_json' => '{}',
+        ];
+        $result = REST_Controller::handle_create_job($params, $store);
+        self::assertSame('abc', $result['id']);
+        self::assertSame('running', $result['status']);
+    }
+
+    public function test_handle_get_job_returns_row(): void
+    {
+        $store = new \SeoAgent\Jobs_Store($this->makeFakeDb());
+        $store->create(['id' => 'jx', 'user_id' => 0, 'tool_name' => 't', 'total' => 5]);
+        $result = REST_Controller::handle_get_job('jx', $store);
+        self::assertSame('jx', $result['id']);
+    }
+
+    public function test_handle_get_job_not_found(): void
+    {
+        $store = new \SeoAgent\Jobs_Store($this->makeFakeDb());
+        $result = REST_Controller::handle_get_job('does-not-exist', $store);
+        self::assertNull($result);
+    }
+
+    public function test_handle_get_job_interrupted_heuristic(): void
+    {
+        // Simulate a job started > 10 min ago with no recent progress.
+        $db = $this->makeFakeDb();
+        $store = new \SeoAgent\Jobs_Store($db);
+        $store->create(['id' => 'jstale', 'user_id' => 0, 'tool_name' => 't', 'total' => 100]);
+        // Forge old timestamps directly in the fake DB row:
+        $db->rows['jstale']['started_at'] = gmdate('Y-m-d H:i:s', time() - 1200);  // 20 min ago
+        $db->rows['jstale']['last_progress_at'] = null;
+        $result = REST_Controller::handle_get_job('jstale', $store);
+        self::assertSame('interrupted', $result['status']);
+    }
+
+    public function test_handle_update_job_progress(): void
+    {
+        $store = new \SeoAgent\Jobs_Store($this->makeFakeDb());
+        $store->create(['id' => 'j1', 'user_id' => 0, 'tool_name' => 't', 'total' => 10]);
+        REST_Controller::handle_update_job_progress('j1', ['done' => 5, 'failed_count' => 1], $store);
+        $j = $store->get('j1');
+        self::assertSame(5, $j->done);
+        self::assertSame(1, $j->failed_count);
+    }
+
+    public function test_handle_mark_job_done(): void
+    {
+        $store = new \SeoAgent\Jobs_Store($this->makeFakeDb());
+        $store->create(['id' => 'j1', 'user_id' => 0, 'tool_name' => 't', 'total' => 10]);
+        REST_Controller::handle_mark_job_done('j1', ['status' => 'completed'], $store);
+        $j = $store->get('j1');
+        self::assertSame('completed', $j->status);
+    }
+
+    public function test_handle_cancel_job(): void
+    {
+        $store = new \SeoAgent\Jobs_Store($this->makeFakeDb());
+        $store->create(['id' => 'j1', 'user_id' => 0, 'tool_name' => 't', 'total' => 10]);
+        REST_Controller::handle_cancel_job('j1', $store);
+        $j = $store->get('j1');
+        self::assertNotNull($j->cancel_requested_at);
+    }
+
+    public function test_handle_find_running_returns_first(): void
+    {
+        $store = new \SeoAgent\Jobs_Store($this->makeFakeDb());
+        $store->create(['id' => 'j1', 'user_id' => 7, 'tool_name' => 't', 'total' => 10]);
+        $result = REST_Controller::handle_find_running_jobs(['user_id' => 7], $store);
+        self::assertCount(1, $result);
+        self::assertSame('j1', $result[0]['id']);
+    }
 }

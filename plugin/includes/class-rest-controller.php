@@ -5,6 +5,7 @@ namespace SeoAgent;
 
 use SeoAgent\Adapters;
 use SeoAgent\History_Store;
+use SeoAgent\Jobs_Store;
 
 final class REST_Controller
 {
@@ -97,6 +98,61 @@ final class REST_Controller
             'methods'             => 'POST',
             'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
                 return new \WP_REST_Response(self::handle_rollback($req->get_json_params() ?? []));
+            },
+            'permission_callback' => [self::class, 'permit_admin_or_write_secret'],
+        ]);
+
+        register_rest_route('seoagent/v1', '/jobs', [
+            'methods'             => 'POST',
+            'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
+                $params = $req->get_json_params() ?? [];
+                return new \WP_REST_Response(self::handle_create_job($params));
+            },
+            'permission_callback' => [self::class, 'permit_admin_or_write_secret'],
+        ]);
+
+        register_rest_route('seoagent/v1', '/jobs', [
+            'methods'             => 'GET',
+            'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
+                return new \WP_REST_Response(self::handle_find_running_jobs($req->get_query_params()));
+            },
+            'permission_callback' => [self::class, 'permit_admin_or_secret'],
+        ]);
+
+        register_rest_route('seoagent/v1', '/jobs/(?P<id>[a-zA-Z0-9-]+)', [
+            'methods'             => 'GET',
+            'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
+                $job = self::handle_get_job((string) $req['id']);
+                if ($job === null) {
+                    return new \WP_REST_Response(['error' => 'not found'], 404);
+                }
+                return new \WP_REST_Response($job);
+            },
+            'permission_callback' => [self::class, 'permit_admin_or_secret'],
+        ]);
+
+        register_rest_route('seoagent/v1', '/jobs/(?P<id>[a-zA-Z0-9-]+)/progress', [
+            'methods'             => 'POST',
+            'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
+                $params = $req->get_json_params() ?? [];
+                return new \WP_REST_Response(self::handle_update_job_progress((string) $req['id'], $params));
+            },
+            'permission_callback' => [self::class, 'permit_admin_or_write_secret'],
+        ]);
+
+        register_rest_route('seoagent/v1', '/jobs/(?P<id>[a-zA-Z0-9-]+)/done', [
+            'methods'             => 'POST',
+            'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
+                $params = $req->get_json_params() ?? [];
+                return new \WP_REST_Response(self::handle_mark_job_done((string) $req['id'], $params));
+            },
+            'permission_callback' => [self::class, 'permit_admin_or_write_secret'],
+        ]);
+
+        register_rest_route('seoagent/v1', '/jobs/(?P<id>[a-zA-Z0-9-]+)/cancel', [
+            'methods'             => 'POST',
+            'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
+                return new \WP_REST_Response(self::handle_cancel_job((string) $req['id']));
             },
             'permission_callback' => [self::class, 'permit_admin_or_write_secret'],
         ]);
@@ -459,6 +515,96 @@ final class REST_Controller
         }
 
         return ['job_id' => $job_id, 'results' => $results];
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     * @return array<string, mixed>
+     */
+    public static function handle_create_job(array $params, ?Jobs_Store $store = null): array
+    {
+        $store ??= new Jobs_Store($GLOBALS['wpdb']);
+        $job = $store->create([
+            'id'          => (string) ($params['id'] ?? ''),
+            'user_id'     => (int) ($params['user_id'] ?? 0),
+            'tool_name'   => (string) ($params['tool_name'] ?? ''),
+            'total'       => (int) ($params['total'] ?? 0),
+            'style_hints' => $params['style_hints'] ?? null,
+            'params_json' => $params['params_json'] ?? null,
+        ]);
+        return (array) $job;
+    }
+
+    /**
+     * Returns the job row, or null if not found. If a job is `running` but
+     * has been silent for >60s and started >10min ago, surface its status as
+     * `interrupted` (heuristic — the row in DB is unchanged).
+     *
+     * @return array<string, mixed>|null
+     */
+    public static function handle_get_job(string $id, ?Jobs_Store $store = null): ?array
+    {
+        $store ??= new Jobs_Store($GLOBALS['wpdb']);
+        $job = $store->get($id);
+        if ($job === null) {
+            return null;
+        }
+        if (($job->status ?? null) === 'running') {
+            $started      = isset($job->started_at) ? (int) strtotime((string) $job->started_at) : 0;
+            $lastProgress = !empty($job->last_progress_at) ? (int) strtotime((string) $job->last_progress_at) : 0;
+            $silentFor    = time() - max($lastProgress, $started);
+            if ($started > 0 && (time() - $started) > 600 && $silentFor > 60) {
+                $arr = (array) $job;
+                $arr['status'] = 'interrupted';
+                return $arr;
+            }
+        }
+        return (array) $job;
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     * @return array{ok: bool}
+     */
+    public static function handle_update_job_progress(string $id, array $params, ?Jobs_Store $store = null): array
+    {
+        $store ??= new Jobs_Store($GLOBALS['wpdb']);
+        $store->update_progress(
+            $id,
+            (int) ($params['done'] ?? 0),
+            (int) ($params['failed_count'] ?? 0)
+        );
+        return ['ok' => true];
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     * @return array{ok: bool}
+     */
+    public static function handle_mark_job_done(string $id, array $params, ?Jobs_Store $store = null): array
+    {
+        $store ??= new Jobs_Store($GLOBALS['wpdb']);
+        $store->mark_done($id, (string) ($params['status'] ?? 'completed'));
+        return ['ok' => true];
+    }
+
+    /** @return array{status: string} */
+    public static function handle_cancel_job(string $id, ?Jobs_Store $store = null): array
+    {
+        $store ??= new Jobs_Store($GLOBALS['wpdb']);
+        $store->request_cancel($id);
+        return ['status' => 'cancel_requested'];
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     * @return list<array<string, mixed>>
+     */
+    public static function handle_find_running_jobs(array $params, ?Jobs_Store $store = null): array
+    {
+        $store ??= new Jobs_Store($GLOBALS['wpdb']);
+        $job = $store->find_running_for_user((int) ($params['user_id'] ?? 0));
+        return $job === null ? [] : [(array) $job];
     }
 
     private static function adapter_get(Adapters\Seo_Fields_Adapter $adapter, string $field, int $post_id): ?string
