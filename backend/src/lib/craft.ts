@@ -123,7 +123,7 @@ export async function composeRewrite(
       try {
         const proposal = parseProposal(text, summary.id);
         const cacheHit = (resp.usage?.cache_read_input_tokens ?? 0) > 0;
-        console.log(`[craft] ${JSON.stringify({
+        console.warn(`[craft] ${JSON.stringify({
           post_id: summary.id,
           duration_ms: Date.now() - startedAt,
           cache_hit: cacheHit,
