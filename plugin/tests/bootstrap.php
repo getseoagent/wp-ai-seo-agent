@@ -72,7 +72,7 @@ if (!function_exists('sanitize_title')) {
 }
 
 if (!class_exists('WP_REST_Request')) {
-    class WP_REST_Request {
+    class WP_REST_Request implements \ArrayAccess {
         public function get_header(string $key): ?string {
             return $GLOBALS['_seoagent_test_headers'][strtolower($key)] ?? null;
         }
