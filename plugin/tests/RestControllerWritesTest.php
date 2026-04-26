@@ -195,4 +195,67 @@ final class RestControllerWritesTest extends TestCase
         };
         return new \SeoAgent\History_Store($db);
     }
+
+    public function test_get_history_filters_by_post_id(): void
+    {
+        $store = self::store_with_rows([
+            (object) ['id' => 5, 'post_id' => 42, 'job_id' => 'j1', 'field' => 'title', 'before_value' => 'a', 'after_value' => 'b', 'status' => 'applied', 'reason' => null, 'user_id' => null, 'created_at' => '2026-04-26 10:00:00', 'rolled_back_at' => null],
+        ]);
+        $payload = REST_Controller::handle_get_history(['post_id' => 42], $store);
+        $this->assertCount(1, $payload['rows']);
+        $this->assertSame(5, $payload['rows'][0]['id']);
+    }
+
+    public function test_get_history_filters_by_job_id(): void
+    {
+        $store = self::store_with_job_rows([
+            (object) ['id' => 7, 'post_id' => 100, 'job_id' => 'job-x', 'field' => 'description', 'before_value' => null, 'after_value' => null, 'status' => 'skipped_unchanged', 'reason' => null, 'user_id' => null, 'created_at' => 'x', 'rolled_back_at' => null],
+        ]);
+        $payload = REST_Controller::handle_get_history(['job_id' => 'job-x'], $store);
+        $this->assertCount(1, $payload['rows']);
+        $this->assertSame('job-x', $payload['rows'][0]['job_id']);
+    }
+
+    public function test_get_history_clamps_limit(): void
+    {
+        $rows = array_map(static fn(int $i) => (object) ['id' => $i, 'post_id' => 1, 'job_id' => 'x', 'field' => 'title', 'before_value' => null, 'after_value' => null, 'status' => 'applied', 'reason' => null, 'user_id' => null, 'created_at' => 'x', 'rolled_back_at' => null], range(1, 100));
+        $captured_limit = null;
+        $store = new class($rows, $captured_limit) extends \SeoAgent\History_Store {
+            /** @var list<object> */
+            public array $rows_ref;
+            public ?int $captured_limit_ref;
+            public function __construct(array $rows, ?int &$captured) {
+                parent::__construct(new \stdClass());
+                $this->rows_ref = $rows;
+                $this->captured_limit_ref = &$captured;
+            }
+            public function find_by_post(int $post_id, int $limit, int $cursor): array {
+                $this->captured_limit_ref = $limit;
+                return $this->rows_ref;
+            }
+        };
+        REST_Controller::handle_get_history(['post_id' => 1, 'limit' => 9999], $store);
+        $this->assertSame(100, $store->captured_limit_ref);
+    }
+
+    /** @param list<object> $rows */
+    private static function store_with_rows(array $rows): \SeoAgent\History_Store
+    {
+        $db = new class($rows) {
+            public string $prefix = 'wp_';
+            public function __construct(public array $rows_ref) {}
+            public function prepare(string $sql, ...$args): string { return $sql; }
+            public function insert(string $table, array $data): int { return 1; }
+            public function get_results(string $sql): array { return $this->rows_ref; }
+            public function get_row(string $sql): ?object { return null; }
+            public function update(string $table, array $data, array $where): int { return 0; }
+        };
+        return new \SeoAgent\History_Store($db);
+    }
+
+    /** @param list<object> $rows */
+    private static function store_with_job_rows(array $rows): \SeoAgent\History_Store
+    {
+        return self::store_with_rows($rows);
+    }
 }

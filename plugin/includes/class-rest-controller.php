@@ -9,6 +9,7 @@ use SeoAgent\History_Store;
 final class REST_Controller
 {
     private const LIST_POSTS_MAX_LIMIT = 50;
+    private const HISTORY_MAX_LIMIT = 100;
 
     public static function init(): void
     {
@@ -77,6 +78,18 @@ final class REST_Controller
                 ));
             },
             'permission_callback' => [self::class, 'permit_admin_or_write_secret'],
+        ]);
+
+        register_rest_route('seoagent/v1', '/history', [
+            'methods'             => 'GET',
+            'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
+                $params = $req->get_query_params();
+                if (empty($params['post_id']) && empty($params['job_id'])) {
+                    return new \WP_REST_Response(['error' => 'post_id or job_id required'], 400);
+                }
+                return new \WP_REST_Response(self::handle_get_history($params));
+            },
+            'permission_callback' => [self::class, 'permit_admin_or_secret'],
         ]);
     }
 
@@ -297,6 +310,44 @@ final class REST_Controller
         }
 
         return ['job_id' => $job_id, 'results' => $results];
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     * @return array{rows: list<array<string,mixed>>, next_cursor: int|null, total: int}
+     */
+    public static function handle_get_history(array $params, ?History_Store $store = null): array
+    {
+        $store ??= new History_Store($GLOBALS['wpdb']);
+        $limit  = max(1, min(self::HISTORY_MAX_LIMIT, (int) ($params['limit'] ?? 20)));
+        $cursor = max(0, (int) ($params['cursor'] ?? 0));
+
+        $post_id = isset($params['post_id']) ? (int) $params['post_id'] : null;
+        $job_id  = isset($params['job_id'])  ? (string) $params['job_id']  : null;
+
+        if ($post_id === null && ($job_id === null || $job_id === '')) {
+            return ['rows' => [], 'next_cursor' => null, 'total' => 0]; // route handler turns this into 400
+        }
+
+        $raw = $post_id !== null
+            ? $store->find_by_post($post_id, $limit, $cursor)
+            : $store->find_by_job((string) $job_id, $limit, $cursor);
+
+        $rows = array_map(static fn(object $r): array => [
+            'id'             => (int) $r->id,
+            'post_id'        => (int) $r->post_id,
+            'job_id'         => (string) $r->job_id,
+            'field'          => (string) $r->field,
+            'before_value'   => $r->before_value !== null ? (string) $r->before_value : null,
+            'after_value'    => $r->after_value  !== null ? (string) $r->after_value  : null,
+            'status'         => (string) $r->status,
+            'reason'         => $r->reason !== null ? (string) $r->reason : null,
+            'user_id'        => $r->user_id !== null ? (int) $r->user_id : null,
+            'created_at'     => (string) $r->created_at,
+            'rolled_back_at' => $r->rolled_back_at !== null ? (string) $r->rolled_back_at : null,
+        ], $raw);
+
+        return ['rows' => $rows, 'next_cursor' => count($rows) === $limit ? $cursor + $limit : null, 'total' => count($rows)];
     }
 
     private static function adapter_get(Adapters\Seo_Fields_Adapter $adapter, string $field, int $post_id): ?string
