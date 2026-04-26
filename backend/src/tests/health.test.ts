@@ -1,5 +1,8 @@
 import { describe, expect, it } from "bun:test";
-import { app } from "../index";
+
+process.env.WP_BASE_URL ??= "https://test.example";
+
+const { app } = await import("../index");
 
 describe("GET /health", () => {
   it("responds 200 with {status: 'ok'}", async () => {

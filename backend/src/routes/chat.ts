@@ -32,7 +32,7 @@ export function mountChat(app: Hono, deps: ChatDeps): void {
     }
 
     deps.sessionStore.append(body.session_id, { role: "user", content: body.message });
-    const messages = deps.sessionStore.get(body.session_id) as Message[];
+    const messages: Message[] = deps.sessionStore.get(body.session_id);
 
     const client = deps.makeClient(apiKey);
     const ac = new AbortController();

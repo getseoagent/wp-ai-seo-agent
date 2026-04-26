@@ -1,7 +1,6 @@
 export type Message =
   | { role: "user"; content: string }
-  | { role: "assistant"; content: string }
-  | { role: "tool"; tool_use_id: string; content: string };
+  | { role: "assistant"; content: string };
 
 type Opts = { maxSessions: number; now: () => number };
 

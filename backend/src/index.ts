@@ -9,8 +9,12 @@ import { createAnthropicClient } from "./lib/anthropic-client";
 export const app = new Hono();
 mountHealth(app);
 
+const wpBaseUrl = process.env.WP_BASE_URL;
+if (!wpBaseUrl) {
+  throw new Error("WP_BASE_URL is required (e.g. https://www.seo-friendly.org)");
+}
 const wp = createWpClient({
-  baseUrl:      process.env.WP_BASE_URL ?? "https://www.seo-friendly.org",
+  baseUrl:      wpBaseUrl,
   sharedSecret: process.env.SHARED_SECRET ?? "",
 });
 const sessionStore = createSessionStore();
