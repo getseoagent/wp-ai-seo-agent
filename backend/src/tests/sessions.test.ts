@@ -14,6 +14,7 @@ describe("createSessionStore (Postgres-backed)", () => {
     sql = new SQL(TEST_DB_URL!);
     await sql`DROP TABLE IF EXISTS session_messages CASCADE`;
     await sql`DROP TABLE IF EXISTS sessions CASCADE`;
+    await sql`DROP TABLE IF EXISTS licenses CASCADE`;
     await sql`DROP TABLE IF EXISTS migrations CASCADE`;
     await runMigrations(sql, MIG_DIR);
   });

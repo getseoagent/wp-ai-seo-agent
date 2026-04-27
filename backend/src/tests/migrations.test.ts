@@ -14,10 +14,12 @@ describe("runMigrations", () => {
   afterAll(async () => { await sql.close(); });
   beforeEach(async () => {
     // Drop tables created by real migrations so each test starts clean.
-    // session_messages has an FK to sessions, so order matters; CASCADE handles
-    // the rest. `migrations` has no FK to the others, hence the explicit drop.
+    // session_messages has an FK to sessions, and sessions has an FK to
+    // licenses (added in 002), so order matters; CASCADE handles the rest.
+    // `migrations` has no FK to the others, hence the explicit drop.
     await sql`DROP TABLE IF EXISTS session_messages CASCADE`;
     await sql`DROP TABLE IF EXISTS sessions CASCADE`;
+    await sql`DROP TABLE IF EXISTS licenses CASCADE`;
     await sql`DROP TABLE IF EXISTS migrations CASCADE`;
   });
 
@@ -97,5 +99,16 @@ describe("runMigrations", () => {
     expect(names).toContain("sessions");
     expect(names).toContain("session_messages");
     expect(names).toContain("migrations");
+  });
+
+  it("applies 002_licenses.sql and creates licenses table with FK from sessions", async () => {
+    await runMigrations(sql, MIG_DIR);
+    const tables = await sql`SELECT tablename FROM pg_tables WHERE schemaname='public'`;
+    expect(tables.map((r: any) => r.tablename)).toContain("licenses");
+    const fk = await sql`
+      SELECT conname FROM pg_constraint
+      WHERE conrelid = 'sessions'::regclass AND contype = 'f'
+    `;
+    expect(fk.map((r: any) => r.conname)).toContain("sessions_license_key_fkey");
   });
 });
