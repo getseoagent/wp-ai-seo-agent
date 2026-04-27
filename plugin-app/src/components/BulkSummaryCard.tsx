@@ -21,6 +21,11 @@ const buttonStyle: React.CSSProperties = { fontSize: 12, padding: "4px 10px", bo
 
 export type BulkSummaryCardProps = {
   result: unknown;
+  /**
+   * Programmatic chat-message injection (e.g. fires "rollback job <id>" when the user clicks
+   * the Rollback button). Wired by Chat.tsx → MessageList.tsx → ToolCallCard chain.
+   * If absent, the rollback button is hidden — the card still renders the summary.
+   */
   onSendChat?: (text: string) => void;
 };
 

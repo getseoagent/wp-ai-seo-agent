@@ -294,6 +294,44 @@ describe("apply_style_to_batch tool", () => {
     );
     expect(receivedHints?.length).toBeLessThanOrEqual(2048);
   });
+
+  it("calls createJob with correct payload", async () => {
+    let createArgs: any = null;
+    const wp = {
+      ...fakeWpForBulk,
+      createJob: async (a: any) => {
+        createArgs = a;
+        return { id: a.id, ...a, status: "running", done: 0, failed_count: 0, started_at: "", finished_at: null, cancel_requested_at: null, last_progress_at: null } as any;
+      },
+    };
+    const craft: CraftDeps = {
+      composeRewrite: async (s) => ({
+        post_id: s.id, intent: "informational",
+        primary_keyword: { text: "k", volume: null, source: "llm_estimate" },
+        synonym: "syn",
+        title: { old: null, new: "T".repeat(20), length: 20 },
+        description: { old: null, new: "D".repeat(50), length: 50 },
+        focus_keyword: { old: null, new: "k" },
+        reasoning: "r",
+      }),
+    };
+    await dispatchTool(
+      "apply_style_to_batch",
+      { post_ids: [1, 2], style_hints: "hint-x" },
+      wp as any,
+      undefined,
+      craft,
+      () => {},
+    );
+    expect(createArgs).not.toBeNull();
+    expect(createArgs.tool_name).toBe("apply_style_to_batch");
+    expect(createArgs.total).toBe(2);
+    expect(createArgs.style_hints).toBe("hint-x");
+    expect(JSON.parse(createArgs.params_json)).toEqual({ post_ids: [1, 2] });
+    expect(createArgs.user_id).toBe(0);
+    expect(typeof createArgs.id).toBe("string");
+    expect(createArgs.id.length).toBeGreaterThan(0);
+  });
 });
 
 describe("cancel_job tool", () => {
@@ -306,6 +344,13 @@ describe("cancel_job tool", () => {
     const out: any = await dispatchTool("cancel_job", { job_id: "jX" }, wp as any);
     expect(cancelled).toBe("jX");
     expect(out.status).toBe("cancel_requested");
+  });
+  it("is idempotent across calls (dispatch always calls wp.cancelJob)", async () => {
+    const calls: string[] = [];
+    const wp = { ...fakeWp, cancelJob: async (id: string) => { calls.push(id); } };
+    await dispatchTool("cancel_job", { job_id: "jX" }, wp as any);
+    await dispatchTool("cancel_job", { job_id: "jX" }, wp as any);
+    expect(calls).toEqual(["jX", "jX"]);
   });
 });
 
@@ -356,5 +401,9 @@ describe("rollback tool — job_id extension", () => {
   it("rejects when neither provided", async () => {
     const out: any = await dispatchTool("rollback", {}, fakeWp as any);
     expect(out.error).toMatch(/history_ids or job_id/i);
+  });
+  it("rejects when both history_ids and job_id provided", async () => {
+    const out: any = await dispatchTool("rollback", { history_ids: [1], job_id: "j" }, fakeWp as any);
+    expect(out.error).toMatch(/only one of/i);
   });
 });

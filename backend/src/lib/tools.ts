@@ -224,6 +224,9 @@ export async function dispatchTool(
       return { proposals, failures };
     }
     case "apply_style_to_batch": {
+      // TODO Plan 4: replace with JWT-derived user_id once authentication lands.
+      const PLACEHOLDER_USER_ID = 0;
+
       const { post_ids, style_hints } = (input ?? {}) as { post_ids?: unknown; style_hints?: unknown };
       if (!Array.isArray(post_ids) || post_ids.length === 0) {
         return { error: "post_ids required" };
@@ -237,8 +240,9 @@ export async function dispatchTool(
       const ids = post_ids.map(v => Number(v));
       const trimmedHints = typeof style_hints === "string" ? style_hints.slice(0, 2048) : "";
 
-      // Concurrent-job guard
-      const existing = await wp.findRunningJobForUser(0, signal);
+      // Concurrent-job guard. Race window between findRunning + createJob is intentional
+      // for v1: single-user deployment, no DB-side unique-running constraint. Plan 4 may add SELECT...FOR UPDATE.
+      const existing = await wp.findRunningJobForUser(PLACEHOLDER_USER_ID, signal);
       if (existing) {
         return { error: `another bulk job is already running (job_id: ${existing.id})` };
       }
@@ -249,10 +253,11 @@ export async function dispatchTool(
         : `job-${Date.now()}-${Math.random().toString(36).slice(2)}`;
       await wp.createJob({
         id: jobId,
-        user_id: 0,
+        user_id: PLACEHOLDER_USER_ID,
         tool_name: "apply_style_to_batch",
         total: ids.length,
         style_hints: trimmedHints,
+        // style_hints is stored in its own column (queryable); params_json holds replay-only data.
         params_json: JSON.stringify({ post_ids: ids }),
       }, signal);
 
@@ -261,7 +266,10 @@ export async function dispatchTool(
 
       const result: BulkApplyResult = await runBulkJob({
         jobId, postIds: ids, styleHints: trimmedHints,
-        wp, craft, signal: signal ?? new AbortController().signal,
+        wp, craft,
+        // Inert signal when caller (e.g. test, future direct invocation) provides none.
+        // Cancellation still flows via wp.getJob().cancel_requested_at polling inside runBulkJob.
+        signal: signal ?? new AbortController().signal,
         emit: safeEmit,
       });
       return result;
