@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { formatRewriteCard, type FormattedProposal, type FormattedFailure, type ProposalField } from "./format-rewrite";
 
 const containerStyle: React.CSSProperties = {
@@ -99,6 +100,10 @@ const errorRowStyle: React.CSSProperties = {
   fontSize: 12,
 };
 
+const actionRowStyle: React.CSSProperties = { marginTop: 10, paddingTop: 8, borderTop: "1px solid #dbe4ec", display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" };
+const actionButtonStyle: React.CSSProperties = { fontSize: 12, padding: "4px 10px", border: "1px solid #2271b1", color: "#2271b1", background: "#fff", borderRadius: 4, cursor: "pointer" };
+const refineInputStyle: React.CSSProperties = { fontSize: 12, padding: "4px 8px", border: "1px solid #dbe4ec", borderRadius: 4, flex: 1, minWidth: 160 };
+
 const intentStyles: Record<string, React.CSSProperties> = {
   transactional: { background: "#fff8e5", color: "#996800" },
   commercial:    { background: "#e6f7ff", color: "#006399" },
@@ -186,7 +191,13 @@ function FailureRow({ failure }: { failure: FormattedFailure }) {
   );
 }
 
-export function RewriteCard({ result }: { result: unknown }) {
+export type RewriteCardProps = {
+  result: unknown;
+  onSendChat?: (text: string) => void;
+};
+
+export function RewriteCard({ result, onSendChat }: RewriteCardProps) {
+  const [refineText, setRefineText] = useState("");
   const formatted = tryFormat(result);
   if (!formatted) {
     return <div style={containerStyle}>No proposals returned.</div>;
@@ -201,6 +212,28 @@ export function RewriteCard({ result }: { result: unknown }) {
         <div>
           <div style={sectionHeaderStyle}>Proposals ({proposals.length})</div>
           {proposals.map((p) => <ProposalBlock key={p.postId} proposal={p} />)}
+        </div>
+      )}
+      {proposals.length > 0 && onSendChat && (
+        <div style={actionRowStyle}>
+          <button
+            style={actionButtonStyle}
+            onClick={() => onSendChat(`apply this style to all the remaining posts in the batch`)}
+          >
+            Apply to remaining posts
+          </button>
+          <input
+            style={refineInputStyle}
+            placeholder="refine: e.g. more aggressive, no emoji"
+            value={refineText}
+            onChange={e => setRefineText(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === "Enter" && refineText.trim()) {
+                onSendChat(`re-propose with this style: ${refineText.trim()}`);
+                setRefineText("");
+              }
+            }}
+          />
         </div>
       )}
       {failures.length > 0 && (
