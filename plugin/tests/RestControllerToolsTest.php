@@ -421,22 +421,33 @@ final class RestControllerToolsTest extends TestCase
         $adapter       = self::adapter_with_state(['title' => 'NewA', 'description' => 'NewB'], $writes);
         $store         = self::store_with_history_rows($rows_by_id, $rows_inserted, $marked_ids, $job_rows_for);
 
-        $payload = REST_Controller::handle_rollback(
-            ['job_id' => 'jA'],
-            $adapter,
-            $store,
-            static fn(): string => 'rb-job',
-            static fn(): string => '2026-04-26 12:00:00'
-        );
+        // Install a $GLOBALS['wpdb'] recorder so we can assert the transaction codepath fires.
+        $prev_wpdb = $GLOBALS['wpdb'] ?? null;
+        $GLOBALS['wpdb'] = new class { public array $queries = []; public function query(string $sql): int { $this->queries[] = $sql; return 0; } };
 
-        self::assertSame('rb-job', $payload['job_id']);
-        self::assertCount(2, $payload['results']);
-        self::assertSame('rolled_back', $payload['results'][0]['status']);
-        self::assertSame('rolled_back', $payload['results'][1]['status']);
-        // jB row 19 must remain untouched: only ids 17 and 18 should appear in $marked_ids.
-        $marked_id_set = array_map(static fn(array $m): int => $m['id'], $marked_ids);
-        self::assertEqualsCanonicalizing([17, 18], $marked_id_set);
-        self::assertNotContains(19, $marked_id_set);
+        try {
+            $payload = REST_Controller::handle_rollback(
+                ['job_id' => 'jA'],
+                $adapter,
+                $store,
+                static fn(): string => 'rb-job',
+                static fn(): string => '2026-04-26 12:00:00'
+            );
+
+            self::assertSame('rb-job', $payload['job_id']);
+            self::assertCount(2, $payload['results']);
+            self::assertSame('rolled_back', $payload['results'][0]['status']);
+            self::assertSame('rolled_back', $payload['results'][1]['status']);
+            $marked_id_set = array_map(static fn(array $m): int => $m['id'], $marked_ids);
+            self::assertEqualsCanonicalizing([17, 18], $marked_id_set);
+            self::assertNotContains(19, $marked_id_set);
+            // Transaction wrap must have fired START TRANSACTION + COMMIT (no ROLLBACK on happy path).
+            self::assertContains('START TRANSACTION', $GLOBALS['wpdb']->queries);
+            self::assertContains('COMMIT', $GLOBALS['wpdb']->queries);
+            self::assertNotContains('ROLLBACK', $GLOBALS['wpdb']->queries);
+        } finally {
+            if ($prev_wpdb === null) unset($GLOBALS['wpdb']); else $GLOBALS['wpdb'] = $prev_wpdb;
+        }
     }
 
     public function test_handle_rollback_history_ids_path_still_works(): void

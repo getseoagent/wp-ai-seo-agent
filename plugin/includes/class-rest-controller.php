@@ -456,7 +456,7 @@ final class REST_Controller
      * rollback-able by the same mechanism.
      *
      * @param array<string, mixed> $params
-     * @return array{job_id: string, results: list<array<string,mixed>>}
+     * @return array{job_id: string, results: list<array<string,mixed>>, error?: string}
      */
     public static function handle_rollback(
         array $params,
