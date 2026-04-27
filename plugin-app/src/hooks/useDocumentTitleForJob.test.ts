@@ -29,7 +29,10 @@ describe("useDocumentTitleForJob", () => {
 
   it("flashes (✓) ... · Done for 5s on terminal then restores", () => {
     const initialState: JobPollState = { status: "running", job: j({ done: 9, total: 10 }), applyOptimistic: () => {} };
-    const { rerender } = renderHook(({ ps }: { ps: JobPollState }) => useDocumentTitleForJob(ps), { initialProps: { ps: initialState } });
+    const { rerender } = renderHook<void, { ps: JobPollState }>(
+      ({ ps }) => useDocumentTitleForJob(ps),
+      { initialProps: { ps: initialState } },
+    );
     expect(document.title).toBe("(9/10) SEO Agent");
 
     const terminal: JobPollState = { status: "terminal", job: j({ status: "completed", done: 10, total: 10, finished_at: "x" }) };

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { MessageList, type ChatItem } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { useSseChat } from "../hooks/useSseChat";
@@ -6,6 +6,7 @@ import { useJobPolling } from "../hooks/useJobPolling";
 import { useDocumentTitleForJob } from "../hooks/useDocumentTitleForJob";
 import { BulkProgressBar } from "./BulkProgressBar";
 import { BulkSummaryCard } from "./BulkSummaryCard";
+import { requestNotificationPermissionOnce, notifyJobComplete } from "../lib/notifications";
 import { BULK_COLORS } from "./bulk-styles";
 
 const typingIndicatorStyle: React.CSSProperties = {
@@ -39,6 +40,20 @@ export function Chat({ restUrl, nonce }: { restUrl: string; nonce: string }) {
 
   const pollState = useJobPolling(activeJobId, restUrl);
   useDocumentTitleForJob(pollState);
+
+  // Track which terminal job we've already notified for so re-renders don't
+  // re-fire the same Notification.
+  const notifiedJobIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (pollState.status !== "terminal") return;
+    if (notifiedJobIdRef.current === pollState.job.id) return;
+    notifiedJobIdRef.current = pollState.job.id;
+    // Only ping when the user isn't already looking at the page; if the tab
+    // is visible the BulkSummaryCard is in their face already.
+    if (typeof document !== "undefined" && document.visibilityState !== "visible") {
+      notifyJobComplete(pollState.job);
+    }
+  }, [pollState]);
 
   const appendAssistantDelta = (delta: string) =>
     setItems(prev => {
@@ -80,6 +95,8 @@ export function Chat({ restUrl, nonce }: { restUrl: string; nonce: string }) {
       const isApplyTool = matchingTool && matchingTool.kind === "tool" && matchingTool.tool.name === "apply_style_to_batch";
       if (isApplyTool && r?.status === "running" && typeof r.job_id === "string") {
         setActiveJobId(r.job_id);
+        // Best-effort permission ask on first apply in this session. Fire-and-forget.
+        void requestNotificationPermissionOnce();
       }
     },
     onError: msg =>
