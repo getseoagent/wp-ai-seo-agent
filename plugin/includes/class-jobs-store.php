@@ -79,4 +79,39 @@ final class Jobs_Store
         $row = $this->db->get_row($sql);
         return is_object($row) ? $row : null;
     }
+
+    /**
+     * List jobs filtered by status / since / limit. Powers the recent-jobs banner
+     * and any "what jobs ran lately" UI.
+     *
+     * @param array{status?: string, since?: string, limit?: int} $filters
+     * @return array<int, object>
+     */
+    public function list_jobs(array $filters): array
+    {
+        $where = [];
+        $params = [];
+
+        if (!empty($filters['status'])) {
+            $where[] = 'status = %s';
+            $params[] = $filters['status'];
+        }
+        if (!empty($filters['since'])) {
+            // Match on finished_at when present; for jobs still running the column
+            // is NULL — fall back to last_progress_at so a recently-touched runner
+            // also shows up if the caller wants that.
+            $where[] = '(finished_at >= %s OR (finished_at IS NULL AND last_progress_at >= %s))';
+            $params[] = $filters['since'];
+            $params[] = $filters['since'];
+        }
+
+        $limit = max(1, min(50, (int) ($filters['limit'] ?? 10)));
+
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+        $sql = "SELECT * FROM {$this->table()} {$whereSql} ORDER BY started_at DESC LIMIT {$limit}";
+
+        $prepared = empty($params) ? $sql : $this->db->prepare($sql, ...$params);
+        $rows = $this->db->get_results($prepared);
+        return is_array($rows) ? $rows : [];
+    }
 }

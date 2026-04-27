@@ -13,6 +13,7 @@ final class JobsStoreTest extends TestCase
             public array $rows = [];
             public array $insertCalls = [];
             public array $updateCalls = [];
+            public string $lastQuery = '';
 
             public function insert(string $table, array $row): int
             {
@@ -32,6 +33,7 @@ final class JobsStoreTest extends TestCase
 
             public function get_row(string $sql): ?object
             {
+                $this->lastQuery = $sql;
                 if (preg_match('/id = \'([^\']+)\'/', $sql, $m) && isset($this->rows[$m[1]])) {
                     return (object) $this->rows[$m[1]];
                 }
@@ -49,11 +51,20 @@ final class JobsStoreTest extends TestCase
 
             public function get_results(string $sql): array
             {
+                $this->lastQuery = $sql;
                 $out = [];
+                $statusMatch = null;
+                if (preg_match('/status = \'([^\']+)\'/', $sql, $m)) {
+                    $statusMatch = $m[1];
+                }
                 foreach ($this->rows as $row) {
-                    if (preg_match('/status = \'running\'/', $sql) && $row['status'] !== 'running') continue;
-                    if (preg_match('/user_id = (\d+)/', $sql, $m) && (int)$row['user_id'] !== (int)$m[1]) continue;
+                    if ($statusMatch !== null && ($row['status'] ?? null) !== $statusMatch) continue;
+                    if (preg_match('/user_id = (\d+)/', $sql, $m) && (int)($row['user_id'] ?? 0) !== (int)$m[1]) continue;
                     $out[] = (object) $row;
+                }
+                // Honor LIMIT n at end of query
+                if (preg_match('/LIMIT (\d+)/', $sql, $m)) {
+                    $out = array_slice($out, 0, (int)$m[1]);
                 }
                 return $out;
             }
@@ -66,7 +77,7 @@ final class JobsStoreTest extends TestCase
                 return $sql;
             }
 
-            public function query(string $sql): int|bool { return 1; }
+            public function query(string $sql): int|bool { $this->lastQuery = $sql; return 1; }
         };
     }
 
@@ -136,5 +147,49 @@ final class JobsStoreTest extends TestCase
         $running = $store->find_running_for_user(0);
         self::assertNotNull($running);
         self::assertSame('j1', $running->id);
+    }
+
+    public function test_list_jobs_returns_rows_matching_status_filter(): void
+    {
+        $db = $this->fakeDb();
+        $store = new Jobs_Store($db);
+        $store->create(['id' => 'a', 'user_id' => 0, 'tool_name' => 't', 'total' => 5]);
+        $store->create(['id' => 'b', 'user_id' => 0, 'tool_name' => 't', 'total' => 3]);
+        $store->mark_done('a', 'completed');
+        $store->mark_done('b', 'completed');
+        $store->create(['id' => 'c', 'user_id' => 0, 'tool_name' => 't', 'total' => 7]); // running
+
+        $rows = $store->list_jobs(['status' => 'completed', 'limit' => 10]);
+        self::assertCount(2, $rows);
+        self::assertContains('a', array_map(fn($r) => $r->id, $rows));
+        self::assertContains('b', array_map(fn($r) => $r->id, $rows));
+    }
+
+    public function test_list_jobs_applies_since_filter_in_sql(): void
+    {
+        $db = $this->fakeDb();
+        $store = new Jobs_Store($db);
+        $store->list_jobs(['status' => 'completed', 'since' => '2026-04-27 12:00:00', 'limit' => 5]);
+
+        self::assertStringContainsString("status = 'completed'", $db->lastQuery);
+        self::assertStringContainsString('finished_at >=', $db->lastQuery);
+        self::assertStringContainsString("'2026-04-27 12:00:00'", $db->lastQuery);
+        self::assertStringContainsString('LIMIT 5', $db->lastQuery);
+    }
+
+    public function test_list_jobs_clamps_limit_to_50(): void
+    {
+        $db = $this->fakeDb();
+        $store = new Jobs_Store($db);
+        $store->list_jobs(['status' => 'completed', 'limit' => 9999]);
+        self::assertStringContainsString('LIMIT 50', $db->lastQuery);
+    }
+
+    public function test_list_jobs_clamps_limit_to_at_least_one(): void
+    {
+        $db = $this->fakeDb();
+        $store = new Jobs_Store($db);
+        $store->list_jobs(['status' => 'completed', 'limit' => 0]);
+        self::assertStringContainsString('LIMIT 1', $db->lastQuery);
     }
 }
