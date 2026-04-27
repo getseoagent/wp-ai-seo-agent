@@ -13,13 +13,13 @@ const fakeWp = {
   detectSeoPlugin: async () => ({ name: "rank-math" }),
   updateSeoFields: async (post_id: number, fields: any, job_id?: string) => ({ job_id: job_id ?? "auto", results: [{ field: Object.keys(fields)[0], status: "applied" }] }),
   getHistory:      async (args: any) => ({ rows: [{ id: 1, post_id: args.post_id ?? 1 }], next_cursor: null, total: 1 }),
-  rollback:        async (ids: number[]) => ({ job_id: "rj", results: ids.map(id => ({ history_id: id, status: "rolled_back" })) }),
+  rollback:        async (params: { history_ids?: number[]; job_id?: string }) => ({ job_id: "rj", results: (params.history_ids ?? []).map(id => ({ history_id: id, status: "rolled_back" })) }),
 } as unknown as WpClient;
 
 describe("tools", () => {
   it("exposes the new write tool names", () => {
     const names = tools.map(t => t.name).sort();
-    expect(names).toEqual(["apply_style_to_batch", "detect_seo_plugin", "get_categories", "get_history", "get_post_summary", "get_tags", "list_posts", "propose_seo_rewrites", "rollback", "update_seo_fields"]);
+    expect(names).toEqual(["apply_style_to_batch", "cancel_job", "detect_seo_plugin", "get_categories", "get_history", "get_job_status", "get_post_summary", "get_tags", "list_posts", "propose_seo_rewrites", "rollback", "update_seo_fields"]);
   });
 
   it("each tool has an input_schema", () => {
@@ -293,5 +293,68 @@ describe("apply_style_to_batch tool", () => {
       fakeWpForBulk as any, undefined, craft, () => {},
     );
     expect(receivedHints?.length).toBeLessThanOrEqual(2048);
+  });
+});
+
+describe("cancel_job tool", () => {
+  it("is registered", () => {
+    expect(tools.some(t => t.name === "cancel_job")).toBe(true);
+  });
+  it("calls wp.cancelJob", async () => {
+    let cancelled: string | null = null;
+    const wp = { ...fakeWp, cancelJob: async (id: string) => { cancelled = id; } };
+    const out: any = await dispatchTool("cancel_job", { job_id: "jX" }, wp as any);
+    expect(cancelled).toBe("jX");
+    expect(out.status).toBe("cancel_requested");
+  });
+});
+
+describe("get_job_status tool", () => {
+  it("is registered", () => {
+    expect(tools.some(t => t.name === "get_job_status")).toBe(true);
+  });
+  it("returns wp.getJob result", async () => {
+    const wp = { ...fakeWp, getJob: async (id: string) => ({
+      id, user_id: 0, tool_name: "t", status: "running", total: 5, done: 2,
+      failed_count: 0, style_hints: null, params_json: null,
+      started_at: "2026-04-26 12:00:00", finished_at: null,
+      cancel_requested_at: null, last_progress_at: "2026-04-26 12:00:30",
+    }) };
+    const out: any = await dispatchTool("get_job_status", { job_id: "jY" }, wp as any);
+    expect(out.job_id).toBe("jY");
+    expect(out.status).toBe("running");
+    expect(out.done).toBe(2);
+    expect(out.total).toBe(5);
+  });
+  it("returns error when job not found", async () => {
+    const wp = { ...fakeWp, getJob: async () => null };
+    const out: any = await dispatchTool("get_job_status", { job_id: "missing" }, wp as any);
+    expect(out.error).toMatch(/not found/i);
+  });
+});
+
+describe("rollback tool — job_id extension", () => {
+  it("accepts job_id and returns rollback summary", async () => {
+    let calledWith: any = null;
+    const wp = { ...fakeWp, rollback: async (params: any) => {
+      calledWith = params;
+      return { job_id: "rb-1", results: [{ history_id: 1, status: "rolled_back" }, { history_id: 2, status: "rolled_back" }] };
+    } };
+    const out: any = await dispatchTool("rollback", { job_id: "jZ" }, wp as any);
+    expect(calledWith).toEqual({ job_id: "jZ" });
+    expect(out.results).toHaveLength(2);
+  });
+  it("history_ids path still works", async () => {
+    let calledWith: any = null;
+    const wp = { ...fakeWp, rollback: async (params: any) => {
+      calledWith = params;
+      return { job_id: "rb-2", results: [{ history_id: 5, status: "rolled_back" }] };
+    } };
+    await dispatchTool("rollback", { history_ids: [5] }, wp as any);
+    expect(calledWith).toEqual({ history_ids: [5] });
+  });
+  it("rejects when neither provided", async () => {
+    const out: any = await dispatchTool("rollback", {}, fakeWp as any);
+    expect(out.error).toMatch(/history_ids or job_id/i);
   });
 });

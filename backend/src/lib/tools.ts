@@ -93,11 +93,14 @@ export const tools: Tool[] = [
   },
   {
     name: "rollback",
-    description: "Reverse one or more prior writes by their history row ids. Each rollback is itself logged so the action is reversible.",
+    description: "Reverse one or more prior writes by their history row ids, OR roll back all writes belonging to a bulk job. Each rollback is itself logged so the action is reversible.",
     input_schema: {
       type: "object",
-      properties: { history_ids: { type: "array", items: { type: "integer" }, maxItems: 50 } },
-      required: ["history_ids"],
+      properties: {
+        history_ids: { type: "array", items: { type: "integer" }, description: "Specific audit row IDs to roll back", maxItems: 50 },
+        job_id: { type: "string", description: "UUID of a job — rolls back all its non-rolled-back rows in a transaction" },
+      },
+      // exactly one required — Anthropic's JSON schema doesn't enforce oneOf reliably, so we validate at dispatch
       additionalProperties: false,
     },
   },
@@ -127,6 +130,26 @@ export const tools: Tool[] = [
       additionalProperties: false,
     },
   },
+  {
+    name: "cancel_job",
+    description: "Request cancellation of a running bulk job. Idempotent. The currently in-flight posts complete; further posts are skipped.",
+    input_schema: {
+      type: "object",
+      properties: { job_id: { type: "string", description: "UUID of the running job" } },
+      required: ["job_id"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "get_job_status",
+    description: "Get current state of a bulk job (running, completed, cancelled, failed, interrupted).",
+    input_schema: {
+      type: "object",
+      properties: { job_id: { type: "string" } },
+      required: ["job_id"],
+      additionalProperties: false,
+    },
+  },
 ];
 
 export type SseEventEmitter = (ev: SseEvent) => void;
@@ -148,7 +171,21 @@ export async function dispatchTool(
     case "detect_seo_plugin": return wp.detectSeoPlugin(signal);
     case "update_seo_fields": return wp.updateSeoFields(Number(args.post_id), (args.fields ?? {}) as any, args.job_id as string | undefined, signal);
     case "get_history":       return wp.getHistory(args as any, signal);
-    case "rollback":          return wp.rollback((args.history_ids ?? []) as number[], signal);
+    case "rollback": {
+      const params = (input ?? {}) as { history_ids?: unknown; job_id?: unknown };
+      const hasIds = Array.isArray(params.history_ids) && params.history_ids.length > 0;
+      const hasJobId = typeof params.job_id === "string" && params.job_id.length > 0;
+      if (!hasIds && !hasJobId) {
+        return { error: "rollback requires history_ids or job_id" };
+      }
+      if (hasIds && hasJobId) {
+        return { error: "rollback accepts only one of history_ids or job_id, not both" };
+      }
+      const rollbackArgs = hasJobId
+        ? { job_id: params.job_id as string }
+        : { history_ids: (params.history_ids as unknown[]).map(v => Number(v)) };
+      return wp.rollback(rollbackArgs as any, signal);
+    }
     case "propose_seo_rewrites": {
       const post_ids = args.post_ids;
       const style_hints = args.style_hints;
@@ -228,6 +265,34 @@ export async function dispatchTool(
         emit: safeEmit,
       });
       return result;
+    }
+    case "cancel_job": {
+      const { job_id } = (input ?? {}) as { job_id?: string };
+      if (typeof job_id !== "string" || !job_id) {
+        return { error: "job_id required" };
+      }
+      await wp.cancelJob(job_id, signal);
+      return { status: "cancel_requested" };
+    }
+    case "get_job_status": {
+      const { job_id } = (input ?? {}) as { job_id?: string };
+      if (typeof job_id !== "string" || !job_id) {
+        return { error: "job_id required" };
+      }
+      const job = await wp.getJob(job_id, signal);
+      if (!job) {
+        return { error: "job not found" };
+      }
+      return {
+        job_id: job.id,
+        status: job.status,
+        total: job.total,
+        done: job.done,
+        failed: job.failed_count,
+        started_at: job.started_at,
+        finished_at: job.finished_at,
+        cancel_requested_at: job.cancel_requested_at,
+      };
     }
     default: throw new Error(`unknown tool: ${name}`);
   }

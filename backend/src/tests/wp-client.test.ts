@@ -111,7 +111,7 @@ describe("WpClient", () => {
 
   it("rollback POSTs history_ids with X-Write-Secret", async () => {
     const wp = createWpClient({ baseUrl: "https://site.example", sharedSecret: "r", writeSecret: "w" });
-    await wp.rollback([17, 18]);
+    await wp.rollback({ history_ids: [17, 18] });
     expect(calls[0].url).toBe("https://site.example/wp-json/seoagent/v1/rollback");
     expect((calls[0].init.headers as Record<string,string>)["X-Write-Secret"]).toBe("w");
     const body = JSON.parse((calls[0].init.body as string));
