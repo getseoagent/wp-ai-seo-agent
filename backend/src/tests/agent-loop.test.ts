@@ -106,11 +106,14 @@ describe("runAgent", () => {
     for await (const ev of runAgent({ messages:[{ role: "user", content: "x" }], wp: fakeWp, signal: new AbortController().signal, client, tools })) {
       events.push(ev);
     }
+    // Plan 4-B contract: all tool_call events emit upfront in input order,
+    // then tool_results follow in resolve order. Frontend matches by id, so
+    // this re-ordering is invisible to the UI.
     expect(events.map(e => e.type)).toEqual([
-      "tool_call", "tool_result", "tool_call", "tool_result", "text", "done"
+      "tool_call", "tool_call", "tool_result", "tool_result", "text", "done"
     ]);
     expect(events[0]).toMatchObject({ id: "tu_1" });
-    expect(events[2]).toMatchObject({ id: "tu_2" });
+    expect(events[1]).toMatchObject({ id: "tu_2" });
   });
 
   it("propagates craft deps through to dispatchTool", async () => {
@@ -188,5 +191,86 @@ describe("runAgent", () => {
       // no emit, no craft
     };
     expect(args).toBeDefined();
+  });
+});
+
+describe("runAgent split-dispatch", () => {
+  it("dispatches concurrent tools in parallel (total time < sum)", async () => {
+    const dispatchStarts: Array<{ name: string; t: number }> = [];
+    const slowWp = {
+      listPosts:      async () => { dispatchStarts.push({ name: "list_posts", t: Date.now() }); await new Promise(r => setTimeout(r, 80)); return { posts: [], next_cursor: null, total: 0 }; },
+      getPostSummary: async () => { dispatchStarts.push({ name: "get_post_summary", t: Date.now() }); await new Promise(r => setTimeout(r, 80)); return null; },
+      getCategories:  async () => [],
+      getTags:        async () => [],
+      detectSeoPlugin: async () => ({ name: "rank-math" }),
+    } as unknown as WpClient;
+
+    const client = scriptedClient([
+      { deltas: ["go"], toolCalls: [
+          { id: "1", name: "list_posts", input: {} },
+          { id: "2", name: "get_post_summary", input: { id: 5 } },
+        ], stop: "tool_use" },
+      { deltas: ["done"], stop: "end_turn" },
+    ]);
+
+    const t0 = Date.now();
+    for await (const _ of runAgent({ messages: [{ role: "user", content: "hi" }], wp: slowWp, signal: new AbortController().signal, client, tools })) { void _; }
+    const elapsed = Date.now() - t0;
+
+    expect(elapsed).toBeLessThan(150); // each is 80ms; sequential would be ≥160ms
+    expect(dispatchStarts.length).toBe(2);
+    // Both starts within ~20ms of each other = parallel
+    const startGap = Math.abs(dispatchStarts[0].t - dispatchStarts[1].t);
+    expect(startGap).toBeLessThan(20);
+  });
+
+  it("dispatches sequential tools serially (one starts after the previous ends)", async () => {
+    const events: Array<{ name: string; phase: "start"|"end"; t: number }> = [];
+    const slowWp = {
+      listPosts: async () => ({ posts: [], next_cursor: null, total: 0 }),
+      getPostSummary: async () => null,
+      getCategories: async () => [], getTags: async () => [], detectSeoPlugin: async () => ({ name: "rank-math" }),
+      updateSeoFields: async (postId: number) => {
+        events.push({ name: `update-${postId}`, phase: "start", t: Date.now() });
+        await new Promise(r => setTimeout(r, 40));
+        events.push({ name: `update-${postId}`, phase: "end", t: Date.now() });
+        return { history_id: postId, applied: 1 };
+      },
+    } as unknown as WpClient;
+
+    const client = scriptedClient([
+      { deltas: ["go"], toolCalls: [
+          { id: "1", name: "update_seo_fields", input: { post_id: 1, fields: { description: "x" } } },
+          { id: "2", name: "update_seo_fields", input: { post_id: 2, fields: { description: "y" } } },
+        ], stop: "tool_use" },
+      { deltas: ["ok"], stop: "end_turn" },
+    ]);
+
+    for await (const _ of runAgent({ messages: [{ role:"user", content:"hi" }], wp: slowWp, signal: new AbortController().signal, client, tools })) { void _; }
+
+    // First call ends before second call starts
+    const firstEnd = events.find(e => e.phase === "end")!.t;
+    const secondStart = events.filter(e => e.phase === "start")[1].t;
+    expect(secondStart).toBeGreaterThanOrEqual(firstEnd);
+  });
+
+  it("preserves tool_call SSE event order matching input toolUses order", async () => {
+    const fastWp = {
+      listPosts: async () => ({ posts: [], next_cursor: null, total: 0 }),
+      getPostSummary: async () => null,
+      getCategories: async () => [], getTags: async () => [], detectSeoPlugin: async () => ({ name: "rank-math" }),
+    } as unknown as WpClient;
+    const client = scriptedClient([
+      { deltas: ["go"], toolCalls: [
+          { id: "first",  name: "list_posts",       input: {} },
+          { id: "second", name: "get_post_summary", input: { id: 1 } },
+        ], stop: "tool_use" },
+      { deltas: ["ok"], stop: "end_turn" },
+    ]);
+    const callIds: string[] = [];
+    for await (const ev of runAgent({ messages:[{role:"user",content:"hi"}], wp: fastWp, signal: new AbortController().signal, client, tools })) {
+      if (ev.type === "tool_call") callIds.push(ev.id);
+    }
+    expect(callIds).toEqual(["first", "second"]);
   });
 });
