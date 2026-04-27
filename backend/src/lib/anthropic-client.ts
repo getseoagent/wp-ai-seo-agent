@@ -5,11 +5,17 @@ export function createAnthropicClient(apiKey: string): AgentClient {
   const sdk = new Anthropic({ apiKey });
   return {
     stream({ model, messages, tools, signal, system }) {
+      // Strip internal-only fields before sending to Anthropic. The `concurrent`
+      // flag (Plan 4-B) is metadata for our agent-loop split-dispatch — Anthropic's
+      // API rejects unknown properties on tool definitions.
+      const apiTools = tools.map(({ name, description, input_schema }) => ({
+        name, description, input_schema,
+      }));
       const stream = sdk.messages.stream(
         {
           model,
           max_tokens: 4096,
-          tools: tools as unknown as any,
+          tools: apiTools as unknown as any,
           messages: messages as unknown as any,
           ...(system !== undefined ? { system } : {}),
         },
