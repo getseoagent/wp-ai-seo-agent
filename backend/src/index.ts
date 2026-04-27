@@ -13,9 +13,14 @@ const wpBaseUrl = process.env.WP_BASE_URL;
 if (!wpBaseUrl) {
   throw new Error("WP_BASE_URL is required (e.g. https://www.seo-friendly.org)");
 }
+const writeSecret = process.env.WRITE_SECRET;
+if (!writeSecret) {
+  throw new Error("WRITE_SECRET is required (must match SEO_AGENT_WRITE_SECRET in wp-config.php)");
+}
 const wp = createWpClient({
   baseUrl:      wpBaseUrl,
   sharedSecret: process.env.SHARED_SECRET ?? "",
+  writeSecret,
 });
 const sessionStore = createSessionStore();
 

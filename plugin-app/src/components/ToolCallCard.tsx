@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { RewriteCard } from "./RewriteCard";
+import { BulkSummaryCard } from "./BulkSummaryCard";
 
 export type ToolCall = {
   id: string;
@@ -43,7 +45,7 @@ function summarize(args: unknown): string {
   return `(${inside.length > 60 ? inside.slice(0, 57) + "…" : inside})`;
 }
 
-export function ToolCallCard({ call }: { call: ToolCall }) {
+export function ToolCallCard({ call, onSendChat }: { call: ToolCall; onSendChat?: (text: string) => void }) {
   const [open, setOpen] = useState(false);
   const status = call.result === undefined ? "…" : "✓";
   return (
@@ -61,7 +63,11 @@ export function ToolCallCard({ call }: { call: ToolCall }) {
           {call.result !== undefined && (
             <>
               <div style={{ marginTop: 8 }}><strong>result</strong></div>
-              <div>{JSON.stringify(call.result, null, 2)}</div>
+              {call.name === "propose_seo_rewrites"
+                ? <RewriteCard result={call.result} onSendChat={onSendChat} />
+                : (call.name === "apply_style_to_batch" || call.name === "rollback")
+                  ? <BulkSummaryCard result={call.result} onSendChat={onSendChat} />
+                  : <div>{JSON.stringify(call.result, null, 2)}</div>}
             </>
           )}
         </div>

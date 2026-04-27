@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
 process.env.WP_BASE_URL ??= "https://test.example";
+process.env.WRITE_SECRET ??= "test-write-secret";
 
 const { app } = await import("../index");
 

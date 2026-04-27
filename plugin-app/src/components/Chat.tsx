@@ -22,7 +22,7 @@ export function Chat({ restUrl, nonce }: { restUrl: string; nonce: string }) {
       ];
     });
 
-  const { send, busy } = useSseChat({
+  const { send, busy, progressByJobId } = useSseChat({
     endpoint: `${restUrl}/chat`,
     nonce,
     sessionId,
@@ -46,7 +46,7 @@ export function Chat({ restUrl, nonce }: { restUrl: string; nonce: string }) {
 
   return (
     <div>
-      <MessageList items={items} />
+      <MessageList items={items} progressByJobId={progressByJobId} onSendChat={handleSend} />
       <MessageInput onSend={handleSend} disabled={busy} />
     </div>
   );

@@ -1,6 +1,8 @@
 import { dispatchTool, type Tool } from "./tools";
 import type { WpClient } from "./wp-client";
 import type { SseEvent } from "./sse";
+import type { CraftDeps } from "./craft";
+import { CHAT_SYSTEM_PROMPT } from "./chat-prompt";
 
 export type AssistantBlock =
   | { type: "text"; text: string }
@@ -18,6 +20,7 @@ export interface AgentClient {
     messages: Message[];
     tools: Tool[];
     signal: AbortSignal;
+    system?: string;
   }): {
     [Symbol.asyncIterator](): AsyncIterator<AgentChunk>;
     finalMessage(): Promise<{ content: AssistantBlock[]; stop_reason: string }>;
@@ -32,6 +35,8 @@ export type RunAgentArgs = {
   tools: Tool[];
   model?: string;
   maxIterations?: number;
+  craft?: CraftDeps;
+  emit?: (ev: SseEvent) => void;
 };
 
 export async function* runAgent(args: RunAgentArgs): AsyncGenerator<SseEvent> {
@@ -45,7 +50,7 @@ export async function* runAgent(args: RunAgentArgs): AsyncGenerator<SseEvent> {
       return;
     }
 
-    const stream = args.client.stream({ model, messages, tools: args.tools, signal: args.signal });
+    const stream = args.client.stream({ model, messages, tools: args.tools, signal: args.signal, system: CHAT_SYSTEM_PROMPT });
     try {
       for await (const chunk of stream) {
         if (chunk.type === "text") yield { type: "text", delta: chunk.delta };
@@ -72,7 +77,7 @@ export async function* runAgent(args: RunAgentArgs): AsyncGenerator<SseEvent> {
       yield { type: "tool_call", id: tu.id, name: tu.name, args: tu.input };
       let resultJson: string;
       try {
-        const result = await dispatchTool(tu.name, tu.input, args.wp, args.signal);
+        const result = await dispatchTool(tu.name, tu.input, args.wp, args.signal, args.craft, args.emit);
         resultJson = JSON.stringify(result);
         yield { type: "tool_result", id: tu.id, result };
       } catch (err) {

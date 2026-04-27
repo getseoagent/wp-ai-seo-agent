@@ -1,0 +1,13 @@
+{
+  "expected_intent": "transactional",
+  "summary": {
+    "id": 1003,
+    "post_title": "Pożyczka 5000 zł online bez BIK",
+    "slug": "pozyczka-5000-zl-online-bez-bik",
+    "status": "publish",
+    "modified": "2026-03-10 14:00:00",
+    "word_count": 450,
+    "content_preview": "Potrzebujesz szybkiej pożyczki 5000 zł bez sprawdzania w BIK? Oferujemy pożyczki online z natychmiastową decyzją, RRSO od 6.9%, okres spłaty od 3 do 24 miesięcy. Złóż wniosek przez aplikację mobilną, otrzymaj pieniądze na konto w 15 minut. Nie wymagamy zaświadczenia o dochodach dla kwot do 5000 zł. Sprawdź naszą ofertę i wybierz raty dopasowane do Twojego budżetu.",
+    "current_seo": { "title": null, "description": null, "focus_keyword": null, "og_title": null }
+  }
+}

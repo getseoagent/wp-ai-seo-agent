@@ -1,0 +1,13 @@
+{
+  "expected_intent": "informational",
+  "summary": {
+    "id": 1001,
+    "post_title": "How to set up SSL on Nginx",
+    "slug": "how-to-set-up-ssl-on-nginx",
+    "status": "publish",
+    "modified": "2026-01-15 10:00:00",
+    "word_count": 1200,
+    "content_preview": "This step-by-step guide walks you through configuring SSL/TLS on an Nginx web server using Let's Encrypt. We cover certbot installation, generating a free certificate, configuring nginx.conf for HTTPS, redirecting HTTP to HTTPS, enabling HTTP/2, and setting up automatic renewal via cron. Common pitfalls include misconfigured server blocks, mismatched certificate paths, and SELinux denying access to private keys. By the end you'll have an A+ rating on SSL Labs and a hardened TLS setup.",
+    "current_seo": { "title": null, "description": null, "focus_keyword": null, "og_title": null }
+  }
+}
