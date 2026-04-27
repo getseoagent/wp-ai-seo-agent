@@ -178,6 +178,15 @@ export function createWpClient(cfg: Cfg) {
         secretKind: "write",
       }),
 
+    sweepInterruptedJobs: (thresholdMinutes: number, signal?: AbortSignal): Promise<{ interrupted: number }> =>
+      call<{ interrupted: number }>("/jobs/sweep-interrupted", {
+        method: "POST",
+        body: JSON.stringify({ minutes: thresholdMinutes }),
+        signal,
+        secretKind: "write",
+        headers: { "Content-Type": "application/json" },
+      }),
+
     findRunningJobForUser: async (user_id: number, signal?: AbortSignal): Promise<Job | null> => {
       // Plan 4-B: GET /jobs returns { jobs: Job[] } (wrapped) so the same
       // endpoint can carry filtered lists for the frontend banner. Older

@@ -90,6 +90,25 @@ final class Jobs_Store
     }
 
     /**
+     * Mark any 'running' job whose last_progress_at is older than $minutes
+     * (or whose started_at is older if last_progress_at is null) as
+     * 'interrupted'. Returns affected row count.
+     *
+     * Called once on backend startup so jobs left running by a dead backend
+     * process don't perpetually show as 'running' to polling consumers.
+     */
+    public function sweep_interrupted(int $minutes): int
+    {
+        $minutes = max(1, $minutes);
+        $sql = "UPDATE {$this->table()}
+                SET status = 'interrupted', finished_at = NOW()
+                WHERE status = 'running'
+                  AND COALESCE(last_progress_at, started_at) < NOW() - INTERVAL {$minutes} MINUTE";
+        $affected = $this->db->query($sql);
+        return is_int($affected) ? $affected : 0;
+    }
+
+    /**
      * List jobs filtered by status / since / limit. Powers the recent-jobs banner
      * and any "what jobs ran lately" UI.
      *

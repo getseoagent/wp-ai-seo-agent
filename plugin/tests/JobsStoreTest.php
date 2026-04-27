@@ -192,4 +192,24 @@ final class JobsStoreTest extends TestCase
         $store->list_jobs(['status' => 'completed', 'limit' => 0]);
         self::assertStringContainsString('LIMIT 1', $db->lastQuery);
     }
+
+    public function test_sweep_interrupted_marks_stale_running_jobs(): void
+    {
+        $db = $this->fakeDb();
+        $store = new Jobs_Store($db);
+        $count = $store->sweep_interrupted(5);
+
+        self::assertSame(1, $count); // fakeDb's query() returns 1 (single-row no-op)
+        self::assertStringContainsString("status = 'interrupted'", $db->lastQuery);
+        self::assertStringContainsString("status = 'running'", $db->lastQuery);
+        self::assertStringContainsString("INTERVAL 5 MINUTE", $db->lastQuery);
+    }
+
+    public function test_sweep_interrupted_clamps_minutes_to_at_least_one(): void
+    {
+        $db = $this->fakeDb();
+        $store = new Jobs_Store($db);
+        $store->sweep_interrupted(0);
+        self::assertStringContainsString("INTERVAL 1 MINUTE", $db->lastQuery);
+    }
 }

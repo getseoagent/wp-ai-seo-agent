@@ -35,4 +35,12 @@ if (import.meta.main) {
   const port = Number(process.env.PORT ?? 8787);
   Bun.serve({ port, fetch: app.fetch, idleTimeout: 255 });
   console.log(`backend listening on :${port}`);
+
+  // One-shot sweep on startup: any 'running' job with stale last_progress_at
+  // is from a previous backend process and will never resume. Mark them
+  // 'interrupted' so the polling UI shows a clean terminal state instead of
+  // perpetual "running". Best-effort — log and move on if WP isn't reachable.
+  wp.sweepInterruptedJobs(5)
+    .then(r => { if (r.interrupted > 0) console.log(`startup sweep: marked ${r.interrupted} stale running job(s) as interrupted`); })
+    .catch(err => console.error("startup sweep failed:", err instanceof Error ? err.message : String(err)));
 }

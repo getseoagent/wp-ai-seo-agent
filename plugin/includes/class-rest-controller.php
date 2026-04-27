@@ -156,6 +156,15 @@ final class REST_Controller
             },
             'permission_callback' => [self::class, 'permit_admin_or_write_secret'],
         ]);
+
+        register_rest_route('seoagent/v1', '/jobs/sweep-interrupted', [
+            'methods'             => 'POST',
+            'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
+                $params = $req->get_json_params() ?? [];
+                return new \WP_REST_Response(self::handle_sweep_interrupted($params));
+            },
+            'permission_callback' => [self::class, 'permit_admin_or_write_secret'],
+        ]);
     }
 
     public static function permit_admin(): bool
@@ -635,6 +644,21 @@ final class REST_Controller
         $store ??= new Jobs_Store($GLOBALS['wpdb']);
         $store->request_cancel($id);
         return ['status' => 'cancel_requested'];
+    }
+
+    /**
+     * Backend startup calls this to mark stale 'running' rows from a dead
+     * previous process as 'interrupted'. Idempotent.
+     *
+     * @param array<string, mixed> $params
+     * @return array{interrupted: int}
+     */
+    public static function handle_sweep_interrupted(array $params, ?Jobs_Store $store = null): array
+    {
+        $store ??= new Jobs_Store($GLOBALS['wpdb']);
+        $minutes = isset($params['minutes']) ? (int) $params['minutes'] : 5;
+        $count = $store->sweep_interrupted($minutes);
+        return ['interrupted' => $count];
     }
 
     /**
