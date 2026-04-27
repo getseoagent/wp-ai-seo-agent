@@ -2,6 +2,26 @@ import { useState, useMemo } from "react";
 import { MessageList, type ChatItem } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { useSseChat } from "../hooks/useSseChat";
+import { BULK_COLORS } from "./bulk-styles";
+
+const typingIndicatorStyle: React.CSSProperties = {
+  display: "flex", alignItems: "center", gap: 8,
+  padding: "6px 10px", marginTop: 4,
+  fontSize: 12, color: BULK_COLORS.mutedFg,
+};
+const dotsStyle: React.CSSProperties = {
+  fontSize: 16, letterSpacing: 2, color: BULK_COLORS.mutedFg,
+};
+const typingTextStyle: React.CSSProperties = {
+  fontStyle: "italic",
+};
+const stopButtonStyle: React.CSSProperties = {
+  marginLeft: "auto",
+  fontSize: 12, padding: "3px 10px",
+  border: `1px solid ${BULK_COLORS.destructiveRed}`,
+  color: BULK_COLORS.destructiveRed,
+  background: "#fff", borderRadius: 4, cursor: "pointer",
+};
 
 export function Chat({ restUrl, nonce }: { restUrl: string; nonce: string }) {
   const sessionId = useMemo(
@@ -22,7 +42,7 @@ export function Chat({ restUrl, nonce }: { restUrl: string; nonce: string }) {
       ];
     });
 
-  const { send, busy, progressByJobId } = useSseChat({
+  const { send, cancel, busy, progressByJobId } = useSseChat({
     endpoint: `${restUrl}/chat`,
     nonce,
     sessionId,
@@ -47,6 +67,13 @@ export function Chat({ restUrl, nonce }: { restUrl: string; nonce: string }) {
   return (
     <div>
       <MessageList items={items} progressByJobId={progressByJobId} onSendChat={handleSend} />
+      {busy && (
+        <div style={typingIndicatorStyle}>
+          <span style={dotsStyle}>•••</span>
+          <span style={typingTextStyle}>Agent is thinking…</span>
+          <button style={stopButtonStyle} onClick={cancel}>Stop</button>
+        </div>
+      )}
       <MessageInput onSend={handleSend} disabled={busy} />
     </div>
   );

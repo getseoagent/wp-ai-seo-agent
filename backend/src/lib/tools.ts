@@ -248,9 +248,10 @@ export async function dispatchTool(
       }
 
       // Create job in DB
-      const jobId = (typeof globalThis.crypto?.randomUUID === "function")
-        ? globalThis.crypto.randomUUID()
-        : `job-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      if (typeof globalThis.crypto?.randomUUID !== "function") {
+        throw new Error("apply_style_to_batch: globalThis.crypto.randomUUID unavailable; require Bun ≥1.0 or Node ≥19");
+      }
+      const jobId = globalThis.crypto.randomUUID();
       await wp.createJob({
         id: jobId,
         user_id: PLACEHOLDER_USER_ID,

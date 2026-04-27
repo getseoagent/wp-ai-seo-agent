@@ -124,7 +124,10 @@ export function createWpClient(cfg: Cfg) {
         signal,
       }),
 
-    rollback: (params: { history_ids?: number[] } | { job_id: string }, signal?: AbortSignal) =>
+    rollback: (
+      params: { history_ids: number[]; job_id?: never } | { history_ids?: never; job_id: string },
+      signal?: AbortSignal
+    ) =>
       call<{ job_id: string; results: Array<Record<string, unknown>> }>("/rollback", {
         method: "POST",
         secretKind: "write",

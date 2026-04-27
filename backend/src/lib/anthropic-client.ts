@@ -8,7 +8,7 @@ export function createAnthropicClient(apiKey: string): AgentClient {
       const stream = sdk.messages.stream(
         {
           model,
-          max_tokens: 1024,
+          max_tokens: 4096,
           tools: tools as unknown as any,
           messages: messages as unknown as any,
           ...(system !== undefined ? { system } : {}),

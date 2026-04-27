@@ -1,9 +1,11 @@
-const containerStyle: React.CSSProperties = { fontSize: 12, padding: 8, background: "#f6f7f7", border: "1px solid #dbe4ec", borderRadius: 6, marginTop: 6 };
+import { BULK_COLORS } from "./bulk-styles";
+
+const containerStyle: React.CSSProperties = { fontSize: 12, padding: 8, background: BULK_COLORS.surfaceFill, border: `1px solid ${BULK_COLORS.borderGray}`, borderRadius: 6, marginTop: 6 };
 const headerStyle: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, marginBottom: 4 };
 const progressStyle: React.CSSProperties = { width: "100%", height: 10 };
-const statsStyle: React.CSSProperties = { fontSize: 11, color: "#646970", marginTop: 3 };
+const statsStyle: React.CSSProperties = { fontSize: 11, color: BULK_COLORS.mutedFg, marginTop: 3 };
 // Red outline: destructive mid-flight cancel. Rollback uses blue (post-hoc undo, less catastrophic).
-const buttonStyle: React.CSSProperties = { fontSize: 11, padding: "2px 8px", border: "1px solid #842029", color: "#842029", background: "#fff", borderRadius: 4, cursor: "pointer", marginLeft: "auto" };
+const buttonStyle: React.CSSProperties = { fontSize: 11, padding: "2px 8px", border: `1px solid ${BULK_COLORS.destructiveRed}`, color: BULK_COLORS.destructiveRed, background: "#fff", borderRadius: 4, cursor: "pointer", marginLeft: "auto" };
 
 export type BulkProgressBarProps = {
   jobId: string;
@@ -24,7 +26,7 @@ export function BulkProgressBar({ jobId, progress, onSendChat }: BulkProgressBar
       <progress style={progressStyle} value={done} max={Math.max(total, 1)} />
       <div style={statsStyle}>
         {done} / {total} applied
-        {failed > 0 && <>, <span style={{ color: "#842029" }}>{failed} failed</span></>}
+        {failed > 0 && <>, <span style={{ color: BULK_COLORS.destructiveRed }}>{failed} failed</span></>}
         {currentPostTitle && <> — current: <em>{currentPostTitle}</em></>}
       </div>
     </div>
