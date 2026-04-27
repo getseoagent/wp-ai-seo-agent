@@ -13,6 +13,10 @@ const wpBaseUrl = process.env.WP_BASE_URL;
 if (!wpBaseUrl) {
   throw new Error("WP_BASE_URL is required (e.g. https://www.seo-friendly.org)");
 }
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error("DATABASE_URL is required (e.g. postgres://seoagent:***@127.0.0.1:5432/seoagent)");
+}
 const writeSecret = process.env.WRITE_SECRET;
 if (!writeSecret) {
   throw new Error("WRITE_SECRET is required (must match SEO_AGENT_WRITE_SECRET in wp-config.php)");
