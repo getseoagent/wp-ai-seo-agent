@@ -7,12 +7,20 @@ export type Tool = {
   name: string;
   description: string;
   input_schema: { type: "object"; properties: Record<string, unknown>; required?: string[]; additionalProperties?: boolean };
+  /**
+   * If true, runAgent dispatches this tool concurrently (Promise.allSettled) when
+   * multiple tool_uses appear in the same turn. Read-only / idempotent tools only —
+   * never set on tools with WP write side-effects, audit ordering requirements,
+   * or concurrent-job guards.
+   */
+  concurrent?: boolean;
 };
 
 export const tools: Tool[] = [
   {
     name: "list_posts",
     description: "List WordPress posts (or pages or any post type) with optional category/tag/date/slug filters. Default post_type is 'post'; pass 'page' for pages or 'any' for everything. Returns id, post_title, slug, status, modified.",
+    concurrent: true,
     input_schema: {
       type: "object",
       properties: {
@@ -32,6 +40,7 @@ export const tools: Tool[] = [
   {
     name: "get_post_summary",
     description: "Get one post's title, slug, word count, and current SEO meta (title/description/focus_keyword/og_title).",
+    concurrent: true,
     input_schema: {
       type: "object",
       properties: { id: { type: "integer", description: "Post ID" } },
@@ -52,6 +61,7 @@ export const tools: Tool[] = [
   {
     name: "detect_seo_plugin",
     description: "Identify the active SEO plugin: 'rank-math' or 'none'.",
+    concurrent: true,
     input_schema: { type: "object", properties: {}, additionalProperties: false },
   },
   {
@@ -80,6 +90,7 @@ export const tools: Tool[] = [
   {
     name: "get_history",
     description: "Read audit log entries filtered by post_id or job_id. At least one filter is required.",
+    concurrent: true,
     input_schema: {
       type: "object",
       properties: {
@@ -107,6 +118,7 @@ export const tools: Tool[] = [
   {
     name: "propose_seo_rewrites",
     description: "Preview SEO rewrites for up to 20 posts. Returns proposals + failures. Read-only — does not modify anything in WordPress. Use when the user asks for a preview, draft, or rewrite suggestion.",
+    concurrent: true,
     input_schema: {
       type: "object",
       properties: {
@@ -143,6 +155,7 @@ export const tools: Tool[] = [
   {
     name: "get_job_status",
     description: "Get current state of a bulk job (running, completed, cancelled, failed, interrupted).",
+    concurrent: true,
     input_schema: {
       type: "object",
       properties: { job_id: { type: "string" } },
