@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { mountChat } from "./routes/chat";
 import { mountHealth } from "./routes/health";
+import { mountLicenseRoutes } from "./routes/license";
+import { createLicenseCache } from "./lib/license/cache";
 import { createSessionStore } from "./lib/sessions";
 import { createWpClient } from "./lib/wp-client";
 import { tools } from "./lib/tools";
@@ -23,6 +25,10 @@ const writeSecret = process.env.WRITE_SECRET;
 if (!writeSecret) {
   throw new Error("WRITE_SECRET is required (must match SEO_AGENT_WRITE_SECRET in wp-config.php)");
 }
+const licenseHmacSecret = process.env.LICENSE_HMAC_SECRET;
+if (!licenseHmacSecret) {
+  throw new Error("LICENSE_HMAC_SECRET is required (32+ random chars; signs license keys)");
+}
 const wp = createWpClient({
   baseUrl:      wpBaseUrl,
   sharedSecret: process.env.SHARED_SECRET ?? "",
@@ -36,6 +42,9 @@ mountChat(app, {
   wp,
   tools,
 });
+
+const licenseCache = createLicenseCache({ ttlMs: 60_000 });
+mountLicenseRoutes(app, { sql: getDb(), cache: licenseCache, licenseHmacSecret });
 
 if (import.meta.main) {
   // Apply any pending migrations before serving traffic.
