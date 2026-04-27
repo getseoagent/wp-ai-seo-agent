@@ -13,6 +13,13 @@ export type SessionStore = {
   pruneOlderThan(days: number): Promise<number>;
 };
 
+export class SessionNotFoundError extends Error {
+  constructor(id: string) {
+    super(`session ${id} not found — call getOrCreate first`);
+    this.name = "SessionNotFoundError";
+  }
+}
+
 /**
  * Postgres-backed session store. Replaces in-memory Map<id, Message[]>.
  * JSONB on session_messages.content lets us persist full Anthropic message
@@ -47,7 +54,7 @@ export function createSessionStore(sql: SQL): SessionStore {
       // row so concurrent appends to the same session don't race on seq.
       await sql.begin(async (tx: SQL) => {
         const seqRow = await tx`SELECT message_count AS seq FROM sessions WHERE id = ${id} FOR UPDATE` as Array<{ seq: number }>;
-        if (seqRow.length === 0) throw new Error(`session ${id} not found — call getOrCreate first`);
+        if (seqRow.length === 0) throw new SessionNotFoundError(id);
         const nextSeq = seqRow[0].seq;
         // Bun.SQL serializes JS values natively into JSONB when passed as
         // template params (no ::jsonb cast needed). Strings round-trip as
@@ -64,10 +71,12 @@ export function createSessionStore(sql: SQL): SessionStore {
     },
 
     async pruneOlderThan(days) {
-      const result = await sql`
-        DELETE FROM sessions WHERE last_active_at < NOW() - (${days}::int * INTERVAL '1 day')
-      ` as { count: number };
-      return result.count ?? 0;
+      const rows = await sql`
+        DELETE FROM sessions
+        WHERE last_active_at < NOW() - (${days}::int * INTERVAL '1 day')
+        RETURNING id
+      ` as Array<{ id: string }>;
+      return rows.length;
     },
   };
   return store;

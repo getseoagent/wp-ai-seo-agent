@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "bun:test";
 import { SQL } from "bun";
-import { createSessionStore, type SessionStore } from "../lib/sessions";
+import { createSessionStore, type SessionStore, SessionNotFoundError } from "../lib/sessions";
 import { runMigrations } from "../lib/migrations";
 
 const TEST_DB_URL = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL;
@@ -88,5 +88,13 @@ describe("createSessionStore (Postgres-backed)", () => {
     expect(remaining.map((r: any) => r.id)).toEqual(["s_new"]);
     const msgs = await sql`SELECT COUNT(*)::int AS n FROM session_messages`;
     expect(msgs[0].n).toBe(0); // cascaded
+  });
+
+  it("appendMessage throws SessionNotFoundError for unknown session id", async () => {
+    let caught: unknown = null;
+    try {
+      await store.appendMessage("nonexistent_id", { role: "user", content: "x" });
+    } catch (e) { caught = e; }
+    expect(caught).toBeInstanceOf(SessionNotFoundError);
   });
 });
