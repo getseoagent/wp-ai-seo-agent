@@ -33,6 +33,6 @@ mountChat(app, {
 
 if (import.meta.main) {
   const port = Number(process.env.PORT ?? 8787);
-  Bun.serve({ port, fetch: app.fetch });
+  Bun.serve({ port, fetch: app.fetch, idleTimeout: 255 });
   console.log(`backend listening on :${port}`);
 }
