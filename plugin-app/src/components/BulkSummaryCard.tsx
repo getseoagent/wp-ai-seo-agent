@@ -1,23 +1,24 @@
 import { formatBulkSummary, type FormattedBulkSummary } from "./format-bulk-summary";
+import { BULK_COLORS, BULK_STATUS_BG } from "./bulk-styles";
 
 const containerStyle: React.CSSProperties = { fontSize: 13, fontFamily: "system-ui, -apple-system, sans-serif" };
 const headerStyle: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" };
 const headlineStyle: React.CSSProperties = { fontWeight: 600 };
-const jobIdStyle: React.CSSProperties = { fontSize: 11, color: "#646970", fontFamily: "ui-monospace, monospace", padding: "1px 6px", background: "#f6f7f7", borderRadius: 3 };
+const jobIdStyle: React.CSSProperties = { fontSize: 11, color: BULK_COLORS.mutedFg, fontFamily: "ui-monospace, monospace", padding: "1px 6px", background: BULK_COLORS.surfaceFill, borderRadius: 3 };
 const statusBadgeStyle: React.CSSProperties = { fontSize: 11, padding: "2px 8px", borderRadius: 10, textTransform: "lowercase" };
 const statusColors: Record<string, React.CSSProperties> = {
-  completed: { background: "#e7f5e7", color: "#2c6e2f" },
-  cancelled: { background: "#fff8e5", color: "#996800" },
-  failed: { background: "#fcf0f1", color: "#842029" },
-  rolled_back: { background: "#e6f7ff", color: "#006399" },
+  completed:   { background: BULK_STATUS_BG.completed,   color: BULK_COLORS.applyGreen },
+  cancelled:   { background: BULK_STATUS_BG.cancelled,   color: BULK_COLORS.warnYellow },
+  failed:      { background: BULK_STATUS_BG.failed,      color: BULK_COLORS.destructiveRed },
+  rolled_back: { background: BULK_STATUS_BG.rolled_back, color: BULK_COLORS.rollbackBlue },
 };
 const detailsStyle: React.CSSProperties = { marginTop: 6 };
-const rowStyle: React.CSSProperties = { padding: "3px 0", borderBottom: "1px dotted #dbe4ec", fontSize: 12 };
-const rowAppliedStyle: React.CSSProperties = { color: "#2c6e2f" };
-const rowFailedStyle: React.CSSProperties = { color: "#842029" };
-const rowSkippedStyle: React.CSSProperties = { color: "#996800" };
-const actionRowStyle: React.CSSProperties = { marginTop: 8, paddingTop: 8, borderTop: "1px solid #dbe4ec" };
-const buttonStyle: React.CSSProperties = { fontSize: 12, padding: "4px 10px", border: "1px solid #2271b1", color: "#2271b1", background: "#fff", borderRadius: 4, cursor: "pointer" };
+const rowStyle: React.CSSProperties = { padding: "3px 0", borderBottom: `1px dotted ${BULK_COLORS.borderGray}`, fontSize: 12 };
+const rowAppliedStyle: React.CSSProperties = { color: BULK_COLORS.applyGreen };
+const rowFailedStyle: React.CSSProperties = { color: BULK_COLORS.destructiveRed };
+const rowSkippedStyle: React.CSSProperties = { color: BULK_COLORS.warnYellow };
+const actionRowStyle: React.CSSProperties = { marginTop: 8, paddingTop: 8, borderTop: `1px solid ${BULK_COLORS.borderGray}` };
+const buttonStyle: React.CSSProperties = { fontSize: 12, padding: "4px 10px", border: `1px solid ${BULK_COLORS.primaryBlue}`, color: BULK_COLORS.primaryBlue, background: "#fff", borderRadius: 4, cursor: "pointer" };
 
 export type BulkSummaryCardProps = {
   result: unknown;
@@ -56,7 +57,7 @@ export function BulkSummaryCard({ result, onSendChat }: BulkSummaryCardProps) {
           {summary.rows.map((r, i) => (
             <div key={i} style={{ ...rowStyle, ...rowColor(r.status) }}>
               <strong>{r.label}</strong> — {r.status}
-              {r.detail && <span style={{ color: "#646970", marginLeft: 6 }}>{r.detail}</span>}
+              {r.detail && <span style={{ color: BULK_COLORS.mutedFg, marginLeft: 6 }}>{r.detail}</span>}
             </div>
           ))}
         </div>
