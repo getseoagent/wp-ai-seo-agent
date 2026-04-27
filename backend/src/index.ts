@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { mountChat } from "./routes/chat";
 import { mountHealth } from "./routes/health";
-import { mountLicenseRoutes } from "./routes/license";
+import { mountLicenseRoutes, mountLicenseWebhookRoute } from "./routes/license";
 import { createLicenseCache } from "./lib/license/cache";
 import { createSessionStore } from "./lib/sessions";
 import { createWpClient } from "./lib/wp-client";
@@ -9,6 +9,7 @@ import { tools } from "./lib/tools";
 import { createAnthropicClient } from "./lib/anthropic-client";
 import { runMigrations } from "./lib/migrations";
 import { getDb } from "./lib/db";
+import { createWayForPayClient } from "./lib/billing/wayforpay-client";
 
 export const app = new Hono();
 mountHealth(app);
@@ -29,6 +30,18 @@ const licenseHmacSecret = process.env.LICENSE_HMAC_SECRET;
 if (!licenseHmacSecret) {
   throw new Error("LICENSE_HMAC_SECRET is required (32+ random chars; signs license keys)");
 }
+const wfpMerchantAccount = process.env.WAYFORPAY_MERCHANT_ACCOUNT;
+if (!wfpMerchantAccount) {
+  throw new Error("WAYFORPAY_MERCHANT_ACCOUNT is required (matches the merchant account configured in the WFP dashboard)");
+}
+const wfpMerchantSecretKey = process.env.WAYFORPAY_MERCHANT_SECRET_KEY;
+if (!wfpMerchantSecretKey) {
+  throw new Error("WAYFORPAY_MERCHANT_SECRET_KEY is required (HMAC-MD5 secret for webhook verification + chargeRecurring)");
+}
+const wfpDomain = process.env.WAYFORPAY_DOMAIN;
+if (!wfpDomain) {
+  throw new Error("WAYFORPAY_DOMAIN is required (merchant domain registered with WFP, e.g. www.seo-friendly.org)");
+}
 const wp = createWpClient({
   baseUrl:      wpBaseUrl,
   sharedSecret: process.env.SHARED_SECRET ?? "",
@@ -45,6 +58,18 @@ mountChat(app, {
 
 const licenseCache = createLicenseCache({ ttlMs: 60_000 });
 mountLicenseRoutes(app, { sql: getDb(), cache: licenseCache, licenseHmacSecret });
+
+const wfpClient = createWayForPayClient({
+  merchantAccount:   wfpMerchantAccount,
+  merchantSecretKey: wfpMerchantSecretKey,
+  merchantDomain:    wfpDomain,
+});
+mountLicenseWebhookRoute(app, {
+  sql: getDb(),
+  cache: licenseCache,
+  wfpClient,
+  licenseHmacSecret,
+});
 
 if (import.meta.main) {
   // Apply any pending migrations before serving traffic.
