@@ -1,4 +1,4 @@
-type Cfg = { baseUrl: string; sharedSecret: string; writeSecret: string };
+type Cfg = { baseUrl: string; sharedSecret: string; writeSecret?: string };
 
 export type ListPostsArgs = {
   category?: string;
@@ -41,11 +41,36 @@ export type HistoryRow = {
 
 export type GetHistoryArgs = { post_id?: number; job_id?: string; limit?: number; cursor?: number };
 
+export type Job = {
+  id: string;
+  user_id: number;
+  tool_name: string;
+  status: "running" | "completed" | "cancelled" | "failed" | "interrupted";
+  total: number;
+  done: number;
+  failed_count: number;
+  style_hints: string | null;
+  params_json: string | null;
+  started_at: string;
+  finished_at: string | null;
+  cancel_requested_at: string | null;
+  last_progress_at: string | null;
+};
+
+export type CreateJobArgs = {
+  id: string;
+  user_id?: number;
+  tool_name: string;
+  total: number;
+  style_hints?: string | null;
+  params_json?: string | null;
+};
+
 export function createWpClient(cfg: Cfg) {
   type SecretKind = "read" | "write";
   async function call<T>(
     path: string,
-    opts: { query?: Record<string, unknown>; body?: unknown; method?: "GET"|"POST"; secretKind?: SecretKind; signal?: AbortSignal } = {}
+    opts: { query?: Record<string, unknown>; body?: unknown; method?: "GET"|"POST"; secretKind?: SecretKind; signal?: AbortSignal; headers?: Record<string, string> } = {}
   ): Promise<T> {
     const url = new URL(`${cfg.baseUrl}/wp-json/seoagent/v1${path}`);
     if (opts.query) {
@@ -56,18 +81,22 @@ export function createWpClient(cfg: Cfg) {
       }
     }
     const headers: Record<string, string> = {};
-    if ((opts.secretKind ?? "read") === "write") headers["x-write-secret"] = cfg.writeSecret;
-    else headers["x-shared-secret"] = cfg.sharedSecret;
+    if ((opts.secretKind ?? "read") === "write") {
+      headers["X-Write-Secret"] = cfg.writeSecret ?? "";
+    } else {
+      headers["x-shared-secret"] = cfg.sharedSecret;
+    }
+    if (opts.headers) Object.assign(headers, opts.headers);
     const init: RequestInit = {
       method: opts.method ?? "GET",
       headers,
       signal: opts.signal,
     };
     if (opts.body !== undefined) {
-      headers["content-type"] = "application/json";
-      init.body = JSON.stringify(opts.body);
+      if (!headers["content-type"] && !headers["Content-Type"]) headers["content-type"] = "application/json";
+      init.body = typeof opts.body === "string" ? opts.body : JSON.stringify(opts.body);
     }
-    const res = await fetch(url, init);
+    const res = await fetch(url.toString(), init);
     if (!res.ok) throw new Error(`WP REST ${res.status} on ${path}`);
     return await res.json() as T;
   }
@@ -102,6 +131,54 @@ export function createWpClient(cfg: Cfg) {
         body: { history_ids },
         signal,
       }),
+
+    createJob: (args: CreateJobArgs, signal?: AbortSignal) =>
+      call<Job>(`/jobs`, {
+        method: "POST",
+        body: JSON.stringify(args),
+        signal,
+        secretKind: "write",
+        headers: { "Content-Type": "application/json" },
+      }),
+
+    getJob: async (id: string, signal?: AbortSignal): Promise<Job | null> => {
+      try {
+        return await call<Job>(`/jobs/${encodeURIComponent(id)}`, { signal });
+      } catch (err) {
+        if (err instanceof Error && /404/.test(err.message)) return null;
+        throw err;
+      }
+    },
+
+    updateJobProgress: (id: string, done: number, failed_count: number, signal?: AbortSignal) =>
+      call<{ ok: boolean }>(`/jobs/${encodeURIComponent(id)}/progress`, {
+        method: "POST",
+        body: JSON.stringify({ done, failed_count }),
+        signal,
+        secretKind: "write",
+        headers: { "Content-Type": "application/json" },
+      }),
+
+    markJobDone: (id: string, status: Job["status"], signal?: AbortSignal) =>
+      call<{ ok: boolean }>(`/jobs/${encodeURIComponent(id)}/done`, {
+        method: "POST",
+        body: JSON.stringify({ status }),
+        signal,
+        secretKind: "write",
+        headers: { "Content-Type": "application/json" },
+      }),
+
+    cancelJob: (id: string, signal?: AbortSignal) =>
+      call<{ status: string }>(`/jobs/${encodeURIComponent(id)}/cancel`, {
+        method: "POST",
+        signal,
+        secretKind: "write",
+      }),
+
+    findRunningJobForUser: async (user_id: number, signal?: AbortSignal): Promise<Job | null> => {
+      const rows = await call<Job[]>(`/jobs?user_id=${encodeURIComponent(user_id)}&status=running`, { signal });
+      return rows[0] ?? null;
+    },
   };
 }
 
