@@ -1,6 +1,4 @@
 import { ToolCallCard, type ToolCall } from "./ToolCallCard";
-import { BulkProgressBar } from "./BulkProgressBar";
-import type { ProgressState } from "../hooks/useSseChat";
 
 export type Message = { role: "user" | "assistant"; text: string };
 export type ChatItem =
@@ -70,32 +68,25 @@ const labelBase: React.CSSProperties = {
 
 type MessageListProps = {
   items: ChatItem[];
-  progressByJobId?: Map<string, ProgressState>;
   onSendChat?: (text: string) => void;
 };
 
-export function MessageList({ items, progressByJobId, onSendChat }: MessageListProps) {
-  const progressEntries = progressByJobId ? Array.from(progressByJobId.entries()) : [];
+export function MessageList({ items, onSendChat }: MessageListProps) {
   return (
     <div style={containerStyle}>
-      {items.length === 0 && progressEntries.length === 0 ? (
+      {items.length === 0 ? (
         <div style={emptyHintStyle}>No messages yet — say hi to test the pipe.</div>
       ) : (
-        <>
-          {items.map((it, i) => {
-            if (it.kind === "tool") return <ToolCallCard key={i} call={it.tool} onSendChat={onSendChat} />;
-            const isUser = it.message.role === "user";
-            return (
-              <div key={i} style={{ ...rowBase, alignItems: isUser ? "flex-end" : "flex-start" }}>
-                <div style={labelBase}>{isUser ? "You" : "Agent"}</div>
-                <div style={isUser ? userBubble : assistantBubble}>{it.message.text}</div>
-              </div>
-            );
-          })}
-          {progressEntries.map(([jobId, progress]) => (
-            <BulkProgressBar key={jobId} jobId={jobId} progress={progress} onSendChat={onSendChat} />
-          ))}
-        </>
+        items.map((it, i) => {
+          if (it.kind === "tool") return <ToolCallCard key={i} call={it.tool} onSendChat={onSendChat} />;
+          const isUser = it.message.role === "user";
+          return (
+            <div key={i} style={{ ...rowBase, alignItems: isUser ? "flex-end" : "flex-start" }}>
+              <div style={labelBase}>{isUser ? "You" : "Agent"}</div>
+              <div style={isUser ? userBubble : assistantBubble}>{it.message.text}</div>
+            </div>
+          );
+        })
       )}
     </div>
   );

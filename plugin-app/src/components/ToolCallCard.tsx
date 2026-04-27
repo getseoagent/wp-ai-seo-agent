@@ -2,6 +2,25 @@ import { useState } from "react";
 import { RewriteCard } from "./RewriteCard";
 import { BulkSummaryCard } from "./BulkSummaryCard";
 
+/**
+ * Plan 4-B: apply_style_to_batch returns immediately with {status:"running"}
+ * — the per-job summary card is rendered separately by Chat.tsx via
+ * useJobPolling on terminal status. Inside ToolCallCard we just acknowledge
+ * the kick-off so the chat history shows what happened.
+ */
+function renderApplyResult(result: unknown): JSX.Element {
+  const r = (result ?? {}) as { job_id?: string; status?: string; total?: number };
+  if (r.status === "running" && r.job_id) {
+    return (
+      <div style={{ padding: "4px 0", fontSize: 12 }}>
+        <strong>Job {r.job_id} started</strong> — running over {r.total ?? "?"} post(s). Watch progress below.
+      </div>
+    );
+  }
+  // Fallback for any other shape (e.g. early validation error from dispatchTool)
+  return <div>{JSON.stringify(result, null, 2)}</div>;
+}
+
 export type ToolCall = {
   id: string;
   name: string;
@@ -65,9 +84,11 @@ export function ToolCallCard({ call, onSendChat }: { call: ToolCall; onSendChat?
               <div style={{ marginTop: 8 }}><strong>result</strong></div>
               {call.name === "propose_seo_rewrites"
                 ? <RewriteCard result={call.result} onSendChat={onSendChat} />
-                : (call.name === "apply_style_to_batch" || call.name === "rollback")
+                : call.name === "rollback"
                   ? <BulkSummaryCard result={call.result} onSendChat={onSendChat} />
-                  : <div>{JSON.stringify(call.result, null, 2)}</div>}
+                  : call.name === "apply_style_to_batch"
+                    ? renderApplyResult(call.result)
+                    : <div>{JSON.stringify(call.result, null, 2)}</div>}
             </>
           )}
         </div>

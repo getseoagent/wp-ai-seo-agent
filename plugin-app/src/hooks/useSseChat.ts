@@ -49,9 +49,16 @@ type Args = {
   onToolCall: (id: string, name: string, args: unknown) => void;
   onToolResult: (id: string, result: unknown) => void;
   onError: (message: string) => void;
+  /**
+   * Plan 4-B: opportunistic SSE patch. Fires on each bulk_progress event
+   * arriving over the chat stream so consumers (Chat.tsx) can apply an
+   * optimistic update to useJobPolling state for smoother bar movement
+   * between 2s polls. Polling is still source of truth on conflict.
+   */
+  onBulkProgress?: (jobId: string, patch: { done: number; total: number; failed_count: number; current_post_id: number | null; current_post_title: string | null }) => void;
 };
 
-export function useSseChat({ endpoint, nonce, sessionId, onDelta, onToolCall, onToolResult, onError }: Args) {
+export function useSseChat({ endpoint, nonce, sessionId, onDelta, onToolCall, onToolResult, onError, onBulkProgress }: Args) {
   const [busy, setBusy] = useState(false);
   const [progressByJobId, setProgressByJobId] = useState<Map<string, ProgressState>>(new Map());
   const abortRef = useRef<AbortController | null>(null);
@@ -118,6 +125,14 @@ export function useSseChat({ endpoint, nonce, sessionId, onDelta, onToolCall, on
                 });
                 return next;
               });
+              // Plan 4-B: opportunistically patch useJobPolling state too.
+              onBulkProgress?.(ev.job_id, {
+                done: ev.done,
+                total: ev.total,
+                failed_count: ev.failed,
+                current_post_id: ev.current_post_id ?? null,
+                current_post_title: ev.current_post_title ?? null,
+              });
               // don't fold into chat messages
             }
             // 'done' is ignored — the stream ending IS the done signal
@@ -132,7 +147,7 @@ export function useSseChat({ endpoint, nonce, sessionId, onDelta, onToolCall, on
         abortRef.current = null;
       }
     },
-    [endpoint, nonce, sessionId, busy, onDelta, onToolCall, onToolResult, onError]
+    [endpoint, nonce, sessionId, busy, onDelta, onToolCall, onToolResult, onError, onBulkProgress]
   );
 
   const cancel = useCallback(() => abortRef.current?.abort(), []);

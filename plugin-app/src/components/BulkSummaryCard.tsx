@@ -1,5 +1,6 @@
-import { formatBulkSummary, type FormattedBulkSummary } from "./format-bulk-summary";
+import { formatBulkSummary, formatBulkSummaryFromJob, type FormattedBulkSummary } from "./format-bulk-summary";
 import { BULK_COLORS, BULK_STATUS_BG } from "./bulk-styles";
+import type { Job } from "../hooks/useJobPolling";
 
 const containerStyle: React.CSSProperties = { fontSize: 13, fontFamily: "system-ui, -apple-system, sans-serif" };
 const headerStyle: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" };
@@ -21,11 +22,13 @@ const actionRowStyle: React.CSSProperties = { marginTop: 8, paddingTop: 8, borde
 const buttonStyle: React.CSSProperties = { fontSize: 12, padding: "4px 10px", border: `1px solid ${BULK_COLORS.primaryBlue}`, color: BULK_COLORS.primaryBlue, background: "#fff", borderRadius: 4, cursor: "pointer" };
 
 export type BulkSummaryCardProps = {
-  result: unknown;
+  /** Tool-result-driven render: from rollback tool result (still synchronous in 4-B). */
+  result?: unknown;
+  /** Polling-driven render: from useJobPolling terminal state (Plan 4-B). */
+  pollingJob?: Job;
   /**
    * Programmatic chat-message injection (e.g. fires "rollback job <id>" when the user clicks
-   * the Rollback button). Wired by Chat.tsx → MessageList.tsx → ToolCallCard chain.
-   * If absent, the rollback button is hidden — the card still renders the summary.
+   * the Rollback button). If absent, the rollback button is hidden — the card still renders.
    */
   onSendChat?: (text: string) => void;
 };
@@ -36,10 +39,12 @@ function rowColor(status: string): React.CSSProperties {
   return rowSkippedStyle;
 }
 
-export function BulkSummaryCard({ result, onSendChat }: BulkSummaryCardProps) {
+export function BulkSummaryCard({ result, pollingJob, onSendChat }: BulkSummaryCardProps) {
   let summary: FormattedBulkSummary;
   try {
-    summary = formatBulkSummary(result);
+    summary = pollingJob !== undefined
+      ? formatBulkSummaryFromJob(pollingJob)
+      : formatBulkSummary(result);
   } catch {
     return <div style={containerStyle}>Could not format summary.</div>;
   }

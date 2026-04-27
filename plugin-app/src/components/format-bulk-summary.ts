@@ -1,3 +1,5 @@
+import type { Job } from "../hooks/useJobPolling";
+
 export type FormattedBulkSummary = {
   mode: "apply" | "rollback";
   jobId: string;
@@ -10,6 +12,26 @@ export type FormattedBulkSummary = {
   }>;
   canRollback: boolean;
 };
+
+/**
+ * Plan 4-B: produce a summary from a polling-derived Job (no per-post rows).
+ * Used when the agent's apply_style_to_batch tool returned {status:"running"}
+ * and the actual job state arrived via useJobPolling. Per-post rows would
+ * require a /history?job_id=X fetch — deferred for v0.6.0; the headline +
+ * status badge + total counts are enough for v1.
+ */
+export function formatBulkSummaryFromJob(job: Job): FormattedBulkSummary {
+  const succeeded = job.done;
+  const failed = job.failed_count;
+  return {
+    mode: "apply",
+    jobId: job.id,
+    headline: `Applied ${succeeded} / Failed ${failed} / Total ${job.total}`,
+    statusBadge: job.status,
+    rows: [],
+    canRollback: succeeded > 0 && job.status === "completed",
+  };
+}
 
 type ApplyInput = {
   job_id: string;

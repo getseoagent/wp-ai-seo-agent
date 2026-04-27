@@ -1,7 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { MessageList, type ChatItem } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { useSseChat } from "../hooks/useSseChat";
+import { useJobPolling } from "../hooks/useJobPolling";
+import { BulkProgressBar } from "./BulkProgressBar";
+import { BulkSummaryCard } from "./BulkSummaryCard";
 import { BULK_COLORS } from "./bulk-styles";
 
 const typingIndicatorStyle: React.CSSProperties = {
@@ -29,6 +32,11 @@ export function Chat({ restUrl, nonce }: { restUrl: string; nonce: string }) {
     []
   );
   const [items, setItems] = useState<ChatItem[]>([]);
+  // The active bulk job currently driving the on-screen progress bar / summary.
+  // Set when apply_style_to_batch tool result arrives with status:"running".
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
+
+  const pollState = useJobPolling(activeJobId, restUrl);
 
   const appendAssistantDelta = (delta: string) =>
     setItems(prev => {
@@ -42,21 +50,39 @@ export function Chat({ restUrl, nonce }: { restUrl: string; nonce: string }) {
       ];
     });
 
-  const { send, cancel, busy, progressByJobId } = useSseChat({
+  // Memoize so useSseChat's deps array doesn't churn every render.
+  const handleBulkProgress = useCallback((jobId: string, patch: { done: number; total: number; failed_count: number; current_post_id: number | null; current_post_title: string | null }) => {
+    if (jobId !== activeJobId) return;
+    if (pollState.status === "running") {
+      pollState.applyOptimistic(patch);
+    }
+  }, [activeJobId, pollState]);
+
+  const { send, cancel, busy } = useSseChat({
     endpoint: `${restUrl}/chat`,
     nonce,
     sessionId,
     onDelta: appendAssistantDelta,
     onToolCall: (id, name, args) =>
       setItems(prev => [...prev, { kind: "tool", tool: { id, name, args } }]),
-    onToolResult: (id, result) =>
+    onToolResult: (id, result) => {
       setItems(prev =>
         prev.map(it =>
           it.kind === "tool" && it.tool.id === id ? { kind: "tool", tool: { ...it.tool, result } } : it
         )
-      ),
+      );
+      // Plan 4-B: apply_style_to_batch returns immediately with a job_id; latch
+      // it so useJobPolling kicks in and the bar/card render below.
+      const r = result as { job_id?: string; status?: string } | undefined;
+      const matchingTool = items.find(it => it.kind === "tool" && it.tool.id === id);
+      const isApplyTool = matchingTool && matchingTool.kind === "tool" && matchingTool.tool.name === "apply_style_to_batch";
+      if (isApplyTool && r?.status === "running" && typeof r.job_id === "string") {
+        setActiveJobId(r.job_id);
+      }
+    },
     onError: msg =>
       setItems(prev => [...prev, { kind: "message", message: { role: "assistant", text: `Error: ${msg}` } }]),
+    onBulkProgress: handleBulkProgress,
   });
 
   const handleSend = (text: string) => {
@@ -66,7 +92,13 @@ export function Chat({ restUrl, nonce }: { restUrl: string; nonce: string }) {
 
   return (
     <div>
-      <MessageList items={items} progressByJobId={progressByJobId} onSendChat={handleSend} />
+      <MessageList items={items} onSendChat={handleSend} />
+      {pollState.status === "running" && (
+        <BulkProgressBar job={pollState.job} onSendChat={handleSend} />
+      )}
+      {pollState.status === "terminal" && (
+        <BulkSummaryCard pollingJob={pollState.job} onSendChat={handleSend} />
+      )}
       {busy && (
         <div style={typingIndicatorStyle}>
           <span style={dotsStyle}>•••</span>
