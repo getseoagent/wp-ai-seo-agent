@@ -5,6 +5,8 @@ import { createSessionStore } from "./lib/sessions";
 import { createWpClient } from "./lib/wp-client";
 import { tools } from "./lib/tools";
 import { createAnthropicClient } from "./lib/anthropic-client";
+import { runMigrations } from "./lib/migrations";
+import { getDb } from "./lib/db";
 
 export const app = new Hono();
 mountHealth(app);
@@ -36,6 +38,9 @@ mountChat(app, {
 });
 
 if (import.meta.main) {
+  // Apply any pending migrations before serving traffic.
+  await runMigrations(getDb(), `${import.meta.dir}/../migrations`);
+
   const port = Number(process.env.PORT ?? 8787);
   Bun.serve({ port, fetch: app.fetch, idleTimeout: 255 });
   console.log(`backend listening on :${port}`);
