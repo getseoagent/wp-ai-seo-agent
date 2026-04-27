@@ -1,7 +1,7 @@
 import type { Hono } from "hono";
 import type { SQL } from "bun";
 import type { LicenseCache } from "../lib/license/cache";
-import { parseKey } from "../lib/license/key-format";
+import { parseKey, type Tier } from "../lib/license/key-format";
 
 export type LicenseRouteDeps = {
   sql: SQL;
@@ -18,12 +18,13 @@ export function mountLicenseRoutes(app: Hono, deps: LicenseRouteDeps): void {
     const key = c.req.param("key");
     const parsed = parseKey(key, deps.licenseHmacSecret);
     if (!parsed.ok) return c.json({ error: "invalid_key_format" }, 404);
+    if (parsed.expired) return c.json({ error: "license_expired" }, 403);
 
     const cached = await deps.cache.lookup(key, async () => {
-      const rows = await deps.sql`SELECT key, status, tier, expires_at FROM licenses WHERE key = ${key}` as Array<{ key: string; status: string; tier: string; expires_at: string }>;
+      const rows = await deps.sql`SELECT tier, expires_at FROM licenses WHERE key = ${key}` as Array<{ tier: string; expires_at: string }>;
       const row = rows[0];
       if (!row) return null;
-      return { tier: row.tier as any, expiresAt: new Date(row.expires_at).getTime() };
+      return { tier: row.tier as Tier, expiresAt: new Date(row.expires_at).getTime() };
     });
     if (!cached) return c.json({ error: "not_found" }, 404);
 
@@ -34,6 +35,9 @@ export function mountLicenseRoutes(app: Hono, deps: LicenseRouteDeps): void {
     return c.json({ key, status, tier: cached.tier, expires_at: new Date(cached.expiresAt).toISOString() });
   });
 
+  // TODO(Task 3.x): gate behind JWT auth-middleware. Currently public — DO NOT
+  // promote to prod until JWT middleware lands; anyone who knows a license key
+  // could flag it for cancellation otherwise.
   app.post("/license/:key/cancel", async c => {
     const key = c.req.param("key");
     await deps.sql`UPDATE licenses SET disabled_reason = 'user_cancelled' WHERE key = ${key}`;

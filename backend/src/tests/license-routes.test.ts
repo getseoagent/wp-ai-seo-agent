@@ -58,4 +58,24 @@ describe("license routes", () => {
     const rows = await sql`SELECT status, disabled_reason FROM licenses WHERE key = ${key}`;
     expect(rows[0].status).toBe("active");
   });
+
+  it("GET /license/<key>/verify returns 404 not_found for valid HMAC but missing DB row", async () => {
+    const { key } = generateKey({ tier: "pro", expirySeconds: 86400, secret: SECRET });
+    // Do NOT insert into licenses
+    const res = await app.request(`/license/${key}/verify`);
+    expect(res.status).toBe(404);
+    const body = await res.json() as any;
+    expect(body.error).toBe("not_found");
+  });
+
+  it("GET /license/<key>/verify returns 403 license_expired for HMAC-signed-past-expiry key", async () => {
+    // Sign a key whose embedded expiry is already past
+    const { key } = generateKey({ tier: "pro", expirySeconds: -10, secret: SECRET });
+    // Even with a valid (future-dated) DB row, the signed expiry must reject
+    await sql`INSERT INTO licenses (key, tier, max_sites, expires_at) VALUES (${key}, 'pro', 1, NOW() + INTERVAL '30 days')`;
+    const res = await app.request(`/license/${key}/verify`);
+    expect(res.status).toBe(403);
+    const body = await res.json() as any;
+    expect(body.error).toBe("license_expired");
+  });
 });
