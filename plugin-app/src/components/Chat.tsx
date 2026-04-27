@@ -2,10 +2,12 @@ import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { MessageList, type ChatItem } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { useSseChat } from "../hooks/useSseChat";
-import { useJobPolling } from "../hooks/useJobPolling";
+import { useJobPolling, type Job } from "../hooks/useJobPolling";
 import { useDocumentTitleForJob } from "../hooks/useDocumentTitleForJob";
+import { useRecentJobsBanner } from "../hooks/useRecentJobsBanner";
 import { BulkProgressBar } from "./BulkProgressBar";
 import { BulkSummaryCard } from "./BulkSummaryCard";
+import { RecentJobsBanner } from "./RecentJobsBanner";
 import { requestNotificationPermissionOnce, notifyJobComplete } from "../lib/notifications";
 import { BULK_COLORS } from "./bulk-styles";
 
@@ -40,6 +42,11 @@ export function Chat({ restUrl, nonce }: { restUrl: string; nonce: string }) {
 
   const pollState = useJobPolling(activeJobId, restUrl);
   useDocumentTitleForJob(pollState);
+
+  // Recent-jobs banner: surfaces a job that completed while user was away.
+  // Clicking [View summary] mounts a BulkSummaryCard for that "recovered" job.
+  const recent = useRecentJobsBanner(restUrl);
+  const [recoveredJob, setRecoveredJob] = useState<Job | null>(null);
 
   // Track which terminal job we've already notified for so re-renders don't
   // re-fire the same Notification.
@@ -111,7 +118,17 @@ export function Chat({ restUrl, nonce }: { restUrl: string; nonce: string }) {
 
   return (
     <div>
+      {recent.banner && (
+        <RecentJobsBanner
+          job={recent.banner}
+          onView={(j) => { setRecoveredJob(j); recent.dismiss(); }}
+          onDismiss={recent.dismiss}
+        />
+      )}
       <MessageList items={items} onSendChat={handleSend} />
+      {recoveredJob && (
+        <BulkSummaryCard pollingJob={recoveredJob} onSendChat={handleSend} />
+      )}
       {pollState.status === "running" && (
         <BulkProgressBar job={pollState.job} onSendChat={handleSend} />
       )}

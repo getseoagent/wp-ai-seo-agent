@@ -10,6 +10,8 @@ export const BULK_COLORS = {
   borderGray: "#dbe4ec",
   surfaceFill: "#f6f7f7",
   mutedFg: "#646970",
+  bannerBg: "#eef6ff",             // recent-jobs banner background
+  bannerBorder: "#cfe1f8",         // recent-jobs banner border
 } as const;
 
 export const BULK_STATUS_BG = {
