@@ -1,6 +1,7 @@
 import type { WpClient } from "./wp-client";
 import { CraftError, type CraftDeps, type RewriteProposal, type RewriteFailure } from "./craft";
 import type { SseEvent } from "./sse";
+import { runBulkJob, type BulkApplyResult } from "./job-runner";
 
 export type Tool = {
   name: string;
@@ -113,6 +114,19 @@ export const tools: Tool[] = [
       additionalProperties: false,
     },
   },
+  {
+    name: "apply_style_to_batch",
+    description: "Apply approved SEO rewrite style to up to 200 posts. Creates a job, runs in parallel with concurrency 3, returns a summary with applied/failed/skipped counts. Use after the user has approved the style on a small sample via propose_seo_rewrites.",
+    input_schema: {
+      type: "object",
+      properties: {
+        post_ids:    { type: "array", items: { type: "integer" }, minItems: 1, maxItems: 200, description: "WordPress post IDs to apply the rewrite to (1..200)" },
+        style_hints: { type: "string", maxLength: 2048, description: "Style guidance approved by the user during sampling (e.g. 'aggressive tone, no emoji, brand WPilot')" },
+      },
+      required: ["post_ids", "style_hints"],
+      additionalProperties: false,
+    },
+  },
 ];
 
 export type SseEventEmitter = (ev: SseEvent) => void;
@@ -171,6 +185,49 @@ export async function dispatchTool(
         }
       });
       return { proposals, failures };
+    }
+    case "apply_style_to_batch": {
+      const { post_ids, style_hints } = (input ?? {}) as { post_ids?: unknown; style_hints?: unknown };
+      if (!Array.isArray(post_ids) || post_ids.length === 0) {
+        return { error: "post_ids required" };
+      }
+      if (post_ids.length > 200) {
+        return { error: "batch limit exceeded (>200) — split into multiple apply calls" };
+      }
+      if (!craft) {
+        throw new Error("apply_style_to_batch: craft deps required");
+      }
+      const ids = post_ids.map(v => Number(v));
+      const trimmedHints = typeof style_hints === "string" ? style_hints.slice(0, 2048) : "";
+
+      // Concurrent-job guard
+      const existing = await wp.findRunningJobForUser(0, signal);
+      if (existing) {
+        return { error: `another bulk job is already running (job_id: ${existing.id})` };
+      }
+
+      // Create job in DB
+      const jobId = (typeof globalThis.crypto?.randomUUID === "function")
+        ? globalThis.crypto.randomUUID()
+        : `job-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      await wp.createJob({
+        id: jobId,
+        user_id: 0,
+        tool_name: "apply_style_to_batch",
+        total: ids.length,
+        style_hints: trimmedHints,
+        params_json: JSON.stringify({ post_ids: ids }),
+      }, signal);
+
+      // No emit? Use a no-op fallback (shouldn't happen in production)
+      const safeEmit = emit ?? (() => {});
+
+      const result: BulkApplyResult = await runBulkJob({
+        jobId, postIds: ids, styleHints: trimmedHints,
+        wp, craft, signal: signal ?? new AbortController().signal,
+        emit: safeEmit,
+      });
+      return result;
     }
     default: throw new Error(`unknown tool: ${name}`);
   }

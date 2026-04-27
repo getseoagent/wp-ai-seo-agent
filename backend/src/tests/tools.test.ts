@@ -3,6 +3,7 @@ import { tools, dispatchTool } from "../lib/tools";
 import type { WpClient } from "../lib/wp-client";
 import type { CraftDeps, RewriteProposal } from "../lib/craft";
 import { CraftError } from "../lib/craft";
+import type { BulkApplyResult } from "../lib/job-runner";
 
 const fakeWp = {
   listPosts:       async (args: any) => ({ posts: [{ id: 1, post_title: "t", slug: "s", status: "publish", modified: "x" }], next_cursor: null, total: 1 }),
@@ -18,7 +19,7 @@ const fakeWp = {
 describe("tools", () => {
   it("exposes the new write tool names", () => {
     const names = tools.map(t => t.name).sort();
-    expect(names).toEqual(["detect_seo_plugin", "get_categories", "get_history", "get_post_summary", "get_tags", "list_posts", "propose_seo_rewrites", "rollback", "update_seo_fields"]);
+    expect(names).toEqual(["apply_style_to_batch", "detect_seo_plugin", "get_categories", "get_history", "get_post_summary", "get_tags", "list_posts", "propose_seo_rewrites", "rollback", "update_seo_fields"]);
   });
 
   it("each tool has an input_schema", () => {
@@ -182,5 +183,115 @@ describe("propose_seo_rewrites tool", () => {
       { post_ids: [1] },
       fakeWpForCraft as any,
     )).rejects.toThrow(/craft/);
+  });
+});
+
+const fakeWpForBulk = {
+  ...fakeWp,
+  getPostSummary: async (id: number) => id === 99 ? null : ({
+    id, post_title: `t${id}`, slug: `s${id}`, status: "publish", modified: "x",
+    word_count: 0, content_preview: "c",
+    current_seo: { title: null, description: null, focus_keyword: null, og_title: null },
+  }),
+  updateSeoFields: async (post_id: number, fields: any, job_id: string) => ({
+    job_id, results: [{ field: "title", status: "applied", before: "old", after: fields.title }],
+  }),
+  createJob: async (args: any) => ({ id: args.id ?? "auto-job", ...args, status: "running", done: 0, failed_count: 0, started_at: "", finished_at: null, cancel_requested_at: null, last_progress_at: null }),
+  getJob: async (id: string) => ({ id, status: "running", total: 0, done: 0, failed_count: 0, cancel_requested_at: null, started_at: "", finished_at: null, last_progress_at: null, user_id: 0, tool_name: "t", style_hints: null, params_json: null }),
+  updateJobProgress: async () => ({ ok: true }),
+  markJobDone: async () => ({ ok: true }),
+  findRunningJobForUser: async () => null,
+};
+
+describe("apply_style_to_batch tool", () => {
+  it("is registered in tools array", () => {
+    expect(tools.some(t => t.name === "apply_style_to_batch")).toBe(true);
+  });
+
+  it("creates a job and runs JobRunner", async () => {
+    const events: any[] = [];
+    const craft: CraftDeps = { composeRewrite: async (s) => ({
+      post_id: s.id, intent: "informational",
+      primary_keyword: { text: "k", volume: null, source: "llm_estimate" },
+      synonym: "syn",
+      title: { old: null, new: "T".repeat(20), length: 20 },
+      description: { old: null, new: "D".repeat(50), length: 50 },
+      focus_keyword: { old: null, new: "k" },
+      reasoning: "r",
+    }) };
+    const out: any = await dispatchTool(
+      "apply_style_to_batch",
+      { post_ids: [1, 2, 3], style_hints: "x" },
+      fakeWpForBulk as any,
+      undefined,
+      craft,
+      (ev) => events.push(ev),
+    );
+    expect(out.applied).toBe(3);
+    expect(out.failed).toBe(0);
+    expect(out.status).toBe("completed");
+    expect(events.some(e => e.type === "bulk_progress")).toBe(true);
+  });
+
+  it("rejects empty post_ids", async () => {
+    const out: any = await dispatchTool(
+      "apply_style_to_batch",
+      { post_ids: [] },
+      fakeWpForBulk as any,
+      undefined,
+      { composeRewrite: async () => ({} as any) },
+      () => {},
+    );
+    expect(out.error).toMatch(/post_ids/i);
+  });
+
+  it("rejects > 200 post_ids", async () => {
+    const ids = Array.from({ length: 201 }, (_, i) => i + 1);
+    const out: any = await dispatchTool(
+      "apply_style_to_batch",
+      { post_ids: ids },
+      fakeWpForBulk as any,
+      undefined,
+      { composeRewrite: async () => ({} as any) },
+      () => {},
+    );
+    expect(out.error).toMatch(/200/);
+  });
+
+  it("rejects when user has running job", async () => {
+    const wp = { ...fakeWpForBulk, findRunningJobForUser: async () => ({ id: "existing-job", status: "running" } as any) };
+    const out: any = await dispatchTool(
+      "apply_style_to_batch",
+      { post_ids: [1] },
+      wp as any, undefined,
+      { composeRewrite: async () => ({} as any) },
+      () => {},
+    );
+    expect(out.error).toMatch(/already running/i);
+    expect(out.error).toContain("existing-job");
+  });
+
+  it("throws when craft missing", async () => {
+    await expect(dispatchTool(
+      "apply_style_to_batch",
+      { post_ids: [1] },
+      fakeWpForBulk as any,
+    )).rejects.toThrow(/craft/);
+  });
+
+  it("truncates style_hints > 2048 chars", async () => {
+    let receivedHints: string | undefined;
+    const craft: CraftDeps = {
+      composeRewrite: async (_s, hints) => {
+        receivedHints = hints;
+        return { post_id: 1, intent: "informational", primary_keyword: { text: "k", volume: null, source: "llm_estimate" }, synonym: "s", title: { old: null, new: "T", length: 1 }, description: { old: null, new: "D", length: 1 }, focus_keyword: { old: null, new: "k" }, reasoning: "r" } as any;
+      },
+    };
+    await dispatchTool(
+      "apply_style_to_batch",
+      { post_ids: [1], style_hints: "X".repeat(3000) },
+      fakeWpForBulk as any, undefined, craft, () => {},
+    );
+    expect(receivedHints?.length).toBeLessThanOrEqual(2048);
   });
 });
