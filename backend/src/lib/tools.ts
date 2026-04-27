@@ -1,5 +1,6 @@
 import type { WpClient } from "./wp-client";
 import { CraftError, type CraftDeps, type RewriteProposal, type RewriteFailure } from "./craft";
+import type { SseEvent } from "./sse";
 
 export type Tool = {
   name: string;
@@ -114,12 +115,15 @@ export const tools: Tool[] = [
   },
 ];
 
+export type SseEventEmitter = (ev: SseEvent) => void;
+
 export async function dispatchTool(
   name: string,
   input: unknown,
   wp: WpClient,
   signal?: AbortSignal,
   craft?: CraftDeps,
+  emit?: SseEventEmitter,
 ): Promise<unknown> {
   const args = (input ?? {}) as Record<string, unknown>;
   switch (name) {

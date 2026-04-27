@@ -34,6 +34,7 @@ export type RunAgentArgs = {
   model?: string;
   maxIterations?: number;
   craft?: CraftDeps;
+  emit?: (ev: SseEvent) => void;
 };
 
 export async function* runAgent(args: RunAgentArgs): AsyncGenerator<SseEvent> {
@@ -74,7 +75,7 @@ export async function* runAgent(args: RunAgentArgs): AsyncGenerator<SseEvent> {
       yield { type: "tool_call", id: tu.id, name: tu.name, args: tu.input };
       let resultJson: string;
       try {
-        const result = await dispatchTool(tu.name, tu.input, args.wp, args.signal, args.craft);
+        const result = await dispatchTool(tu.name, tu.input, args.wp, args.signal, args.craft, args.emit);
         resultJson = JSON.stringify(result);
         yield { type: "tool_result", id: tu.id, result };
       } catch (err) {

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { stream } from "hono/streaming";
 import { requireSharedSecret } from "../lib/auth";
-import { sseFormat } from "../lib/sse";
+import { sseFormat, type SseEvent } from "../lib/sse";
 import { runAgent, type AgentClient, type Message } from "../lib/agent-loop";
 import type { Tool } from "../lib/tools";
 import type { WpClient } from "../lib/wp-client";
@@ -41,6 +41,7 @@ export function mountChat(app: Hono, deps: ChatDeps): void {
 
     return stream(c, async (s) => {
       s.onAbort(() => ac.abort());
+      const emit = (ev: SseEvent) => { void s.write(sseFormat(ev)); };
       c.header("content-type", "text/event-stream");
       c.header("cache-control", "no-cache");
       c.header("x-accel-buffering", "no");
@@ -54,6 +55,7 @@ export function mountChat(app: Hono, deps: ChatDeps): void {
           client,
           tools: deps.tools,
           craft,
+          emit,
         })) {
           if (ev.type === "text") assistantText += ev.delta;
           await s.write(sseFormat(ev));

@@ -180,4 +180,13 @@ describe("runAgent", () => {
     expect(events.length).toBe(1);
     expect(events[0]).toMatchObject({ type: "error", message: "network blew up" });
   });
+
+  it("RunAgentArgs.emit is optional", () => {
+    const args: import("../lib/agent-loop").RunAgentArgs = {
+      messages: [], wp: {} as any, signal: new AbortController().signal,
+      client: {} as any, tools: [],
+      // no emit, no craft
+    };
+    expect(args).toBeDefined();
+  });
 });
