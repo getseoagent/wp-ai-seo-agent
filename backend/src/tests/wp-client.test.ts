@@ -234,11 +234,12 @@ describe("WpClient — jobs", () => {
   });
 
   it("findRunningJobForUser returns first or null", async () => {
+    // Plan 4-B: response wrapped in {jobs:[...]} (also carries empty array for "no rows").
     const mockFetch = (async (url: string) => {
       if (url.includes("user_id=7")) {
-        return new Response(JSON.stringify([{ id: "j1", user_id: 7, status: "running", total: 5, done: 0, failed_count: 0, tool_name: "t", style_hints: null, params_json: null, started_at: "x", finished_at: null, cancel_requested_at: null, last_progress_at: null }]), { status: 200, headers: { "content-type": "application/json" } });
+        return new Response(JSON.stringify({ jobs: [{ id: "j1", user_id: 7, status: "running", total: 5, done: 0, failed_count: 0, tool_name: "t", style_hints: null, params_json: null, started_at: "x", finished_at: null, cancel_requested_at: null, last_progress_at: null }] }), { status: 200, headers: { "content-type": "application/json" } });
       }
-      return new Response("[]", { status: 200, headers: { "content-type": "application/json" } });
+      return new Response(JSON.stringify({ jobs: [] }), { status: 200, headers: { "content-type": "application/json" } });
     }) as typeof fetch;
     const orig = globalThis.fetch;
     globalThis.fetch = mockFetch;

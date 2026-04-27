@@ -16,7 +16,9 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('SEO_AGENT_VERSION', '0.1.0');
+// Bump on any schema change; plugins_loaded compares against the stored
+// `seoagent_db_version` option and re-runs dbDelta when they differ.
+define('SEO_AGENT_VERSION', '0.6.0');
 define('SEO_AGENT_FILE', __FILE__);
 define('SEO_AGENT_DIR', plugin_dir_path(__FILE__));
 define('SEO_AGENT_URL', plugin_dir_url(__FILE__));
@@ -35,11 +37,19 @@ foreach (glob(SEO_AGENT_DIR . 'includes/adapters/class-*.php') as $file) {
     require_once $file;
 }
 
-register_activation_hook(__FILE__, static function (): void {
+/**
+ * Idempotent schema migrations. dbDelta diffs the live schema against the DDL
+ * and adds missing columns/indexes — safe to call repeatedly on plugins_loaded
+ * when the version option mismatches SEO_AGENT_VERSION.
+ */
+function seoagent_run_db_migrations(): void
+{
     global $wpdb;
+    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     $charset_collate = $wpdb->get_charset_collate();
-    $table = $wpdb->prefix . 'seoagent_history';
-    $sql = "CREATE TABLE {$table} (
+
+    $history_table = $wpdb->prefix . 'seoagent_history';
+    $history_sql = "CREATE TABLE {$history_table} (
         id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         post_id         BIGINT UNSIGNED NOT NULL,
         job_id          VARCHAR(36)     NOT NULL,
@@ -54,9 +64,10 @@ register_activation_hook(__FILE__, static function (): void {
         INDEX (post_id, created_at),
         INDEX (job_id)
     ) {$charset_collate};";
-    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-    dbDelta($sql);
+    dbDelta($history_sql);
 
+    // Plan 4-B: + current_post_id, current_post_title — populated by job-runner
+    // so polling consumers can render "current: <title>" without SSE.
     $jobs_table = $wpdb->prefix . 'seoagent_jobs';
     $jobs_sql = "CREATE TABLE {$jobs_table} (
         id                   VARCHAR(36)  NOT NULL,
@@ -72,14 +83,26 @@ register_activation_hook(__FILE__, static function (): void {
         finished_at          DATETIME     NULL,
         cancel_requested_at  DATETIME     NULL,
         last_progress_at     DATETIME     NULL,
+        current_post_id      BIGINT UNSIGNED NULL,
+        current_post_title   VARCHAR(255) NULL,
         PRIMARY KEY (id),
         INDEX idx_user_status (user_id, status),
         INDEX idx_started (started_at)
     ) {$charset_collate};";
     dbDelta($jobs_sql);
-});
+}
+
+register_activation_hook(__FILE__, 'seoagent_run_db_migrations');
 
 add_action('plugins_loaded', static function (): void {
+    // Idempotent migration check: if the stored db_version doesn't match the
+    // plugin constant, run migrations and bump the option. dbDelta is a no-op
+    // when the live schema already matches.
+    if (get_option('seoagent_db_version') !== SEO_AGENT_VERSION) {
+        seoagent_run_db_migrations();
+        update_option('seoagent_db_version', SEO_AGENT_VERSION, false);
+    }
+
     \SeoAgent\Settings::init();
     \SeoAgent\Admin_Page::init();
     \SeoAgent\REST_Controller::init();

@@ -304,10 +304,17 @@ final class RestControllerToolsTest extends TestCase
             public function get_results(string $sql): array
             {
                 $out = [];
+                $statusMatch = null;
+                if (preg_match('/status = \'([^\']+)\'/', $sql, $m)) {
+                    $statusMatch = $m[1];
+                }
                 foreach ($this->rows as $row) {
-                    if (preg_match('/status = \'running\'/', $sql) && $row['status'] !== 'running') continue;
-                    if (preg_match('/user_id = (\d+)/', $sql, $m) && (int)$row['user_id'] !== (int)$m[1]) continue;
+                    if ($statusMatch !== null && ($row['status'] ?? null) !== $statusMatch) continue;
+                    if (preg_match('/user_id = (\d+)/', $sql, $m) && (int)($row['user_id'] ?? 0) !== (int)$m[1]) continue;
                     $out[] = (object) $row;
+                }
+                if (preg_match('/LIMIT (\d+)/', $sql, $m)) {
+                    $out = array_slice($out, 0, (int)$m[1]);
                 }
                 return $out;
             }
@@ -392,13 +399,43 @@ final class RestControllerToolsTest extends TestCase
         self::assertNotNull($j->cancel_requested_at);
     }
 
-    public function test_handle_find_running_returns_first(): void
+    public function test_handle_list_jobs_running_for_user_uses_fast_path(): void
     {
+        // Backward-compat: when user_id + status=running provided, the handler
+        // calls Jobs_Store::find_running_for_user (single-row optimization for
+        // backend's findRunningJobForUser concurrency guard).
         $store = new \SeoAgent\Jobs_Store($this->makeFakeDb());
         $store->create(['id' => 'j1', 'user_id' => 7, 'tool_name' => 't', 'total' => 10]);
-        $result = REST_Controller::handle_find_running_jobs(['user_id' => 7], $store);
-        self::assertCount(1, $result);
-        self::assertSame('j1', $result[0]['id']);
+        $result = REST_Controller::handle_list_jobs(['user_id' => 7, 'status' => 'running'], $store);
+        self::assertArrayHasKey('jobs', $result);
+        self::assertCount(1, $result['jobs']);
+        self::assertSame('j1', $result['jobs'][0]['id']);
+    }
+
+    public function test_handle_list_jobs_filters_by_completed_status(): void
+    {
+        $store = new \SeoAgent\Jobs_Store($this->makeFakeDb());
+        $store->create(['id' => 'a', 'user_id' => 0, 'tool_name' => 't', 'total' => 5]);
+        $store->mark_done('a', 'completed');
+        $store->create(['id' => 'b', 'user_id' => 0, 'tool_name' => 't', 'total' => 3]); // running
+        $store->create(['id' => 'c', 'user_id' => 0, 'tool_name' => 't', 'total' => 7]);
+        $store->mark_done('c', 'completed');
+
+        $result = REST_Controller::handle_list_jobs(['status' => 'completed', 'limit' => 10], $store);
+        self::assertArrayHasKey('jobs', $result);
+        self::assertCount(2, $result['jobs']);
+        $ids = array_map(fn($r) => $r['id'], $result['jobs']);
+        self::assertContains('a', $ids);
+        self::assertContains('c', $ids);
+        self::assertNotContains('b', $ids);
+    }
+
+    public function test_handle_list_jobs_returns_wrapped_jobs_shape(): void
+    {
+        $store = new \SeoAgent\Jobs_Store($this->makeFakeDb());
+        $result = REST_Controller::handle_list_jobs(['status' => 'completed'], $store);
+        self::assertArrayHasKey('jobs', $result);
+        self::assertIsArray($result['jobs']);
     }
 
     public function test_handle_rollback_by_job_id_unwinds_all_non_rolled_back(): void

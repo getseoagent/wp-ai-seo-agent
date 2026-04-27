@@ -179,8 +179,12 @@ export function createWpClient(cfg: Cfg) {
       }),
 
     findRunningJobForUser: async (user_id: number, signal?: AbortSignal): Promise<Job | null> => {
-      const rows = await call<Job[]>(`/jobs?user_id=${encodeURIComponent(user_id)}&status=running`, { signal });
-      return rows[0] ?? null;
+      // Plan 4-B: GET /jobs returns { jobs: Job[] } (wrapped) so the same
+      // endpoint can carry filtered lists for the frontend banner. Older
+      // installs returning a bare array are unreachable now (plugin migrated
+      // to the wrapped shape in lockstep with this client change).
+      const body = await call<{ jobs: Job[] }>(`/jobs?user_id=${encodeURIComponent(user_id)}&status=running`, { signal });
+      return body.jobs[0] ?? null;
     },
   };
 }

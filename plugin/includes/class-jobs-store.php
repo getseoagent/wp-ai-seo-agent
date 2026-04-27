@@ -43,13 +43,22 @@ final class Jobs_Store
         return is_object($row) ? $row : null;
     }
 
-    public function update_progress(string $id, int $done, int $failed_count): void
+    public function update_progress(string $id, int $done, int $failed_count, ?int $current_post_id = null, ?string $current_post_title = null): void
     {
-        $this->db->update(
-            $this->table(),
-            ['done' => $done, 'failed_count' => $failed_count, 'last_progress_at' => current_time('mysql', true)],
-            ['id' => $id]
-        );
+        $data = [
+            'done' => $done,
+            'failed_count' => $failed_count,
+            'last_progress_at' => current_time('mysql', true),
+        ];
+        // current_post_* only persisted when the caller has a post in flight.
+        // Keep last-known values when null (avoid blanking between worker swaps).
+        if ($current_post_id !== null) {
+            $data['current_post_id'] = $current_post_id;
+        }
+        if ($current_post_title !== null) {
+            $data['current_post_title'] = $current_post_title;
+        }
+        $this->db->update($this->table(), $data, ['id' => $id]);
     }
 
     public function mark_done(string $id, string $status): void

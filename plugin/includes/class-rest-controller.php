@@ -114,7 +114,7 @@ final class REST_Controller
         register_rest_route('seoagent/v1', '/jobs', [
             'methods'             => 'GET',
             'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
-                return new \WP_REST_Response(self::handle_find_running_jobs($req->get_query_params()));
+                return new \WP_REST_Response(self::handle_list_jobs($req->get_query_params()));
             },
             'permission_callback' => [self::class, 'permit_admin_or_secret'],
         ]);
@@ -611,7 +611,9 @@ final class REST_Controller
         $store->update_progress(
             $id,
             (int) ($params['done'] ?? 0),
-            (int) ($params['failed_count'] ?? 0)
+            (int) ($params['failed_count'] ?? 0),
+            isset($params['current_post_id']) ? (int) $params['current_post_id'] : null,
+            isset($params['current_post_title']) ? (string) $params['current_post_title'] : null,
         );
         return ['ok' => true];
     }
@@ -636,14 +638,33 @@ final class REST_Controller
     }
 
     /**
+     * Filtered list of jobs. Backward-compatible with the Plan 3c
+     * "find running for user" shortcut: when params include both `user_id`
+     * and `status=running`, use find_running_for_user (single-row optimization).
+     * Otherwise apply the Plan 4-B status/since/limit filter via list_jobs.
+     *
+     * Response shape: { jobs: Array<row> }. Backend wp-client must read .jobs.
+     *
      * @param array<string, mixed> $params
-     * @return list<array<string, mixed>>
+     * @return array{jobs: list<array<string, mixed>>}
      */
-    public static function handle_find_running_jobs(array $params, ?Jobs_Store $store = null): array
+    public static function handle_list_jobs(array $params, ?Jobs_Store $store = null): array
     {
         $store ??= new Jobs_Store($GLOBALS['wpdb']);
-        $job = $store->find_running_for_user((int) ($params['user_id'] ?? 0));
-        return $job === null ? [] : [(array) $job];
+
+        $hasUserId = isset($params['user_id']);
+        $statusRunning = ($params['status'] ?? null) === 'running';
+        if ($hasUserId && $statusRunning) {
+            $job = $store->find_running_for_user((int) $params['user_id']);
+            return ['jobs' => $job === null ? [] : [(array) $job]];
+        }
+
+        $rows = $store->list_jobs([
+            'status' => isset($params['status']) ? (string) $params['status'] : null,
+            'since'  => isset($params['since'])  ? (string) $params['since']  : null,
+            'limit'  => isset($params['limit'])  ? (int)    $params['limit']  : 10,
+        ]);
+        return ['jobs' => array_map(static fn($r) => (array) $r, $rows)];
     }
 
     private static function adapter_get(Adapters\Seo_Fields_Adapter $adapter, string $field, int $post_id): ?string
