@@ -3,6 +3,7 @@ import { MessageList, type ChatItem } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { useSseChat } from "../hooks/useSseChat";
 import { useJobPolling } from "../hooks/useJobPolling";
+import { useDocumentTitleForJob } from "../hooks/useDocumentTitleForJob";
 import { BulkProgressBar } from "./BulkProgressBar";
 import { BulkSummaryCard } from "./BulkSummaryCard";
 import { BULK_COLORS } from "./bulk-styles";
@@ -37,6 +38,7 @@ export function Chat({ restUrl, nonce }: { restUrl: string; nonce: string }) {
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
 
   const pollState = useJobPolling(activeJobId, restUrl);
+  useDocumentTitleForJob(pollState);
 
   const appendAssistantDelta = (delta: string) =>
     setItems(prev => {
