@@ -208,8 +208,19 @@ describe("apply_style_to_batch tool", () => {
     expect(tools.some(t => t.name === "apply_style_to_batch")).toBe(true);
   });
 
-  it("creates a job and runs JobRunner", async () => {
+  it("creates a job and runs JobRunner in the background", async () => {
+    // Plan 4-B: dispatchTool returns {status:'running'} immediately and JobRunner
+    // executes detached. Verify the background work via emit() event count instead
+    // of synchronous return shape.
+    let updateCallCount = 0;
     const events: any[] = [];
+    const wp = {
+      ...fakeWpForBulk,
+      updateSeoFields: async (post_id: number, fields: any, job_id: string) => {
+        updateCallCount++;
+        return { job_id, results: [{ field: "title", status: "applied", before: "old", after: fields.title }] };
+      },
+    };
     const craft: CraftDeps = { composeRewrite: async (s) => ({
       post_id: s.id, intent: "informational",
       primary_keyword: { text: "k", volume: null, source: "llm_estimate" },
@@ -222,14 +233,19 @@ describe("apply_style_to_batch tool", () => {
     const out: any = await dispatchTool(
       "apply_style_to_batch",
       { post_ids: [1, 2, 3], style_hints: "x" },
-      fakeWpForBulk as any,
+      wp as any,
       undefined,
       craft,
       (ev) => events.push(ev),
     );
-    expect(out.applied).toBe(3);
-    expect(out.failed).toBe(0);
-    expect(out.status).toBe("completed");
+    // Immediate return shape:
+    expect(out.status).toBe("running");
+    expect(out.total).toBe(3);
+    expect(out.job_id).toMatch(/^[0-9a-f-]{36}$/);
+
+    // Wait for the background JobRunner to drain.
+    await new Promise(r => setTimeout(r, 100));
+    expect(updateCallCount).toBe(3);
     expect(events.some(e => e.type === "bulk_progress")).toBe(true);
   });
 
@@ -280,19 +296,17 @@ describe("apply_style_to_batch tool", () => {
   });
 
   it("truncates style_hints > 2048 chars", async () => {
-    let receivedHints: string | undefined;
     const craft: CraftDeps = {
-      composeRewrite: async (_s, hints) => {
-        receivedHints = hints;
-        return { post_id: 1, intent: "informational", primary_keyword: { text: "k", volume: null, source: "llm_estimate" }, synonym: "s", title: { old: null, new: "T", length: 1 }, description: { old: null, new: "D", length: 1 }, focus_keyword: { old: null, new: "k" }, reasoning: "r" } as any;
-      },
+      composeRewrite: async () => ({ post_id: 1, intent: "informational", primary_keyword: { text: "k", volume: null, source: "llm_estimate" }, synonym: "s", title: { old: null, new: "T", length: 1 }, description: { old: null, new: "D", length: 1 }, focus_keyword: { old: null, new: "k" }, reasoning: "r" } as any),
     };
-    await dispatchTool(
+    const out: any = await dispatchTool(
       "apply_style_to_batch",
       { post_ids: [1], style_hints: "X".repeat(3000) },
       fakeWpForBulk as any, undefined, craft, () => {},
     );
-    expect(receivedHints?.length).toBeLessThanOrEqual(2048);
+    // Plan 4-B: dispatchTool returns {style_hints} in the immediate response —
+    // assert truncation there rather than waiting on the background JobRunner.
+    expect(out.style_hints.length).toBeLessThanOrEqual(2048);
   });
 
   it("calls createJob with correct payload", async () => {
@@ -405,5 +419,90 @@ describe("rollback tool — job_id extension", () => {
   it("rejects when both history_ids and job_id provided", async () => {
     const out: any = await dispatchTool("rollback", { history_ids: [1], job_id: "j" }, fakeWp as any);
     expect(out.error).toMatch(/only one of/i);
+  });
+});
+
+describe("apply_style_to_batch detachment", () => {
+  const minimalProposal = {
+    post_id: 1, intent: "rewrite", confidence: 0.9, reasoning: "r",
+    title: { current: "c", new: "n", diff_summary: "" },
+    description: { current: "c", new: "n", diff_summary: "" },
+    focus_keyword: { current: "c", new: "n", diff_summary: "" },
+  } as RewriteProposal;
+
+  it("returns {status:'running'} immediately without awaiting bulk job completion", async () => {
+    let getPostSummaryHang = true;
+    const wp = {
+      ...fakeWp,
+      findRunningJobForUser: async () => null,
+      createJob: async () => undefined,
+      getPostSummary: async (id: number) => {
+        // Hang to prove dispatchTool doesn't wait for runBulkJob to complete.
+        while (getPostSummaryHang) await new Promise(r => setTimeout(r, 10));
+        return { id, post_title: "T", slug: "s", status: "publish", modified: "x", word_count: 0, current_seo: { title: null, description: null, focus_keyword: null, og_title: null } };
+      },
+      getJob: async () => ({ status: "running", cancel_requested_at: null, done: 0, failed_count: 0 }),
+      updateJobProgress: async () => undefined,
+      updateSeoFields: async () => ({ job_id: "j", results: [] }),
+      markJobDone: async () => undefined,
+    } as any;
+    const fakeCraft: CraftDeps = { composeRewrite: async () => minimalProposal };
+
+    const t0 = Date.now();
+    const result: any = await dispatchTool(
+      "apply_style_to_batch",
+      { post_ids: [1, 2, 3], style_hints: "" },
+      wp,
+      new AbortController().signal,
+      fakeCraft,
+      () => {},
+    );
+    const elapsed = Date.now() - t0;
+
+    expect(elapsed).toBeLessThan(50); // fire-and-forget, not blocked by hung getPostSummary
+    expect(result.status).toBe("running");
+    expect(result.total).toBe(3);
+    expect(result.job_id).toMatch(/^[0-9a-f-]{36}$/);
+    expect(typeof result.started_at).toBe("string");
+
+    // Cleanup: unblock the hung promise so the background bulk job can complete.
+    getPostSummaryHang = false;
+    // Give it a moment to settle so we don't leak unhandled rejections.
+    await new Promise(r => setTimeout(r, 50));
+  });
+
+  it("survives parent signal abort — bulk job processes posts despite client disconnect", async () => {
+    let postsTouched = 0;
+    const wp = {
+      ...fakeWp,
+      findRunningJobForUser: async () => null,
+      createJob: async () => undefined,
+      getPostSummary: async (id: number) => {
+        postsTouched++;
+        await new Promise(r => setTimeout(r, 30));
+        return { id, post_title: "T", slug: "s", status: "publish", modified: "x", word_count: 0, current_seo: { title: null, description: null, focus_keyword: null, og_title: null } };
+      },
+      getJob: async () => ({ status: "running", cancel_requested_at: null, done: 0, failed_count: 0 }),
+      updateJobProgress: async () => undefined,
+      updateSeoFields: async () => ({ job_id: "j", results: [] }),
+      markJobDone: async () => undefined,
+    } as any;
+    const fakeCraft: CraftDeps = { composeRewrite: async () => minimalProposal };
+
+    const parentAc = new AbortController();
+    const result: any = await dispatchTool(
+      "apply_style_to_batch",
+      { post_ids: [1, 2], style_hints: "" },
+      wp, parentAc.signal, fakeCraft, () => {},
+    );
+    expect(result.status).toBe("running");
+
+    // Abort the chat-request signal AFTER the tool returned. The bulk job should
+    // continue because it owns its own AbortController.
+    parentAc.abort();
+
+    // Give the worker pool time to process both posts (concurrency 3, ~30ms each + slack).
+    await new Promise(r => setTimeout(r, 200));
+    expect(postsTouched).toBe(2);
   });
 });

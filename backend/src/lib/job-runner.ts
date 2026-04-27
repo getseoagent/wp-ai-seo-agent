@@ -79,12 +79,20 @@ export async function runBulkJob(args: RunBulkJobArgs): Promise<BulkApplyResult>
   }
 
   async function emitProgress(currentPost?: { id: number; title: string }): Promise<void> {
-    emit({
-      type: "bulk_progress",
-      job_id: jobId, done: applied, total, failed,
-      current_post_id: currentPost?.id,
-      current_post_title: currentPost?.title,
-    });
+    // emit() may write to an SSE stream that the client has long since closed
+    // (CF 100s cap, tab close, end_turn). Closed-stream writes can throw — swallow
+    // because the durable signal for progress is updateJobProgress (DB), not the
+    // ephemeral SSE event.
+    try {
+      emit({
+        type: "bulk_progress",
+        job_id: jobId, done: applied, total, failed,
+        current_post_id: currentPost?.id,
+        current_post_title: currentPost?.title,
+      });
+    } catch {
+      /* SSE writer closed; durable progress lives in DB below */
+    }
     try {
       await wp.updateJobProgress(jobId, applied, failed);
     } catch {

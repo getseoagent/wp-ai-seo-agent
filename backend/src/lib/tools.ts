@@ -278,15 +278,36 @@ export async function dispatchTool(
       // No emit? Use a no-op fallback (shouldn't happen in production)
       const safeEmit = emit ?? (() => {});
 
-      const result: BulkApplyResult = await runBulkJob({
+      // Detached lifecycle (Plan 4-B): runBulkJob owns its own AbortController so
+      // it survives the chat request's signal aborting (CF 100s, tab close).
+      // Cancellation flows ONLY through wp.getJob().cancel_requested_at polling
+      // inside runBulkJob (set via cancel_job tool / POST /jobs/{id}/cancel).
+      const jobAc = new AbortController();
+      const startedAt = new Date().toISOString();
+
+      // Fire-and-forget. .catch persists job=failed so the UI doesn't perpetually
+      // see "running"; the startup sweep (Task 6) catches the case where even the
+      // markJobDone fails by transitioning stale running rows to interrupted.
+      void runBulkJob({
         jobId, postIds: ids, styleHints: trimmedHints,
         wp, craft,
-        // Inert signal when caller (e.g. test, future direct invocation) provides none.
-        // Cancellation still flows via wp.getJob().cancel_requested_at polling inside runBulkJob.
-        signal: signal ?? new AbortController().signal,
+        signal: jobAc.signal,
         emit: safeEmit,
+      }).catch(async err => {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`[runBulkJob ${jobId}] unhandled:`, msg);
+        try {
+          await wp.markJobDone(jobId, "failed");
+        } catch { /* sweep on next backend startup */ }
       });
-      return result;
+
+      return {
+        job_id: jobId,
+        status: "running" as const,
+        total: ids.length,
+        style_hints: trimmedHints,
+        started_at: startedAt,
+      };
     }
     case "cancel_job": {
       const { job_id } = (input ?? {}) as { job_id?: string };
