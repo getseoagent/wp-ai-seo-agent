@@ -24,12 +24,16 @@ export async function runMigrations(sql: SQL, dir: string): Promise<void> {
     (await sql`SELECT filename FROM migrations`).map((r: any) => r.filename)
   );
 
-  // 4. Apply missing migrations in order.
+  // 4. Apply missing migrations in order. Each apply (SQL body + tracker
+  //    INSERT) runs inside sql.begin so a partial failure rolls back fully —
+  //    next boot won't see a half-applied schema with no tracker row.
   for (const filename of files) {
     if (applied.has(filename)) continue;
     const content = await readFile(join(dir, filename), "utf8");
-    await sql.unsafe(content);
-    await sql`INSERT INTO migrations (filename) VALUES (${filename})`;
+    await sql.begin(async (tx) => {
+      await tx.unsafe(content);
+      await tx`INSERT INTO migrations (filename) VALUES (${filename})`;
+    });
     console.log(`[migrations] applied ${filename}`);
   }
 }
