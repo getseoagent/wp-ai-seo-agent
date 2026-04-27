@@ -13,6 +13,11 @@ describe("runMigrations", () => {
   beforeAll(() => { sql = new SQL(TEST_DB_URL!); });
   afterAll(async () => { await sql.close(); });
   beforeEach(async () => {
+    // Drop tables created by real migrations so each test starts clean.
+    // session_messages has an FK to sessions, so order matters; CASCADE handles
+    // the rest. `migrations` has no FK to the others, hence the explicit drop.
+    await sql`DROP TABLE IF EXISTS session_messages CASCADE`;
+    await sql`DROP TABLE IF EXISTS sessions CASCADE`;
     await sql`DROP TABLE IF EXISTS migrations CASCADE`;
   });
 
@@ -83,5 +88,14 @@ describe("runMigrations", () => {
     } finally {
       await rm(tmp, { recursive: true, force: true });
     }
+  });
+
+  it("applies 001_sessions.sql and creates sessions + session_messages tables", async () => {
+    await runMigrations(sql, MIG_DIR);
+    const tables = await sql`SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename`;
+    const names = tables.map((r: any) => r.tablename);
+    expect(names).toContain("sessions");
+    expect(names).toContain("session_messages");
+    expect(names).toContain("migrations");
   });
 });
