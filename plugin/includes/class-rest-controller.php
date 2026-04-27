@@ -690,6 +690,10 @@ final class REST_Controller
             wp_send_json_error(['error' => 'api key not set'], 400);
         }
 
+        // Allow this script to run as long as the underlying SSE stream is alive.
+        // Bulk runs can exceed PHP's default max_execution_time of 60s.
+        set_time_limit(0);
+
         @ini_set('output_buffering', '0');
         @ini_set('zlib.output_compression', '0');
         while (ob_get_level() > 0) {
