@@ -5,7 +5,24 @@ export type SseEvent =
   | { type: "tool_call"; id: string; name: string; args: unknown }
   | { type: "tool_result"; id: string; result: unknown }
   | { type: "error"; message: string }
-  | { type: "done" };
+  | { type: "done" }
+  | {
+      type: "bulk_progress";
+      job_id: string;
+      done: number;
+      total: number;
+      failed: number;
+      current_post_id?: number;
+      current_post_title?: string;
+    };
+
+export type ProgressState = {
+  done: number;
+  total: number;
+  failed: number;
+  currentPostId?: number;
+  currentPostTitle?: string;
+};
 
 export function parseSseChunks(buffer: string): { events: SseEvent[]; remainder: string } {
   const events: SseEvent[] = [];
@@ -36,6 +53,7 @@ type Args = {
 
 export function useSseChat({ endpoint, nonce, sessionId, onDelta, onToolCall, onToolResult, onError }: Args) {
   const [busy, setBusy] = useState(false);
+  const [progressByJobId, setProgressByJobId] = useState<Map<string, ProgressState>>(new Map());
   const abortRef = useRef<AbortController | null>(null);
 
   const send = useCallback(
@@ -69,10 +87,39 @@ export function useSseChat({ endpoint, nonce, sessionId, onDelta, onToolCall, on
           const { events, remainder } = parseSseChunks(buf);
           buf = remainder;
           for (const ev of events) {
-            if (ev.type === "text") onDelta(ev.delta);
-            else if (ev.type === "tool_call") onToolCall(ev.id, ev.name, ev.args);
-            else if (ev.type === "tool_result") onToolResult(ev.id, ev.result);
-            else if (ev.type === "error") onError(ev.message);
+            if (ev.type === "text") {
+              onDelta(ev.delta);
+            } else if (ev.type === "tool_call") {
+              onToolCall(ev.id, ev.name, ev.args);
+            } else if (ev.type === "tool_result") {
+              const result = ev.result as { job_id?: string };
+              // Any tool result that carries a `job_id` ends progress tracking for that job.
+              // Today: apply_style_to_batch (UUID, matches a progress key) and rollback
+              // (DB row id, harmless no-op). New tools emitting `job_id` should follow this convention.
+              if (typeof result?.job_id === "string") {
+                setProgressByJobId(prev => {
+                  const next = new Map(prev);
+                  next.delete(result.job_id!);
+                  return next;
+                });
+              }
+              onToolResult(ev.id, ev.result);
+            } else if (ev.type === "error") {
+              onError(ev.message);
+            } else if (ev.type === "bulk_progress") {
+              setProgressByJobId(prev => {
+                const next = new Map(prev);
+                next.set(ev.job_id, {
+                  done: ev.done,
+                  total: ev.total,
+                  failed: ev.failed,
+                  currentPostId: ev.current_post_id,
+                  currentPostTitle: ev.current_post_title,
+                });
+                return next;
+              });
+              // don't fold into chat messages
+            }
             // 'done' is ignored — the stream ending IS the done signal
           }
         }
@@ -90,5 +137,5 @@ export function useSseChat({ endpoint, nonce, sessionId, onDelta, onToolCall, on
 
   const cancel = useCallback(() => abortRef.current?.abort(), []);
 
-  return { send, cancel, busy };
+  return { send, cancel, busy, progressByJobId };
 }

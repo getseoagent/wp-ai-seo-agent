@@ -50,4 +50,13 @@ describe("parseSseChunks", () => {
     const { events } = parseSseChunks(buf);
     expect(events[0]).toEqual({ type: "tool_result", id: "tu_1", result: { posts: [] } });
   });
+
+  it("parses bulk_progress event", () => {
+    const buf =
+      'event: bulk_progress\ndata: {"type":"bulk_progress","job_id":"j1","done":3,"total":10,"failed":0}\n\n';
+    const { events } = parseSseChunks(buf);
+    expect(events.length).toBe(1);
+    expect(events[0].type).toBe("bulk_progress");
+    expect((events[0] as any).done).toBe(3);
+  });
 });
