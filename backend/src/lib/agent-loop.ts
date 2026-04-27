@@ -3,6 +3,7 @@ import type { WpClient } from "./wp-client";
 import type { SseEvent } from "./sse";
 import type { CraftDeps } from "./craft";
 import { CHAT_SYSTEM_PROMPT } from "./chat-prompt";
+import { type Tier } from "./license/key-format";
 
 export type AssistantBlock =
   | { type: "text"; text: string }
@@ -37,6 +38,7 @@ export type RunAgentArgs = {
   maxIterations?: number;
   craft?: CraftDeps;
   emit?: (ev: SseEvent) => void;
+  tier?: Tier;
 };
 
 export async function* runAgent(args: RunAgentArgs): AsyncGenerator<SseEvent> {
@@ -92,7 +94,7 @@ export async function* runAgent(args: RunAgentArgs): AsyncGenerator<SseEvent> {
     // rejected dispatch can't sink the whole turn — every tool_use must produce a
     // tool_result (tool_use_id pairing requirement of the Anthropic API).
     const concurrentSettled = await Promise.allSettled(
-      concurrentUses.map(tu => dispatchTool(tu.name, tu.input, args.wp, args.signal, args.craft, args.emit))
+      concurrentUses.map(tu => dispatchTool(tu.name, tu.input, args.wp, args.signal, args.craft, args.emit, args.tier ?? "enterprise"))
     );
     for (let i = 0; i < concurrentUses.length; i++) {
       const tu = concurrentUses[i];
@@ -115,7 +117,7 @@ export async function* runAgent(args: RunAgentArgs): AsyncGenerator<SseEvent> {
     for (const tu of sequentialUses) {
       let resultJson: string;
       try {
-        const result = await dispatchTool(tu.name, tu.input, args.wp, args.signal, args.craft, args.emit);
+        const result = await dispatchTool(tu.name, tu.input, args.wp, args.signal, args.craft, args.emit, args.tier ?? "enterprise");
         resultJson = JSON.stringify(result);
         yield { type: "tool_result", id: tu.id, result };
       } catch (err) {

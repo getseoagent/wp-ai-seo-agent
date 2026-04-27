@@ -39,8 +39,9 @@ describe("tools", () => {
     expect((out as any).id).toBe(7);
   });
 
-  it("throws on unknown tool", async () => {
-    await expect(dispatchTool("bogus", {}, fakeWp)).rejects.toThrow(/unknown tool/);
+  it("denies unknown tool via tier gate (fail-closed)", async () => {
+    const out: any = await dispatchTool("bogus", {}, fakeWp);
+    expect(out.error).toMatch(/not enabled/);
   });
 
   it("dispatches update_seo_fields", async () => {
@@ -419,6 +420,39 @@ describe("rollback tool — job_id extension", () => {
   it("rejects when both history_ids and job_id provided", async () => {
     const out: any = await dispatchTool("rollback", { history_ids: [1], job_id: "j" }, fakeWp as any);
     expect(out.error).toMatch(/only one of/i);
+  });
+});
+
+describe("tier gate at dispatchTool", () => {
+  it("free-tier user is denied update_seo_fields with friendly error", async () => {
+    const out: any = await dispatchTool(
+      "update_seo_fields",
+      { post_id: 1, fields: { title: "X" } },
+      fakeWp, undefined, undefined, undefined,
+      "free",
+    );
+    expect(out.error).toMatch(/Pro/i);
+    expect(out.upgrade_url).toBe("https://www.seo-friendly.org/pricing");
+  });
+
+  it("pro-tier user can update_seo_fields", async () => {
+    const out: any = await dispatchTool(
+      "update_seo_fields",
+      { post_id: 1, fields: { title: "X" } },
+      fakeWp, undefined, undefined, undefined,
+      "pro",
+    );
+    expect(out.error).toBeUndefined();
+  });
+
+  it("apply_style_to_batch with 50 ids on Pro is rejected with Agency tier message", async () => {
+    const out: any = await dispatchTool(
+      "apply_style_to_batch",
+      { post_ids: Array(50).fill(1), style_hints: "" },
+      fakeWp, undefined, { composeRewrite: async () => ({} as any) }, undefined,
+      "pro",
+    );
+    expect(out.error).toMatch(/Agency/i);
   });
 });
 

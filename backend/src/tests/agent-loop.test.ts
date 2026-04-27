@@ -81,7 +81,7 @@ describe("runAgent", () => {
     expect(errors[0].message).toMatch(/iteration cap/i);
   });
 
-  it("emits error tool_result and continues when dispatchTool throws", async () => {
+  it("emits error tool_result and continues when dispatchTool denies tool", async () => {
     const client = scriptedClient([
       { deltas: [], toolCalls: [{ id: "tu_1", name: "bogus", input: {} }], stop: "tool_use" },
       { deltas: ["Recovered"], stop: "end_turn" },
@@ -91,7 +91,7 @@ describe("runAgent", () => {
       events.push(ev);
     }
     expect(events.map(e => e.type)).toEqual(["tool_call", "tool_result", "text", "done"]);
-    expect((events[1] as any).result).toMatchObject({ error: expect.stringContaining("unknown tool") });
+    expect((events[1] as any).result).toMatchObject({ error: expect.stringContaining("not enabled") });
   });
 
   it("groups multiple tool_uses in one iteration into a single user follow-up", async () => {

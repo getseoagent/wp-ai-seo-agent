@@ -2,6 +2,8 @@ import type { WpClient } from "./wp-client";
 import { CraftError, type CraftDeps, type RewriteProposal, type RewriteFailure } from "./craft";
 import type { SseEvent } from "./sse";
 import { runBulkJob, type BulkApplyResult } from "./job-runner";
+import { type Tier } from "./license/key-format";
+import { tierAllows } from "./license/tier-gate";
 
 export type Tool = {
   name: string;
@@ -174,8 +176,13 @@ export async function dispatchTool(
   signal?: AbortSignal,
   craft?: CraftDeps,
   emit?: SseEventEmitter,
+  tier: Tier = "enterprise",
 ): Promise<unknown> {
   const args = (input ?? {}) as Record<string, unknown>;
+  const gate = tierAllows(name, tier, input);
+  if (!gate.ok) {
+    return { error: gate.error.message, upgrade_url: gate.error.upgrade_url };
+  }
   switch (name) {
     case "list_posts":        return wp.listPosts(args, signal);
     case "get_post_summary":  return wp.getPostSummary(Number(args.id), signal);

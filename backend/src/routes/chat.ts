@@ -58,6 +58,7 @@ export function mountChat(app: Hono, deps: ChatDeps): void {
           tools: deps.tools,
           craft,
           emit,
+          tier: "enterprise",  // PLACEHOLDER — Block 3 Task 3.3 reads from c.get("auth").tier
         })) {
           if (ev.type === "text") assistantText += ev.delta;
           await s.write(sseFormat(ev));
