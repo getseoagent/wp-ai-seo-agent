@@ -52,4 +52,20 @@ if (import.meta.main) {
   wp.sweepInterruptedJobs(5)
     .then(r => { if (r.interrupted > 0) console.log(`startup sweep: marked ${r.interrupted} stale running job(s) as interrupted`); })
     .catch(err => console.error("startup sweep failed:", err instanceof Error ? err.message : String(err)));
+
+  // Sessions retention: prune anything older than SESSION_RETENTION_DAYS (default 90).
+  // Runs once 5 minutes after startup, then every 24 hours.
+  const retentionDays = Number(process.env.SESSION_RETENTION_DAYS ?? 90);
+  const runRetentionPrune = async () => {
+    try {
+      const deleted = await sessionStore.pruneOlderThan(retentionDays);
+      if (deleted > 0) console.log(`[sessions] pruned ${deleted} stale session(s) older than ${retentionDays} days`);
+    } catch (err) {
+      console.error("[sessions] retention prune failed:", err instanceof Error ? err.message : String(err));
+    }
+  };
+  setTimeout(() => {
+    void runRetentionPrune();
+    setInterval(() => { void runRetentionPrune(); }, 24 * 60 * 60 * 1000);
+  }, 5 * 60 * 1000);
 }
