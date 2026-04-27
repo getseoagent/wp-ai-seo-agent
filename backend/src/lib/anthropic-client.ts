@@ -4,13 +4,14 @@ import type { AgentClient, AssistantBlock, AgentChunk } from "./agent-loop";
 export function createAnthropicClient(apiKey: string): AgentClient {
   const sdk = new Anthropic({ apiKey });
   return {
-    stream({ model, messages, tools, signal }) {
+    stream({ model, messages, tools, signal, system }) {
       const stream = sdk.messages.stream(
         {
           model,
           max_tokens: 1024,
           tools: tools as unknown as any,
           messages: messages as unknown as any,
+          ...(system !== undefined ? { system } : {}),
         },
         { signal }
       );
