@@ -28,7 +28,7 @@ const wp = createWpClient({
   sharedSecret: process.env.SHARED_SECRET ?? "",
   writeSecret,
 });
-const sessionStore = createSessionStore();
+const sessionStore = createSessionStore(getDb());
 
 mountChat(app, {
   makeClient: (apiKey) => createAnthropicClient(apiKey),

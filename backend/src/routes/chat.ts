@@ -5,12 +5,12 @@ import { sseFormat, type SseEvent } from "../lib/sse";
 import { runAgent, type AgentClient, type Message } from "../lib/agent-loop";
 import type { Tool } from "../lib/tools";
 import type { WpClient } from "../lib/wp-client";
-import type { createSessionStore } from "../lib/sessions";
+import type { SessionStore } from "../lib/sessions";
 import { makeDefaultCraft } from "../lib/craft";
 
 type ChatDeps = {
   makeClient: (apiKey: string) => AgentClient;
-  sessionStore: ReturnType<typeof createSessionStore>;
+  sessionStore: SessionStore;
   wp: WpClient;
   tools: Tool[];
 };
@@ -32,8 +32,10 @@ export function mountChat(app: Hono, deps: ChatDeps): void {
       return c.json({ error: "session_id and message required" }, 400);
     }
 
-    deps.sessionStore.append(body.session_id, { role: "user", content: body.message });
-    const messages: Message[] = deps.sessionStore.get(body.session_id);
+    // Block 3 will replace siteUrl/licenseKey with JWT-derived values.
+    await deps.sessionStore.getOrCreate(body.session_id, { siteUrl: "unknown", licenseKey: null });
+    await deps.sessionStore.appendMessage(body.session_id, { role: "user", content: body.message });
+    const messages: Message[] = await deps.sessionStore.getMessages(body.session_id);
 
     const client = deps.makeClient(apiKey);
     const craft = makeDefaultCraft(apiKey);
@@ -61,7 +63,7 @@ export function mountChat(app: Hono, deps: ChatDeps): void {
           await s.write(sseFormat(ev));
         }
         if (assistantText.length > 0) {
-          deps.sessionStore.append(body.session_id, { role: "assistant", content: assistantText });
+          await deps.sessionStore.appendMessage(body.session_id, { role: "assistant", content: assistantText });
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);

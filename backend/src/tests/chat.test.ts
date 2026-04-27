@@ -1,14 +1,36 @@
 import { describe, expect, it, beforeAll } from "bun:test";
 import { Hono } from "hono";
 import { mountChat } from "../routes/chat";
-import { createSessionStore } from "../lib/sessions";
+import type { SessionStore } from "../lib/sessions";
 import { tools } from "../lib/tools";
-import type { AgentClient } from "../lib/agent-loop";
+import type { AgentClient, Message } from "../lib/agent-loop";
 import type { WpClient } from "../lib/wp-client";
 
 beforeAll(() => { process.env.SHARED_SECRET = "test-secret"; });
 
 const fakeWp = { listPosts: async () => ({ posts: [], next_cursor: null, total: 0 }) } as unknown as WpClient;
+
+// In-memory fake of SessionStore. chat.test.ts is testing routing/streaming
+// behavior, not session persistence — a Map-backed fake keeps the tests fast
+// and decoupled from Postgres. Real persistence is covered by sessions.test.ts.
+function makeFakeStore(): SessionStore {
+  const messages = new Map<string, Message[]>();
+  return {
+    async getOrCreate(id) {
+      if (!messages.has(id)) messages.set(id, []);
+      return messages.get(id)!;
+    },
+    async getMessages(id) {
+      return messages.get(id) ?? [];
+    },
+    async appendMessage(id, msg) {
+      const arr = messages.get(id) ?? [];
+      arr.push(msg);
+      messages.set(id, arr);
+    },
+    async pruneOlderThan() { return 0; },
+  };
+}
 
 function singleTurnClient(deltas: string[]): AgentClient {
   return {
@@ -24,7 +46,7 @@ function singleTurnClient(deltas: string[]): AgentClient {
 
 function makeApp(client: AgentClient) {
   const app = new Hono();
-  const store = createSessionStore({ maxSessions: 10, now: () => 1 });
+  const store = makeFakeStore();
   mountChat(app, {
     makeClient: () => client,
     sessionStore: store,
@@ -77,7 +99,7 @@ describe("POST /chat", () => {
     expect(text).toContain('event: text');
     expect(text).toContain('"delta":"Hel"');
     expect(text).toContain('event: done');
-    const persisted = store.get("s1");
+    const persisted = await store.getMessages("s1");
     expect(persisted.length).toBe(2); // user msg + assistant final
     expect(persisted[0]).toMatchObject({ role: "user" });
     expect(persisted[1]).toMatchObject({ role: "assistant" });
