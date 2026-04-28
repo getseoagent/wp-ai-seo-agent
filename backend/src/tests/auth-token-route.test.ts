@@ -10,7 +10,6 @@ import { verifyJwt } from "../lib/jwt";
 const TEST_DB_URL = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL!;
 const HMAC_SECRET = "test-secret-32-bytes-for-hmac----";
 const JWT_SECRET  = "test-jwt-secret-32-bytes-min-pls!";
-const SHARED      = "test-shared-secret";
 const MIG_DIR = `${import.meta.dir}/../../migrations`;
 
 const prevEnv: Record<string, string | undefined> = {};
@@ -20,18 +19,15 @@ describe("POST /auth/token", () => {
   let app: Hono;
 
   beforeAll(async () => {
-    prevEnv.SHARED_SECRET = process.env.SHARED_SECRET;
-    prevEnv.JWT_SECRET    = process.env.JWT_SECRET;
-    process.env.SHARED_SECRET = SHARED;
-    process.env.JWT_SECRET    = JWT_SECRET;
+    prevEnv.JWT_SECRET = process.env.JWT_SECRET;
+    process.env.JWT_SECRET = JWT_SECRET;
 
     sql = new SQL(TEST_DB_URL);
     await sql`DROP TABLE IF EXISTS session_messages, sessions, licenses, migrations CASCADE`;
     await runMigrations(sql, MIG_DIR);
   });
   afterAll(async () => {
-    if (prevEnv.SHARED_SECRET === undefined) delete process.env.SHARED_SECRET; else process.env.SHARED_SECRET = prevEnv.SHARED_SECRET;
-    if (prevEnv.JWT_SECRET    === undefined) delete process.env.JWT_SECRET;    else process.env.JWT_SECRET    = prevEnv.JWT_SECRET;
+    if (prevEnv.JWT_SECRET === undefined) delete process.env.JWT_SECRET; else process.env.JWT_SECRET = prevEnv.JWT_SECRET;
     await sql.close();
   });
   beforeEach(async () => {
@@ -48,19 +44,10 @@ describe("POST /auth/token", () => {
   function call(body: unknown, headers: Record<string, string> = {}): Promise<Response> {
     return Promise.resolve(app.request("/auth/token", {
       method: "POST",
-      headers: { "content-type": "application/json", "x-shared-secret": SHARED, ...headers },
+      headers: { "content-type": "application/json", ...headers },
       body: JSON.stringify(body),
     }));
   }
-
-  it("rejects without shared secret (401)", async () => {
-    const res = await app.request("/auth/token", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ license_key: null, site_url: "https://x" }),
-    });
-    expect(res.status).toBe(401);
-  });
 
   it("rejects missing site_url (400)", async () => {
     const res = await call({ license_key: null });

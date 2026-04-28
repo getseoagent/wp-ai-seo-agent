@@ -16,7 +16,7 @@ describe("WpClient", () => {
   });
   afterEach(() => restoreFetch());
 
-  it("listPosts forwards query params and shared-secret header", async () => {
+  it("listPosts forwards query params and Bearer auth", async () => {
     const original = globalThis.fetch;
     globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
       calls.push({ url: String(url), init: init ?? {} });
@@ -29,13 +29,14 @@ describe("WpClient", () => {
       }), { status: 200, headers: { "content-type": "application/json" } });
     }) as typeof fetch;
     try {
-      const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!", sharedSecret: "s3cret", writeSecret: "test-write" });
+      const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
       const result = await wp.listPosts({ category: "news", limit: 5 });
       expect(calls.length).toBe(1);
       expect(calls[0].url).toContain("/wp-json/seoagent/v1/posts");
       expect(calls[0].url).toContain("category=news");
       expect(calls[0].url).toContain("limit=5");
-      expect((calls[0].init.headers as Record<string,string>)["x-shared-secret"]).toBe("s3cret");
+      const auth = (calls[0].init.headers as Record<string,string>)["authorization"] ?? "";
+      expect(auth).toMatch(/^Bearer\s+ey[\w-]+\.[\w-]+\.[\w-]+$/);
       expect(result.posts[0].word_count).toBe(42);
     } finally {
       globalThis.fetch = original;
@@ -43,7 +44,7 @@ describe("WpClient", () => {
   });
 
   it("getPostSummary uses path id", async () => {
-    const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!", sharedSecret: "s", writeSecret: "test-write" });
+    const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
     await wp.getPostSummary(42);
     expect(calls[0].url).toBe("https://site.example/wp-json/seoagent/v1/post/42/summary");
   });
@@ -61,7 +62,7 @@ describe("WpClient", () => {
       current_seo: { title: null, description: null, focus_keyword: null, og_title: null },
     }), { status: 200, headers: { "content-type": "application/json" } })) as typeof fetch;
     try {
-      const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!", sharedSecret: "s", writeSecret: "test-write" });
+      const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
       const result = await wp.getPostSummary(42);
       expect(result?.content_preview).toBe("preview text");
     } finally {
@@ -71,52 +72,54 @@ describe("WpClient", () => {
 
   it("throws on non-2xx", async () => {
     globalThis.fetch = (async () => new Response("nope", { status: 500 })) as typeof fetch;
-    const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!", sharedSecret: "s", writeSecret: "test-write" });
+    const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
     await expect(wp.listPosts({})).rejects.toThrow(/500/);
   });
 
   it("forwards abort signal to fetch", async () => {
-    const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!", sharedSecret: "s", writeSecret: "test-write" });
+    const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
     const ac = new AbortController();
     await wp.listPosts({}, ac.signal);
     expect(calls[0].init.signal).toBe(ac.signal);
   });
 
-  it("updateSeoFields POSTs JSON body with Bearer + X-Write-Secret (dual-mode)", async () => {
-    const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!", sharedSecret: "r", writeSecret: "w" });
+  it("updateSeoFields POSTs JSON body with Bearer auth", async () => {
+    const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
     await wp.updateSeoFields(42, { title: "X" });
     expect(calls.length).toBe(1);
     expect(calls[0].url).toBe("https://site.example/wp-json/seoagent/v1/post/42/seo-fields");
     const headers = calls[0].init.headers as Record<string,string>;
     expect(headers["authorization"] ?? "").toMatch(/^Bearer\s+ey[\w-]+\.[\w-]+\.[\w-]+$/);
-    expect(headers["X-Write-Secret"]).toBe("w");
+    expect(headers["X-Write-Secret"]).toBeUndefined();
+    expect(headers["x-shared-secret"]).toBeUndefined();
     expect(calls[0].init.method).toBe("POST");
     expect(calls[0].init.body as string).toContain('"title":"X"');
   });
 
   it("updateSeoFields includes job_id when provided", async () => {
-    const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!", sharedSecret: "r", writeSecret: "w" });
+    const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
     await wp.updateSeoFields(42, { title: "X" }, "job-uuid");
     const body = JSON.parse((calls[0].init.body as string));
     expect(body.job_id).toBe("job-uuid");
   });
 
-  it("getHistory sends Bearer + x-shared-secret on read endpoints (no X-Write-Secret)", async () => {
-    const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!", sharedSecret: "r", writeSecret: "w" });
+  it("getHistory sends Bearer on read endpoints (no X-Write-Secret)", async () => {
+    const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
     await wp.getHistory({ post_id: 42, limit: 10 });
     expect(calls[0].url).toContain("post_id=42");
     expect(calls[0].url).toContain("limit=10");
     const headers = calls[0].init.headers as Record<string,string>;
     expect(headers["authorization"] ?? "").toMatch(/^Bearer\s+ey[\w-]+\.[\w-]+\.[\w-]+$/);
-    expect(headers["x-shared-secret"]).toBe("r");
     expect(headers["X-Write-Secret"]).toBeUndefined();
   });
 
-  it("rollback POSTs history_ids with X-Write-Secret", async () => {
-    const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!", sharedSecret: "r", writeSecret: "w" });
+  it("rollback POSTs history_ids with Bearer auth", async () => {
+    const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
     await wp.rollback({ history_ids: [17, 18] });
     expect(calls[0].url).toBe("https://site.example/wp-json/seoagent/v1/rollback");
-    expect((calls[0].init.headers as Record<string,string>)["X-Write-Secret"]).toBe("w");
+    const headers = calls[0].init.headers as Record<string,string>;
+    expect(headers["authorization"] ?? "").toMatch(/^Bearer\s+ey[\w-]+\.[\w-]+\.[\w-]+$/);
+    expect(headers["X-Write-Secret"]).toBeUndefined();
     const body = JSON.parse((calls[0].init.body as string));
     expect(body.history_ids).toEqual([17, 18]);
   });
@@ -139,12 +142,12 @@ describe("WpClient — jobs", () => {
     const orig = globalThis.fetch;
     globalThis.fetch = mockFetch;
     try {
-      const wp = createWpClient({ baseUrl: "https://example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!", sharedSecret: "s", writeSecret: "w" });
+      const wp = createWpClient({ baseUrl: "https://example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
       const job = await wp.createJob({ id: "abc", user_id: 0, tool_name: "apply_style_to_batch", total: 5, style_hints: "x", params_json: "{}" });
       expect(job.id).toBe("abc");
       expect(captured.url).toContain("/seoagent/v1/jobs");
       expect(captured.opts.method).toBe("POST");
-      expect(captured.opts.headers["X-Write-Secret"]).toBe("w");
+      expect(captured.opts.headers["authorization"]).toMatch(/^Bearer\s+ey/);
     } finally {
       globalThis.fetch = orig;
     }
@@ -160,7 +163,7 @@ describe("WpClient — jobs", () => {
     const orig = globalThis.fetch;
     globalThis.fetch = mockFetch;
     try {
-      const wp = createWpClient({ baseUrl: "https://example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!", sharedSecret: "s" });
+      const wp = createWpClient({ baseUrl: "https://example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
       const job = await wp.getJob("jx");
       expect(job?.id).toBe("jx");
     } finally {
@@ -173,7 +176,7 @@ describe("WpClient — jobs", () => {
     const orig = globalThis.fetch;
     globalThis.fetch = mockFetch;
     try {
-      const wp = createWpClient({ baseUrl: "https://example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!", sharedSecret: "s" });
+      const wp = createWpClient({ baseUrl: "https://example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
       const job = await wp.getJob("missing");
       expect(job).toBeNull();
     } finally {
@@ -190,7 +193,7 @@ describe("WpClient — jobs", () => {
     const orig = globalThis.fetch;
     globalThis.fetch = mockFetch;
     try {
-      const wp = createWpClient({ baseUrl: "https://example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!", sharedSecret: "s", writeSecret: "w" });
+      const wp = createWpClient({ baseUrl: "https://example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
       await wp.updateJobProgress("j1", 5, 1);
       expect(captured.url).toContain("/jobs/j1/progress");
       expect(captured.method).toBe("POST");
@@ -209,7 +212,7 @@ describe("WpClient — jobs", () => {
     const orig = globalThis.fetch;
     globalThis.fetch = mockFetch;
     try {
-      const wp = createWpClient({ baseUrl: "https://example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!", sharedSecret: "s", writeSecret: "w" });
+      const wp = createWpClient({ baseUrl: "https://example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
       await wp.markJobDone("j1", "completed");
       expect(captured.url).toContain("/jobs/j1/done");
       expect(captured.body).toEqual({ status: "completed" });
@@ -227,7 +230,7 @@ describe("WpClient — jobs", () => {
     const orig = globalThis.fetch;
     globalThis.fetch = mockFetch;
     try {
-      const wp = createWpClient({ baseUrl: "https://example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!", sharedSecret: "s", writeSecret: "w" });
+      const wp = createWpClient({ baseUrl: "https://example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
       await wp.cancelJob("j1");
       expect(captured.url).toContain("/jobs/j1/cancel");
       expect(captured.method).toBe("POST");
@@ -247,7 +250,7 @@ describe("WpClient — jobs", () => {
     const orig = globalThis.fetch;
     globalThis.fetch = mockFetch;
     try {
-      const wp = createWpClient({ baseUrl: "https://example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!", sharedSecret: "s" });
+      const wp = createWpClient({ baseUrl: "https://example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
       const job = await wp.findRunningJobForUser(7);
       expect(job?.id).toBe("j1");
       const empty = await wp.findRunningJobForUser(99);

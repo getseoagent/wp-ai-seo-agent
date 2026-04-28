@@ -17,11 +17,6 @@ final class Backend_Client
         return 'http://localhost:8787';
     }
 
-    public static function shared_secret(): string
-    {
-        return defined('SEO_AGENT_SHARED_SECRET') ? (string) SEO_AGENT_SHARED_SECRET : '';
-    }
-
     /**
      * Returns a fresh JWT, minting one via /auth/token if no cached token exists or
      * the cached one is within REFRESH_GRACE_SECONDS of its expiry. Throws on backend error.
@@ -50,10 +45,7 @@ final class Backend_Client
         ]);
 
         $response = wp_remote_post($url, [
-            'headers' => [
-                'Content-Type'    => 'application/json',
-                'X-Shared-Secret' => self::shared_secret(),
-            ],
+            'headers' => [ 'Content-Type' => 'application/json' ],
             'body'    => $payload,
             'timeout' => 10,
         ]);

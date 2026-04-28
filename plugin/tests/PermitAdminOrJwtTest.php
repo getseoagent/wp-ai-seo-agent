@@ -54,26 +54,15 @@ final class PermitAdminOrJwtTest extends TestCase
         $this->assertFalse(REST_Controller::permit_admin_or_jwt(new WP_REST_Request()));
     }
 
-    public function test_dual_mode_shared_secret_fallback(): void
-    {
-        $GLOBALS['_seoagent_test_headers'] = ['x-shared-secret' => 'shared-test-secret'];
-        $this->assertTrue(REST_Controller::permit_admin_or_jwt(new WP_REST_Request()));
-    }
-
-    public function test_dual_mode_write_secret_fallback(): void
-    {
-        $GLOBALS['_seoagent_test_headers'] = ['x-write-secret' => 'write-test-secret'];
-        $this->assertTrue(REST_Controller::permit_admin_or_jwt(new WP_REST_Request()));
-    }
-
     public function test_no_auth_at_all_is_rejected(): void
     {
         $this->assertFalse(REST_Controller::permit_admin_or_jwt(new WP_REST_Request()));
     }
 
-    public function test_wrong_shared_secret_is_rejected(): void
+    public function test_legacy_shared_secret_no_longer_accepted(): void
     {
-        $GLOBALS['_seoagent_test_headers'] = ['x-shared-secret' => 'totally-wrong'];
+        // Sanity: post-cutover, the legacy header doesn't grant access on its own.
+        $GLOBALS['_seoagent_test_headers'] = ['x-shared-secret' => 'shared-test-secret'];
         $this->assertFalse(REST_Controller::permit_admin_or_jwt(new WP_REST_Request()));
     }
 

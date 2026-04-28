@@ -23,10 +23,6 @@ const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
   throw new Error("DATABASE_URL is required (e.g. postgres://seoagent:***@127.0.0.1:5432/seoagent)");
 }
-const writeSecret = process.env.WRITE_SECRET;
-if (!writeSecret) {
-  throw new Error("WRITE_SECRET is required (must match SEO_AGENT_WRITE_SECRET in wp-config.php)");
-}
 const licenseHmacSecret = process.env.LICENSE_HMAC_SECRET;
 if (!licenseHmacSecret) {
   throw new Error("LICENSE_HMAC_SECRET is required (32+ random chars; signs license keys)");
@@ -48,10 +44,8 @@ if (!jwtSecret) {
   throw new Error("JWT_SECRET is required (32+ random chars; signs auth tokens + service tokens)");
 }
 const wp = createWpClient({
-  baseUrl:      wpBaseUrl,
+  baseUrl:   wpBaseUrl,
   jwtSecret,
-  sharedSecret: process.env.SHARED_SECRET ?? "",
-  writeSecret,
 });
 const sessionStore = createSessionStore(getDb());
 

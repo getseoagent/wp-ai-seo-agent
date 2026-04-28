@@ -1,6 +1,5 @@
 import type { Hono } from "hono";
 import type { SQL } from "bun";
-import { requireSharedSecret } from "../lib/auth";
 import { signJwt } from "../lib/jwt";
 import type { LicenseCache } from "../lib/license/cache";
 import { parseKey, type Tier } from "../lib/license/key-format";
@@ -16,7 +15,7 @@ export type AuthTokenDeps = {
 type Body = { license_key?: string | null; site_url?: string };
 
 export function mountAuthTokenRoute(app: Hono, deps: AuthTokenDeps): void {
-  app.post("/auth/token", requireSharedSecret, async c => {
+  app.post("/auth/token", async c => {
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) return c.json({ error: "server misconfigured: JWT_SECRET unset" }, 500);
 

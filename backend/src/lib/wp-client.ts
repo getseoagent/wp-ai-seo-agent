@@ -2,12 +2,8 @@ import { signJwt } from "./jwt";
 
 type Cfg = {
   baseUrl: string;
-  /** HS256 secret for signing service JWTs sent to the plugin (Plan 4-A Task 3.5). */
+  /** HS256 secret for signing service JWTs sent to the plugin. */
   jwtSecret: string;
-  /** Legacy shared secret — kept while plugin is in dual-mode soak (Task 3.5 → 3.6). */
-  sharedSecret?: string;
-  /** Legacy write secret — kept while plugin is in dual-mode soak. */
-  writeSecret?: string;
 };
 
 /** Sign a short-lived (60s) service JWT carrying the requested scope. */
@@ -112,10 +108,6 @@ export function createWpClient(cfg: Cfg) {
     const headers: Record<string, string> = {
       authorization: `Bearer ${signServiceJwt(cfg.jwtSecret, scope)}`,
     };
-    // Legacy headers — sent during the dual-mode soak window so plugin instances
-    // that haven't picked up Task 3.5 yet keep working. Removed in Task 3.6.
-    if (scope === "write" && cfg.writeSecret) headers["X-Write-Secret"] = cfg.writeSecret;
-    if (cfg.sharedSecret)                      headers["x-shared-secret"] = cfg.sharedSecret;
     if (opts.headers) Object.assign(headers, opts.headers);
     const init: RequestInit = {
       method: opts.method ?? "GET",

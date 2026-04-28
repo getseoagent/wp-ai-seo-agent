@@ -1,18 +1,6 @@
 import type { MiddlewareHandler } from "hono";
 import { verifyJwt, type JwtPayload, type JwtSecrets } from "./jwt";
 
-export const requireSharedSecret: MiddlewareHandler = async (c, next) => {
-  const expected = process.env.SHARED_SECRET;
-  if (!expected) {
-    return c.json({ error: "server misconfigured: SHARED_SECRET unset" }, 500);
-  }
-  const header = c.req.header("x-shared-secret");
-  if (header !== expected) {
-    return c.json({ error: "unauthorized" }, 401);
-  }
-  await next();
-};
-
 export type JwtVariables = { jwt: JwtPayload };
 
 export const requireJwt: MiddlewareHandler<{ Variables: JwtVariables }> = async (c, next) => {

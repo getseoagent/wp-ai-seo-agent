@@ -15,7 +15,6 @@ final class BackendClientTest extends TestCase
         $GLOBALS['_seoagent_test_home_url'] = 'https://shop.example';
 
         if (!defined('SEO_AGENT_BACKEND_URL')) define('SEO_AGENT_BACKEND_URL', 'http://backend.test');
-        if (!defined('SEO_AGENT_SHARED_SECRET')) define('SEO_AGENT_SHARED_SECRET', 'shared-test-secret');
     }
 
     public function test_mints_token_via_auth_token_when_cache_is_empty(): void
@@ -30,8 +29,8 @@ final class BackendClientTest extends TestCase
 
         $req = $GLOBALS['_last_remote_post'];
         $this->assertSame('http://backend.test/auth/token', $req['url']);
-        $this->assertSame('shared-test-secret', $req['args']['headers']['X-Shared-Secret']);
-        $this->assertSame('application/json',   $req['args']['headers']['Content-Type']);
+        $this->assertArrayNotHasKey('X-Shared-Secret', $req['args']['headers']);
+        $this->assertSame('application/json', $req['args']['headers']['Content-Type']);
         $body = json_decode($req['args']['body'], true);
         $this->assertNull($body['license_key']);
         $this->assertSame('https://shop.example', $body['site_url']);

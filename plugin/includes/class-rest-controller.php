@@ -173,70 +173,23 @@ final class REST_Controller
     }
 
     /**
-     * Accepts either an admin user (browser→WP path) or a request carrying
-     * the shared-secret header (backend→WP path). Plan 4 replaces the
-     * shared-secret leg with HS256 JWT.
-     */
-    public static function permit_admin_or_secret(\WP_REST_Request $request): bool
-    {
-        if (current_user_can('manage_options')) {
-            return true;
-        }
-        $expected = Backend_Client::shared_secret();
-        if ($expected === '') {
-            return false;
-        }
-        return hash_equals($expected, (string) $request->get_header('x-shared-secret'));
-    }
-
-    /**
-     * Mirror of permit_admin_or_secret but checks X-Write-Secret against
-     * SEO_AGENT_WRITE_SECRET. Used on write endpoints (Tasks 7, 9) to isolate
-     * code-bug blast radius — a leaked read-secret cannot enable writes.
-     */
-    public static function permit_admin_or_write_secret(\WP_REST_Request $request): bool
-    {
-        if (current_user_can('manage_options')) {
-            return true;
-        }
-        $expected = defined('SEO_AGENT_WRITE_SECRET') ? (string) SEO_AGENT_WRITE_SECRET : '';
-        if ($expected === '') {
-            return false;
-        }
-        return hash_equals($expected, (string) $request->get_header('x-write-secret'));
-    }
-
-    /**
      * Single permission callback covering admin + service-JWT (backend→plugin).
-     * During the dual-mode soak window (Tasks 3.5 → 3.6) it also accepts the
-     * legacy shared-secret / write-secret headers so unmigrated callers don't
-     * break mid-deploy. Task 3.6 strips the dual-mode arms entirely.
+     * The shared-secret / write-secret legacy arms were removed in Task 3.6.
      */
     public static function permit_admin_or_jwt(\WP_REST_Request $request): bool
     {
         if (current_user_can('manage_options')) {
             return true;
         }
-
-        if (defined('SEO_AGENT_JWT_SECRET')) {
-            $auth = (string) $request->get_header('authorization');
-            if ($auth !== '' && preg_match('/^bearer\s+(.+)$/i', $auth, $m)) {
-                $verified = JwtVerifier::verify($m[1], (string) SEO_AGENT_JWT_SECRET);
-                if (!empty($verified['ok'])) return true;
-            }
+        if (!defined('SEO_AGENT_JWT_SECRET')) {
+            return false;
         }
-
-        // --- Dual-mode legacy fallbacks (removed in Task 3.6) -----------------
-        $shared = defined('SEO_AGENT_SHARED_SECRET') ? (string) SEO_AGENT_SHARED_SECRET : '';
-        if ($shared !== '' && hash_equals($shared, (string) $request->get_header('x-shared-secret'))) {
-            return true;
+        $auth = (string) $request->get_header('authorization');
+        if ($auth === '' || !preg_match('/^bearer\s+(.+)$/i', $auth, $m)) {
+            return false;
         }
-        $write = defined('SEO_AGENT_WRITE_SECRET') ? (string) SEO_AGENT_WRITE_SECRET : '';
-        if ($write !== '' && hash_equals($write, (string) $request->get_header('x-write-secret'))) {
-            return true;
-        }
-
-        return false;
+        $verified = JwtVerifier::verify($m[1], (string) SEO_AGENT_JWT_SECRET);
+        return !empty($verified['ok']);
     }
 
     /** @return array{name: string} */
