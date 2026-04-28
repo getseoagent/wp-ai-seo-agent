@@ -9,11 +9,21 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/en/
 ## [Unreleased]
 
 ### Polish
-- Bootstrap validation: backend refuses to start if `JWT_SECRET`, `LICENSE_HMAC_SECRET`, or `WAYFORPAY_MERCHANT_SECRET_KEY` are shorter than 32 characters. Prevents accidentally weak prod secrets.
+- Bootstrap validation: backend refuses to start if `JWT_SECRET`, `LICENSE_HMAC_SECRET`, or `WAYFORPAY_MERCHANT_SECRET_KEY` are shorter than 32 characters.
 - `class-options.php` centralises every wp_options key the plugin writes; `Settings` / `License` / `uninstall.php` reference the constants instead of duplicating string literals.
-- dbDelta SQL fixed: PRIMARY KEY moved out of column-inline declaration; anonymous `INDEX (...)` clauses replaced with named `KEY idx_*` (resolves "Multiple primary key defined" + "Incorrect index name ''" warnings observed in prod error.log on plugin activation).
+- dbDelta SQL fixed: PRIMARY KEY moved out of column-inline declaration; anonymous `INDEX (...)` clauses replaced with named `KEY idx_*` (resolves "Multiple primary key defined" + "Incorrect index name ''" warnings observed in prod error.log on plugin activation). Tables now declared `ENGINE=InnoDB` so the rollback transaction's `START TRANSACTION / COMMIT / ROLLBACK` semantics actually apply.
 - `_helpers/test-jwt.ts` centralises the test JWT secret and `setupTestJwt()`; three test files migrated.
 - `.editorconfig` at repo root (tabs for PHP per WPCS, 2-space soft for TS/JS/SQL, LF/UTF-8).
+
+### Security
+- `handle_list_posts` whitelists `post_type` against `get_post_types(['public' => true])`. A JWT-bearer caller could previously have requested `post_type=revision` or `post_type=oembed_cache` and exfiltrated non-public bodies through the listing.
+- `category_name` and `tag` query-args now flow through `sanitize_title()`.
+- `handle_update_seo_fields` swaps `wp_kses_post` → `sanitize_text_field` for SEO field values. Title / description / focus_keyword / og_title are plain text; the previous filter would have let `<a>` / `<img>` through into `<title>`, which is stored-XSS bait if a future Rank Math template ever renders unsanitized.
+- `proxy_chat` error responses no longer echo `$e->getMessage()` or `curl_error($ch)` to the SSE client. Both can leak backend hostnames (`Could not resolve host: backend.internal:7117`); full detail goes to `error_log()`, generic message to the browser.
+- New per-IP rate limit on the public `/auth/token` endpoint via `lib/rate-limit.ts` (fixed-window token bucket; 10 mints/min default, configurable via `AUTH_TOKEN_RATE_LIMIT_PER_MIN`). Defense-in-depth against credential-fingerprint scans now that the endpoint is unauthenticated.
+
+### Quality
+- Backend TypeScript strict-mode is now zero errors (was 34 pre-existing). Mostly tightened test-side mocks (`as unknown as typeof fetch`, narrowed `find()` predicates, discriminated-union narrowing on `TierGateResult`).
 
 ## [0.8.0-recurring-billing] — 2026-04-28
 
