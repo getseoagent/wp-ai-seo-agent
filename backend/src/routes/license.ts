@@ -129,15 +129,27 @@ export function mountLicenseWebhookRoute(app: Hono, deps: WebhookDeps): void {
         secret: deps.licenseHmacSecret,
       });
 
+      // recToken from the first successful charge enables monthly auto-renewal
+      // by the billing worker (Task 4.3). cardPan is the masked PAN we surface
+      // in the plugin's Subscription tab. Both are nullable — WFP omits them on
+      // some merchant configs, in which case the worker just won't auto-renew.
+      const recToken: string | null = typeof payload.recToken === "string" ? payload.recToken : null;
+      const cardPan:  string | null = typeof payload.cardPan  === "string" ? payload.cardPan  : null;
+
       await deps.sql`
         INSERT INTO licenses (
           key, status, tier, max_sites, email,
           wayforpay_order_reference,
-          expires_at
+          wayforpay_recurring_token,
+          wayforpay_card_pan,
+          expires_at,
+          next_charge_at
         ) VALUES (
           ${key}, 'active', ${productMapping.tier}, ${productMapping.maxSites},
           ${payload.clientEmail ?? null}, ${orderRef},
-          NOW() + INTERVAL '30 days'
+          ${recToken}, ${cardPan},
+          NOW() + INTERVAL '30 days',
+          NOW() + INTERVAL '29 days'
         )
       `;
 

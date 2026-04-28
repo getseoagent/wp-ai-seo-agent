@@ -111,4 +111,32 @@ describe("runMigrations", () => {
     `;
     expect(fk.map((r: any) => r.conname)).toContain("sessions_license_key_fkey");
   });
+
+  it("applies 003_recurring.sql adding recurring billing columns + due-charges index", async () => {
+    await runMigrations(sql, MIG_DIR);
+    const cols = await sql`
+      SELECT column_name, data_type
+      FROM information_schema.columns
+      WHERE table_name = 'licenses'
+    ` as Array<{ column_name: string; data_type: string }>;
+    const names = cols.map(c => c.column_name);
+    for (const expected of [
+      "wayforpay_recurring_token",
+      "wayforpay_card_pan",
+      "recurring_state",
+      "next_charge_at",
+      "last_charge_attempt_at",
+      "last_charge_result",
+      "retry_count",
+      "cancelled_at",
+      "renewal_reminder_sent_for",
+    ]) {
+      expect(names).toContain(expected);
+    }
+    const idx = await sql`
+      SELECT indexname FROM pg_indexes
+      WHERE tablename = 'licenses' AND indexname = 'licenses_due_charges'
+    ` as Array<{ indexname: string }>;
+    expect(idx.length).toBe(1);
+  });
 });

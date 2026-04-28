@@ -51,6 +51,22 @@ describe("WayForPay webhook (initial purchase)", () => {
     expect(rows[0].tier).toBe("pro");
     expect(rows[0].max_sites).toBe(1);
     expect(rows[0].email).toBe("u@example.com");
+    expect(rows[0].wayforpay_recurring_token).toBe("rec-pro-1");
+    expect(rows[0].wayforpay_card_pan).toBe("411111****1111");
+    expect(rows[0].next_charge_at).not.toBeNull();
+    // next_charge_at sits 1 day before expires_at (29 days from now).
+    const nextCharge = new Date(rows[0].next_charge_at).getTime();
+    expect(nextCharge).toBeGreaterThan(Date.now() + 28 * 86400_000);
+    expect(nextCharge).toBeLessThan(Date.now() + 30 * 86400_000);
+  });
+
+  it("falls back to null recToken/cardPan when WFP omits them", async () => {
+    const payload = { merchantAccount: "acct", orderReference: "ord-norec", amount: 19, currency: "USD", transactionStatus: "Approved", reasonCode: 1100, productName: "AI SEO Agent — Pro", clientEmail: "u@x" };
+    const { body } = signedBody(payload);
+    await app.request("/license/wayforpay-webhook", { method: "POST", body, headers: { "content-type": "application/json" } });
+    const rows = await sql`SELECT * FROM licenses WHERE wayforpay_order_reference = ${"ord-norec"}` as any[];
+    expect(rows[0].wayforpay_recurring_token).toBeNull();
+    expect(rows[0].wayforpay_card_pan).toBeNull();
   });
 
   it("creates license row with max_sites=5 on Agency tier", async () => {
