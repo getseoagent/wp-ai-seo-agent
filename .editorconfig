@@ -1,0 +1,33 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# WordPress Coding Standards: tabs in PHP. Plugin's phpcs.xml.dist enforces.
+[*.php]
+indent_style = tab
+indent_size = 4
+
+# TS / TSX / JS / JSON / YAML — 2-space soft indent (Prettier default).
+[*.{ts,tsx,js,jsx,json,yml,yaml,html,css}]
+indent_style = space
+indent_size = 2
+
+# SQL migrations: 2-space soft, matches the existing files.
+[*.sql]
+indent_style = space
+indent_size = 2
+
+# Markdown: trailing whitespace can be intentional (line break with two spaces).
+[*.md]
+trim_trailing_whitespace = false
+indent_style = space
+indent_size = 2
+
+# Shell + systemd unit files: matches POSIX conventions.
+[*.{sh,service}]
+indent_style = space
+indent_size = 2

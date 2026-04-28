@@ -19,34 +19,24 @@ import type { Tier } from "./lib/license/key-format";
 export const app = new Hono();
 mountHealth(app);
 
-const wpBaseUrl = process.env.WP_BASE_URL;
-if (!wpBaseUrl) {
-  throw new Error("WP_BASE_URL is required (e.g. https://www.seo-friendly.org)");
+const MIN_SECRET_LEN = 32;
+function requireEnv(name: string, hint: string, opts: { minLen?: number } = {}): string {
+  const v = process.env[name];
+  if (!v) throw new Error(`${name} is required (${hint})`);
+  if (opts.minLen && v.length < opts.minLen) {
+    throw new Error(`${name} too short (got ${v.length} chars, need ${opts.minLen}+) — ${hint}`);
+  }
+  return v;
 }
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) {
-  throw new Error("DATABASE_URL is required (e.g. postgres://seoagent:***@127.0.0.1:5432/seoagent)");
-}
-const licenseHmacSecret = process.env.LICENSE_HMAC_SECRET;
-if (!licenseHmacSecret) {
-  throw new Error("LICENSE_HMAC_SECRET is required (32+ random chars; signs license keys)");
-}
-const wfpMerchantAccount = process.env.WAYFORPAY_MERCHANT_ACCOUNT;
-if (!wfpMerchantAccount) {
-  throw new Error("WAYFORPAY_MERCHANT_ACCOUNT is required (matches the merchant account configured in the WFP dashboard)");
-}
-const wfpMerchantSecretKey = process.env.WAYFORPAY_MERCHANT_SECRET_KEY;
-if (!wfpMerchantSecretKey) {
-  throw new Error("WAYFORPAY_MERCHANT_SECRET_KEY is required (HMAC-MD5 secret for webhook verification + chargeRecurring)");
-}
-const wfpDomain = process.env.WAYFORPAY_DOMAIN;
-if (!wfpDomain) {
-  throw new Error("WAYFORPAY_DOMAIN is required (merchant domain registered with WFP, e.g. www.seo-friendly.org)");
-}
-const jwtSecret = process.env.JWT_SECRET;
-if (!jwtSecret) {
-  throw new Error("JWT_SECRET is required (32+ random chars; signs auth tokens + service tokens)");
-}
+
+const wpBaseUrl           = requireEnv("WP_BASE_URL",                   "e.g. https://www.seo-friendly.org");
+const databaseUrl         = requireEnv("DATABASE_URL",                  "e.g. postgres://seoagent:***@127.0.0.1:5432/seoagent");
+const licenseHmacSecret   = requireEnv("LICENSE_HMAC_SECRET",           "32+ random chars; signs license keys",                                       { minLen: MIN_SECRET_LEN });
+const wfpMerchantAccount  = requireEnv("WAYFORPAY_MERCHANT_ACCOUNT",    "matches the merchant account configured in the WFP dashboard");
+const wfpMerchantSecretKey = requireEnv("WAYFORPAY_MERCHANT_SECRET_KEY", "32+ chars; HMAC-MD5 secret for webhook + chargeRecurring",                  { minLen: MIN_SECRET_LEN });
+const wfpDomain           = requireEnv("WAYFORPAY_DOMAIN",              "merchant domain registered with WFP, e.g. www.seo-friendly.org");
+const jwtSecret           = requireEnv("JWT_SECRET",                    "32+ random chars; signs user + service JWTs",                                { minLen: MIN_SECRET_LEN });
+void databaseUrl;
 const wp = createWpClient({
   baseUrl:   wpBaseUrl,
   jwtSecret,

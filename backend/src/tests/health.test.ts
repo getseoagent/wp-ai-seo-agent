@@ -6,6 +6,9 @@ process.env.LICENSE_HMAC_SECRET ??= "test-secret-32-bytes-for-hmac----";
 process.env.WAYFORPAY_MERCHANT_ACCOUNT ??= "test-wfp-account";
 process.env.WAYFORPAY_MERCHANT_SECRET_KEY ??= "test-wfp-secret";
 process.env.WAYFORPAY_DOMAIN ??= "test.example";
+// health.test imports the actual app module, which validates env at top-level.
+// We don't need the test-jwt helper here (no JWT signing happens in this test);
+// just need a 32+ char value for the bootstrap-validation check to pass.
 process.env.JWT_SECRET ??= "test-jwt-secret-32-bytes-min-pls!";
 
 const { app } = await import("../index");

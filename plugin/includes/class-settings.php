@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 final class Settings {
 
-	private const OPTION_KEY = 'seo_agent_api_key';
+	private const OPTION_KEY = Options::API_KEY;
 
 	public static function init(): void {
 		// No-op for now; reserved for option registration if needed later.

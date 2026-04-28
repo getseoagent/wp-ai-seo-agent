@@ -8,9 +8,10 @@ import type { WpClient } from "../lib/wp-client";
 import { signJwt } from "../lib/jwt";
 import type { Tier } from "../lib/license/key-format";
 
-const JWT_SECRET = "test-jwt-secret-32-bytes-min-pls!";
+import { TEST_JWT_SECRET, setupTestJwt } from "./_helpers/test-jwt";
+const JWT_SECRET = TEST_JWT_SECRET;
 
-beforeAll(() => { process.env.JWT_SECRET = JWT_SECRET; });
+beforeAll(() => { setupTestJwt(); });
 
 const fakeWp = { listPosts: async () => ({ posts: [], next_cursor: null, total: 0 }) } as unknown as WpClient;
 

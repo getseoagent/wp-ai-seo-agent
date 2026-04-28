@@ -12,6 +12,7 @@ if (!defined('AUTH_KEY')) {
     define('AUTH_KEY', 'test-auth-key-do-not-use-in-prod');
 }
 
+require_once dirname(__DIR__) . '/includes/class-options.php';
 require_once dirname(__DIR__) . '/includes/class-settings.php';
 require_once dirname(__DIR__) . '/includes/class-license.php';
 require_once dirname(__DIR__) . '/includes/class-jwt-verifier.php';

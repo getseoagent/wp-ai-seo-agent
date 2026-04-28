@@ -8,9 +8,10 @@ import { generateKey } from "../lib/license/key-format";
 import { signJwt } from "../lib/jwt";
 
 import { testDbUrl } from "./_helpers/test-db";
+import { TEST_JWT_SECRET, setupTestJwt } from "./_helpers/test-jwt";
 const TEST_DB_URL = testDbUrl();
 const SECRET = "test-secret-32-bytes-for-hmac----";
-const JWT_SECRET = "test-jwt-secret-32-bytes-min-pls!";
+const JWT_SECRET = TEST_JWT_SECRET;
 const MIG_DIR = `${import.meta.dir}/../../migrations`;
 
 function bearerFor(licenseKey: string | null, tier: "free" | "pro" = "pro"): string {
@@ -26,9 +27,7 @@ describe("license routes", () => {
   let app: Hono;
 
   beforeAll(async () => {
-    // Force-override — backend/.env may carry a real prod JWT_SECRET; the test
-    // signer must match what requireJwt verifies against.
-    process.env.JWT_SECRET = JWT_SECRET;
+    setupTestJwt();
     sql = new SQL(TEST_DB_URL);
     await sql`DROP TABLE IF EXISTS session_messages, sessions, licenses, migrations CASCADE`;
     await runMigrations(sql, MIG_DIR);

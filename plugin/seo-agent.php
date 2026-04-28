@@ -27,6 +27,7 @@ define( 'SEO_AGENT_FILE', __FILE__ );
 define( 'SEO_AGENT_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SEO_AGENT_URL', plugin_dir_url( __FILE__ ) );
 
+require_once SEO_AGENT_DIR . 'includes/class-options.php';
 require_once SEO_AGENT_DIR . 'includes/class-settings.php';
 require_once SEO_AGENT_DIR . 'includes/class-license.php';
 require_once SEO_AGENT_DIR . 'includes/class-jwt-verifier.php';
@@ -54,9 +55,15 @@ function seoagent_run_db_migrations(): void {
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 	$charset_collate = $wpdb->get_charset_collate();
 
+	// dbDelta is picky:
+	//  • PRIMARY KEY must be on its own line, not inline-declared on the column.
+	//  • Every INDEX/KEY must be named. Anonymous indexes parse-fail, leaving
+	//    behind "Incorrect index name ''" rows in WordPress's debug log on
+	//    every plugins_loaded upgrade tick.
+	//  • Each KEY clause must be on its own line.
 	$history_table = $wpdb->prefix . 'seoagent_history';
 	$history_sql   = "CREATE TABLE {$history_table} (
-        id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         post_id         BIGINT UNSIGNED NOT NULL,
         job_id          VARCHAR(36)     NOT NULL,
         field           VARCHAR(64)     NOT NULL,
@@ -67,8 +74,9 @@ function seoagent_run_db_migrations(): void {
         user_id         BIGINT UNSIGNED NULL,
         created_at      DATETIME        DEFAULT CURRENT_TIMESTAMP,
         rolled_back_at  DATETIME        NULL,
-        INDEX (post_id, created_at),
-        INDEX (job_id)
+        PRIMARY KEY  (id),
+        KEY idx_post_created (post_id, created_at),
+        KEY idx_job (job_id)
     ) {$charset_collate};";
 	dbDelta( $history_sql );
 
@@ -91,9 +99,9 @@ function seoagent_run_db_migrations(): void {
         last_progress_at     DATETIME     NULL,
         current_post_id      BIGINT UNSIGNED NULL,
         current_post_title   VARCHAR(255) NULL,
-        PRIMARY KEY (id),
-        INDEX idx_user_status (user_id, status),
-        INDEX idx_started (started_at)
+        PRIMARY KEY  (id),
+        KEY idx_user_status (user_id, status),
+        KEY idx_started (started_at)
     ) {$charset_collate};";
 	dbDelta( $jobs_sql );
 }
@@ -106,9 +114,9 @@ add_action(
 		// Idempotent migration check: if the stored db_version doesn't match the
 		// plugin constant, run migrations and bump the option. dbDelta is a no-op
 		// when the live schema already matches.
-		if ( get_option( 'seoagent_db_version' ) !== SEO_AGENT_VERSION ) {
+		if ( get_option( \SeoAgent\Options::DB_VERSION ) !== SEO_AGENT_VERSION ) {
 			seoagent_run_db_migrations();
-			update_option( 'seoagent_db_version', SEO_AGENT_VERSION, false );
+			update_option( \SeoAgent\Options::DB_VERSION, SEO_AGENT_VERSION, false );
 		}
 
 		\SeoAgent\Settings::init();

@@ -15,9 +15,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class License {
 
-	private const OPT_LICENSE_KEY = 'seo_agent_license_key';
-	private const OPT_JWT         = 'seo_agent_jwt';
-	private const OPT_JWT_EXP     = 'seo_agent_jwt_exp';
+	private const OPT_LICENSE_KEY = Options::LICENSE_KEY;
+	private const OPT_JWT         = Options::JWT;
+	private const OPT_JWT_EXP     = Options::JWT_EXP;
 
 	public static function get_license_key(): ?string {
 		$stored = get_option( self::OPT_LICENSE_KEY, null );

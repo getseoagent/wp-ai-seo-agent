@@ -8,27 +8,23 @@ import { generateKey } from "../lib/license/key-format";
 import { verifyJwt } from "../lib/jwt";
 
 import { testDbUrl } from "./_helpers/test-db";
+import { TEST_JWT_SECRET, setupTestJwt } from "./_helpers/test-jwt";
 const TEST_DB_URL = testDbUrl();
 const HMAC_SECRET = "test-secret-32-bytes-for-hmac----";
-const JWT_SECRET  = "test-jwt-secret-32-bytes-min-pls!";
+const JWT_SECRET  = TEST_JWT_SECRET;
 const MIG_DIR = `${import.meta.dir}/../../migrations`;
-
-const prevEnv: Record<string, string | undefined> = {};
 
 describe("POST /auth/token", () => {
   let sql: SQL;
   let app: Hono;
 
   beforeAll(async () => {
-    prevEnv.JWT_SECRET = process.env.JWT_SECRET;
-    process.env.JWT_SECRET = JWT_SECRET;
-
+    setupTestJwt();
     sql = new SQL(TEST_DB_URL);
     await sql`DROP TABLE IF EXISTS session_messages, sessions, licenses, migrations CASCADE`;
     await runMigrations(sql, MIG_DIR);
   });
   afterAll(async () => {
-    if (prevEnv.JWT_SECRET === undefined) delete process.env.JWT_SECRET; else process.env.JWT_SECRET = prevEnv.JWT_SECRET;
     await sql.close();
   });
   beforeEach(async () => {
