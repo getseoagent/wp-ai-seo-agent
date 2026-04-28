@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { mountChat } from "./routes/chat";
 import { mountHealth } from "./routes/health";
 import { mountLicenseRoutes, mountLicenseWebhookRoute } from "./routes/license";
+import { mountAuthTokenRoute } from "./routes/auth";
 import { createLicenseCache } from "./lib/license/cache";
 import { createSessionStore } from "./lib/sessions";
 import { createWpClient } from "./lib/wp-client";
@@ -58,6 +59,18 @@ mountChat(app, {
 
 const licenseCache = createLicenseCache({ ttlMs: 60_000 });
 mountLicenseRoutes(app, { sql: getDb(), cache: licenseCache, licenseHmacSecret });
+
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret) {
+  throw new Error("JWT_SECRET is required (32+ random chars; signs auth tokens)");
+}
+const tokenTtlSeconds = Number(process.env.JWT_TOKEN_TTL_SECONDS ?? 86400);
+mountAuthTokenRoute(app, {
+  sql: getDb(),
+  cache: licenseCache,
+  licenseHmacSecret,
+  tokenTtlSeconds,
+});
 
 const wfpClient = createWayForPayClient({
   merchantAccount:   wfpMerchantAccount,

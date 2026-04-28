@@ -7,6 +7,7 @@ process.env.LICENSE_HMAC_SECRET ??= "test-secret-32-bytes-for-hmac----";
 process.env.WAYFORPAY_MERCHANT_ACCOUNT ??= "test-wfp-account";
 process.env.WAYFORPAY_MERCHANT_SECRET_KEY ??= "test-wfp-secret";
 process.env.WAYFORPAY_DOMAIN ??= "test.example";
+process.env.JWT_SECRET ??= "test-jwt-secret-32-bytes-min-pls!";
 
 const { app } = await import("../index");
 
