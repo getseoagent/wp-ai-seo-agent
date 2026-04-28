@@ -53,7 +53,64 @@ if (!function_exists('wp_json_encode')) {
 if (!function_exists('wp_remote_post')) {
     function wp_remote_post(string $url, array $args) {
         $GLOBALS['_last_remote_post'] = ['url' => $url, 'args' => $args];
+        $handler = $GLOBALS['_remote_post_handler'] ?? null;
+        if (is_callable($handler)) {
+            return $handler($url, $args);
+        }
         return ['response' => ['code' => 200], 'body' => ''];
+    }
+}
+if (!function_exists('wp_remote_retrieve_response_code')) {
+    function wp_remote_retrieve_response_code($response): int {
+        return is_array($response) ? (int) ($response['response']['code'] ?? 0) : 0;
+    }
+}
+if (!function_exists('wp_remote_retrieve_body')) {
+    function wp_remote_retrieve_body($response): string {
+        return is_array($response) ? (string) ($response['body'] ?? '') : '';
+    }
+}
+if (!function_exists('is_wp_error')) {
+    function is_wp_error($thing): bool {
+        return $thing instanceof \WP_Error;
+    }
+}
+if (!class_exists('WP_Error')) {
+    class WP_Error {
+        private string $message;
+        public function __construct(string $code = '', string $message = '') { $this->message = $message; }
+        public function get_error_message(): string { return $this->message; }
+    }
+}
+if (!function_exists('home_url')) {
+    function home_url(string $path = ''): string {
+        return ($GLOBALS['_seoagent_test_home_url'] ?? 'https://test.example') . $path;
+    }
+}
+if (!function_exists('get_transient')) {
+    function get_transient(string $key) {
+        $entry = $GLOBALS['_transient_store'][$key] ?? null;
+        if (!is_array($entry)) return false;
+        if (isset($entry['expires_at']) && $entry['expires_at'] !== 0 && $entry['expires_at'] < time()) {
+            unset($GLOBALS['_transient_store'][$key]);
+            return false;
+        }
+        return $entry['value'];
+    }
+}
+if (!function_exists('set_transient')) {
+    function set_transient(string $key, $value, int $ttl = 0): bool {
+        $GLOBALS['_transient_store'][$key] = [
+            'value'      => $value,
+            'expires_at' => $ttl > 0 ? time() + $ttl : 0,
+        ];
+        return true;
+    }
+}
+if (!function_exists('delete_transient')) {
+    function delete_transient(string $key): bool {
+        unset($GLOBALS['_transient_store'][$key]);
+        return true;
     }
 }
 

@@ -751,13 +751,20 @@ final class REST_Controller
         $url = Backend_Client::backend_url() . '/chat';
         $payload = wp_json_encode(['message' => $message, 'session_id' => $session_id]);
 
+        try {
+            $jwt = Backend_Client::get_jwt();
+        } catch (\Throwable $e) {
+            echo "event: error\ndata: " . wp_json_encode(['type' => 'error', 'message' => $e->getMessage()]) . "\n\n";
+            exit;
+        }
+
         ignore_user_abort(false);
 
         $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
-                'X-Shared-Secret: ' . Backend_Client::shared_secret(),
+                'Authorization: Bearer ' . $jwt,
                 'X-Anthropic-Key: ' . $api_key,
             ],
             CURLOPT_POST           => true,
