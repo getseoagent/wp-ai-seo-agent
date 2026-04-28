@@ -28,7 +28,7 @@ function makeApp() {
   return app;
 }
 
-function tokenFor(opts: { tier?: "free" | "starter" | "pro" | "agency"; expiresInSec?: number; secret?: string; license_key?: string | null } = {}): string {
+function tokenFor(opts: { tier?: "free" | "pro" | "agency" | "enterprise"; expiresInSec?: number; secret?: string; license_key?: string | null } = {}): string {
   const now = Math.floor(Date.now() / 1000);
   const exp = opts.expiresInSec === undefined ? now + 3600 : now + opts.expiresInSec;
   return signJwt(

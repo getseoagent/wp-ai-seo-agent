@@ -46,11 +46,11 @@ describe("POST /auth/token", () => {
   });
 
   function call(body: unknown, headers: Record<string, string> = {}): Promise<Response> {
-    return app.request("/auth/token", {
+    return Promise.resolve(app.request("/auth/token", {
       method: "POST",
       headers: { "content-type": "application/json", "x-shared-secret": SHARED, ...headers },
       body: JSON.stringify(body),
-    });
+    }));
   }
 
   it("rejects without shared secret (401)", async () => {

@@ -5,16 +5,27 @@ import { runMigrations } from "../lib/migrations";
 import { mountLicenseRoutes } from "../routes/license";
 import { createLicenseCache } from "../lib/license/cache";
 import { generateKey } from "../lib/license/key-format";
+import { signJwt } from "../lib/jwt";
 
 const TEST_DB_URL = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL!;
 const SECRET = "test-secret-32-bytes-for-hmac----";
+const JWT_SECRET = "test-jwt-secret-32-bytes-min-pls!";
 const MIG_DIR = `${import.meta.dir}/../../migrations`;
+
+function bearerFor(licenseKey: string | null, tier: "free" | "pro" = "pro"): string {
+  const now = Math.floor(Date.now() / 1000);
+  return `Bearer ${signJwt(
+    { site_url: "https://x", license_key: licenseKey, tier, iat: now, exp: now + 3600 },
+    { current: JWT_SECRET },
+  )}`;
+}
 
 describe("license routes", () => {
   let sql: SQL;
   let app: Hono;
 
   beforeAll(async () => {
+    process.env.JWT_SECRET ??= JWT_SECRET;
     sql = new SQL(TEST_DB_URL);
     await sql`DROP TABLE IF EXISTS session_messages, sessions, licenses, migrations CASCADE`;
     await runMigrations(sql, MIG_DIR);
@@ -51,12 +62,36 @@ describe("license routes", () => {
   it("POST /license/<key>/cancel marks license cancelled but keeps active until expiry", async () => {
     const { key } = generateKey({ tier: "pro", expirySeconds: 86400, secret: SECRET });
     await sql`INSERT INTO licenses (key, tier, max_sites, expires_at) VALUES (${key}, 'pro', 1, NOW() + INTERVAL '5 days')`;
-    const res = await app.request(`/license/${key}/cancel`, { method: "POST" });
+    const res = await app.request(`/license/${key}/cancel`, { method: "POST", headers: { authorization: bearerFor(key) } });
     expect(res.status).toBe(200);
     const body = await res.json() as any;
     expect(body.cancelled).toBe(true);
     const rows = await sql`SELECT status, disabled_reason FROM licenses WHERE key = ${key}`;
     expect(rows[0].status).toBe("active");
+  });
+
+  it("POST /license/<key>/cancel rejects without JWT (401)", async () => {
+    const { key } = generateKey({ tier: "pro", expirySeconds: 86400, secret: SECRET });
+    await sql`INSERT INTO licenses (key, tier, max_sites, expires_at) VALUES (${key}, 'pro', 1, NOW() + INTERVAL '5 days')`;
+    const res = await app.request(`/license/${key}/cancel`, { method: "POST" });
+    expect(res.status).toBe(401);
+  });
+
+  it("POST /license/<key>/cancel rejects when JWT.license_key does not match path key (403)", async () => {
+    const { key: keyA } = generateKey({ tier: "pro", expirySeconds: 86400, secret: SECRET });
+    const { key: keyB } = generateKey({ tier: "pro", expirySeconds: 86400, secret: SECRET });
+    await sql`INSERT INTO licenses (key, tier, max_sites, expires_at) VALUES (${keyA}, 'pro', 1, NOW() + INTERVAL '5 days')`;
+    const res = await app.request(`/license/${keyA}/cancel`, { method: "POST", headers: { authorization: bearerFor(keyB) } });
+    expect(res.status).toBe(403);
+    const body = await res.json() as any;
+    expect(body.error).toBe("license_mismatch");
+  });
+
+  it("POST /license/<key>/cancel rejects free-tier JWT (license_key=null) (403)", async () => {
+    const { key } = generateKey({ tier: "pro", expirySeconds: 86400, secret: SECRET });
+    await sql`INSERT INTO licenses (key, tier, max_sites, expires_at) VALUES (${key}, 'pro', 1, NOW() + INTERVAL '5 days')`;
+    const res = await app.request(`/license/${key}/cancel`, { method: "POST", headers: { authorization: bearerFor(null, "free") } });
+    expect(res.status).toBe(403);
   });
 
   it("GET /license/<key>/verify returns 404 not_found for valid HMAC but missing DB row", async () => {

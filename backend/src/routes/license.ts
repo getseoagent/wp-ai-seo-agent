@@ -3,6 +3,8 @@ import type { SQL } from "bun";
 import type { LicenseCache } from "../lib/license/cache";
 import { generateKey, parseKey, type Tier } from "../lib/license/key-format";
 import type { WayForPayClient } from "../lib/billing/wayforpay-client";
+import { requireJwt } from "../lib/auth";
+import type { JwtPayload } from "../lib/jwt";
 
 export type LicenseRouteDeps = {
   sql: SQL;
@@ -36,11 +38,13 @@ export function mountLicenseRoutes(app: Hono, deps: LicenseRouteDeps): void {
     return c.json({ key, status, tier: cached.tier, expires_at: new Date(cached.expiresAt).toISOString() });
   });
 
-  // TODO(Task 3.x): gate behind JWT auth-middleware. Currently public — DO NOT
-  // promote to prod until JWT middleware lands; anyone who knows a license key
-  // could flag it for cancellation otherwise.
+  app.use("/license/:key/cancel", requireJwt);
   app.post("/license/:key/cancel", async c => {
     const key = c.req.param("key");
+    const jwt = c.get("jwt" as never) as JwtPayload;
+    if (jwt.license_key !== key) {
+      return c.json({ error: "license_mismatch" }, 403);
+    }
     await deps.sql`UPDATE licenses SET disabled_reason = 'user_cancelled' WHERE key = ${key}`;
     deps.cache.invalidate(key);
     return c.json({ cancelled: true });
