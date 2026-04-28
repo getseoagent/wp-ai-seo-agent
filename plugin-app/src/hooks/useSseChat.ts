@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type SseEvent =
   | { type: "text"; delta: string }
@@ -151,6 +151,13 @@ export function useSseChat({ endpoint, nonce, sessionId, onDelta, onToolCall, on
   );
 
   const cancel = useCallback(() => abortRef.current?.abort(), []);
+
+  // Unmount cleanup: abort any in-flight stream so the fetch + reader loop
+  // bail out instead of running to completion against a torn-down component
+  // (React's "setState on unmounted" warning + a stranded TCP connection).
+  useEffect(() => {
+    return () => abortRef.current?.abort();
+  }, []);
 
   return { send, cancel, busy, progressByJobId };
 }

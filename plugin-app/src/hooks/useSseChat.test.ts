@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { parseSseChunks } from "./useSseChat";
+import { describe, expect, it, vi, afterEach } from "vitest";
+import { renderHook, act } from "@testing-library/react";
+import { parseSseChunks, useSseChat } from "./useSseChat";
 
 describe("parseSseChunks", () => {
   it("splits two events", () => {
@@ -57,6 +58,53 @@ describe("parseSseChunks", () => {
     const { events } = parseSseChunks(buf);
     expect(events.length).toBe(1);
     expect(events[0].type).toBe("bulk_progress");
-    expect((events[0] as any).done).toBe(3);
+    expect((events[0] as { done: number }).done).toBe(3);
+  });
+});
+
+describe("useSseChat unmount cleanup", () => {
+  const noop = (): void => {};
+  const baseArgs = {
+    endpoint:    "/chat",
+    nonce:       "n",
+    sessionId:   "s",
+    onDelta:     noop,
+    onToolCall:  noop,
+    onToolResult: noop,
+    onError:     noop,
+  };
+  let originalFetch: typeof globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it("aborts the in-flight stream when the component unmounts", async () => {
+    // Simulate a fetch that opens a stream and then waits forever for the
+    // next chunk. We capture the AbortSignal so we can assert it fires.
+    let captured: AbortSignal | null = null;
+    originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
+      captured = init?.signal ?? null;
+      // Body that blocks on read() until the signal fires.
+      const stream = new ReadableStream({
+        start(controller) {
+          captured?.addEventListener("abort", () => controller.error(new DOMException("aborted", "AbortError")));
+        },
+      });
+      return new Response(stream, { status: 200 });
+    }) as typeof globalThis.fetch;
+
+    const { result, unmount } = renderHook(() => useSseChat(baseArgs));
+    // Fire-and-forget — we don't await; the stream is parked.
+    void act(() => { void result.current.send("hi"); });
+    // Yield once so fetch resolves and the reader.read() hangs.
+    await act(async () => { await Promise.resolve(); });
+    expect(captured).not.toBeNull();
+    expect(captured!.aborted).toBe(false);
+
+    unmount();
+
+    expect(captured!.aborted).toBe(true);
   });
 });

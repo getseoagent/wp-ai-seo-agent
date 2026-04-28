@@ -61,9 +61,9 @@ type RollbackInput = {
 };
 
 function isApplyInput(x: unknown): x is ApplyInput {
-  return !!x && typeof x === "object"
-    && typeof (x as any).applied === "number"
-    && Array.isArray((x as any).results);
+  if (!x || typeof x !== "object") return false;
+  const o = x as Record<string, unknown>;
+  return typeof o.applied === "number" && Array.isArray(o.results);
 }
 
 export function formatBulkSummary(input: unknown): FormattedBulkSummary {

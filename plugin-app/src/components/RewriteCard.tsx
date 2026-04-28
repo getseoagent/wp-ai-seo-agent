@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { formatRewriteCard, type FormattedProposal, type FormattedFailure, type ProposalField } from "./format-rewrite";
+import { formatRewriteCard, type FormattedProposal, type FormattedFailure, type ProposalField, type RawProposal, type RawFailure } from "./format-rewrite";
 
 const containerStyle: React.CSSProperties = {
   border: "1px solid #dbe4ec",
@@ -124,7 +124,7 @@ function intentBadgeStyle(intent: string): React.CSSProperties {
   return { ...intentBadgeBaseStyle, ...palette };
 }
 
-function isProposalShape(v: unknown): boolean {
+function isProposalShape(v: unknown): v is RawProposal {
   if (!v || typeof v !== "object") return false;
   const o = v as Record<string, unknown>;
   return (
@@ -136,16 +136,24 @@ function isProposalShape(v: unknown): boolean {
   );
 }
 
+function isFailureShape(v: unknown): v is RawFailure {
+  if (!v || typeof v !== "object") return false;
+  const o = v as Record<string, unknown>;
+  return typeof o.post_id === "number" && typeof o.reason === "string";
+}
+
 function tryFormat(result: unknown): { proposals: FormattedProposal[]; failures: FormattedFailure[] } | null {
   if (!result || typeof result !== "object") return null;
   const r = result as Record<string, unknown>;
   const rawProposalsAll = Array.isArray(r.proposals) ? r.proposals : [];
-  const rawFailures = Array.isArray(r.failures) ? r.failures : [];
-  // Filter to valid proposals — render the well-formed ones, drop the malformed.
-  const rawProposals = rawProposalsAll.filter(isProposalShape);
+  const rawFailuresAll  = Array.isArray(r.failures)  ? r.failures  : [];
+  // Filter to valid shapes — render the well-formed ones, drop the malformed.
+  // Type-guard predicates narrow the arrays so formatRewriteCard sees the
+  // RawProposal[] / RawFailure[] it expects without an `as any` shortcut.
+  const proposals = rawProposalsAll.filter(isProposalShape);
+  const failures  = rawFailuresAll.filter(isFailureShape);
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return formatRewriteCard({ proposals: rawProposals as any, failures: rawFailures as any });
+    return formatRewriteCard({ proposals, failures });
   } catch {
     return null;
   }

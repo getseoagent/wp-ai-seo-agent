@@ -23,7 +23,7 @@ export type FormattedResult = {
   failures: FormattedFailure[];
 };
 
-type RawProposal = {
+export type RawProposal = {
   post_id: number;
   intent: string;
   title:         { old: string | null; new: string; length: number };
@@ -32,7 +32,7 @@ type RawProposal = {
   reasoning: string;
 };
 
-type RawFailure = { post_id: number; reason: string; detail?: string };
+export type RawFailure = { post_id: number; reason: string; detail?: string };
 
 export function formatRewriteCard(toolResult: { proposals: RawProposal[]; failures: RawFailure[] }): FormattedResult {
   const proposals = (toolResult.proposals ?? []).map((p) => ({
