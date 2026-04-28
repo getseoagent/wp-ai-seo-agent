@@ -5,7 +5,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runMigrations } from "../lib/migrations";
 
-const TEST_DB_URL = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL;
+import { testDbUrl } from "./_helpers/test-db";
+const TEST_DB_URL = testDbUrl();
 const MIG_DIR = `${import.meta.dir}/../../migrations`;
 
 describe("runMigrations", () => {

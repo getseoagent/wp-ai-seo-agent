@@ -6,7 +6,8 @@ import { mountLicenseWebhookRoute } from "../routes/license";
 import { createWayForPayClient } from "../lib/billing/wayforpay-client";
 import { createLicenseCache } from "../lib/license/cache";
 
-const TEST_DB_URL = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL!;
+import { testDbUrl } from "./_helpers/test-db";
+const TEST_DB_URL = testDbUrl();
 const SECRET = "test-merchant-secret";
 const HMAC_SECRET = "test-hmac-32-bytes-for-license---";
 const MIG_DIR = `${import.meta.dir}/../../migrations`;

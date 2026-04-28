@@ -7,7 +7,8 @@ import { createLicenseCache } from "../lib/license/cache";
 import { generateKey } from "../lib/license/key-format";
 import { verifyJwt } from "../lib/jwt";
 
-const TEST_DB_URL = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL!;
+import { testDbUrl } from "./_helpers/test-db";
+const TEST_DB_URL = testDbUrl();
 const HMAC_SECRET = "test-secret-32-bytes-for-hmac----";
 const JWT_SECRET  = "test-jwt-secret-32-bytes-min-pls!";
 const MIG_DIR = `${import.meta.dir}/../../migrations`;

@@ -3,7 +3,8 @@ import { SQL } from "bun";
 import { createSessionStore, type SessionStore, SessionNotFoundError } from "../lib/sessions";
 import { runMigrations } from "../lib/migrations";
 
-const TEST_DB_URL = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL;
+import { testDbUrl } from "./_helpers/test-db";
+const TEST_DB_URL = testDbUrl();
 const MIG_DIR = `${import.meta.dir}/../../migrations`;
 
 describe("createSessionStore (Postgres-backed)", () => {

@@ -5,7 +5,8 @@ import { tickOnce, type EmailKind, type TickDeps } from "../lib/billing/billing-
 import type { ChargeArgs, ChargeResult } from "../lib/billing/wayforpay-client";
 import type { Tier } from "../lib/license/key-format";
 
-const TEST_DB_URL = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL!;
+import { testDbUrl } from "./_helpers/test-db";
+const TEST_DB_URL = testDbUrl();
 const MIG_DIR = `${import.meta.dir}/../../migrations`;
 
 type EmailCall = { kind: EmailKind; key: string; tier: Tier };
