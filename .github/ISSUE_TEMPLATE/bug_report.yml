@@ -1,0 +1,115 @@
+name: Bug report
+description: Something is broken in the plugin or backend.
+title: "[Bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Before submitting, please:
+
+        - Check that you are on the latest version of the plugin.
+        - Run **SEO Agent → Settings → Diagnose** and paste the report below.
+        - Search existing issues so you don't file a duplicate.
+
+        **Security issues:** do NOT use this form. See [SECURITY.md](../SECURITY.md).
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: wp-version
+    attributes:
+      label: WordPress version
+      placeholder: "6.9"
+    validations:
+      required: true
+
+  - type: input
+    id: php-version
+    attributes:
+      label: PHP version
+      placeholder: "8.1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: seo-plugin
+    attributes:
+      label: Active SEO plugin
+      options:
+        - RankMath
+        - Yoast SEO
+        - All in One SEO
+        - SEOPress
+        - None / Fallback
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tier
+    attributes:
+      label: License tier
+      options:
+        - Free
+        - Pro
+        - Agency
+        - Enterprise
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the problem and what you expected instead.
+      placeholder: When I clicked "Apply to remaining" the bulk job stopped at 12/24 with no error in the UI.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the SEO Agent admin panel
+        2. Type ...
+        3. Click ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnose
+    attributes:
+      label: Diagnose report
+      description: Output from **SEO Agent → Settings → Diagnose**. Redact your API key.
+      render: json
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Browser console + PHP error log
+      description: Paste any errors from DevTools console and from your PHP error log around the time of the issue.
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I am using the latest version of the plugin.
+          required: true
+        - label: I have searched existing issues for duplicates.
+          required: true
+        - label: This is not a security issue (those go through SECURITY.md).
+          required: true

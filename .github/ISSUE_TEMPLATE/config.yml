@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability disclosure
+    url: https://getseoagent.app/security
+    about: Security issues must be reported privately per SECURITY.md, not in GitHub issues.
+  - name: WordPress plugin support forum
+    url: https://wordpress.org/support/plugin/seo-agent/
+    about: General how-to questions and free-tier support go to the WordPress.org plugin forum.
+  - name: Pro / Agency / Enterprise customer support
+    url: mailto:artifact861+support@gmail.com
+    about: Paid-tier customers — email us with your license key for direct support.

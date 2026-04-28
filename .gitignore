@@ -25,3 +25,10 @@ composer.lock
 
 # wp.org build output
 dist/
+
+# Backups (e.g. .env.bak from sed -i.bak)
+*.bak
+
+# Belt-and-suspenders for env files
+.env*
+!.env.example

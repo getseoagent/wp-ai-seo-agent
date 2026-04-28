@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI SEO Agent — Bulk SEO rewrites for WordPress</title>
+  <meta name="description" content="Approve 5 samples. Apply to 500. AI SEO Agent does bulk SEO rewrites for WordPress, sitting on top of RankMath, Yoast, AIOSEO, or SEOPress.">
+  <meta property="og:title" content="AI SEO Agent — Bulk SEO rewrites for WordPress">
+  <meta property="og:description" content="Approve 5 samples. Apply to 500. Chat-driven bulk SEO for WordPress.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://getseoagent.app">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><circle cx=%226%22 cy=%2216%22 r=%223%22 fill=%22%23009ff5%22/><path d=%22M11.5 16h5%22 stroke=%22%23009ff5%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/><circle cx=%2220%22 cy=%2211%22 r=%221.6%22 fill=%22%23009ff5%22/><circle cx=%2225%22 cy=%2211%22 r=%221.6%22 fill=%22%23009ff5%22/><circle cx=%2220%22 cy=%2216%22 r=%221.6%22 fill=%22%23009ff5%22/><circle cx=%2225%22 cy=%2216%22 r=%221.6%22 fill=%22%23009ff5%22/><circle cx=%2220%22 cy=%2221%22 r=%221.6%22 fill=%22%23009ff5%22/><circle cx=%2225%22 cy=%2221%22 r=%221.6%22 fill=%22%23009ff5%22/></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['-apple-system','BlinkMacSystemFont','"Segoe UI"','Roboto','Oxygen-Sans','Ubuntu','Cantarell','"Helvetica Neue"','Helvetica','Arial','sans-serif'],
+            mono: ['"SF Mono"','Menlo','Monaco','Consolas','"Liberation Mono"','"Courier New"','monospace'],
+          },
+          colors: {
+            ink: '#21252e',
+            'ink-soft': '#4a5060',
+            paper: '#ffffff',
+            cream: '#f9fbfc',
+            line: '#e4e7ea',
+            line2: '#d4d8dd',
+            mute: '#798290',
+            primary: '#009ff5',
+            'primary-deep': '#007bc4',
+            ok: '#31cd64',
+            warn: '#fda92a',
+            err: '#fc4f52',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: #ffffff; color: #21252e; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    a, button { cursor: pointer; }
+    ::selection { background: #009ff5; color: #fff; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    details > summary::after { content: '+'; float: right; font-size: 1.4em; line-height: 1; transition: transform .15s; color: #798290; }
+    details[open] > summary::after { transform: rotate(45deg); }
+    .underline-primary { text-decoration: underline; text-decoration-color: #009ff5; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+  </style>
+</head>
+<body class="antialiased">
+
+  <header class="border-b border-line bg-white sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2">
+        <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-label="SEO Agent">
+          <circle cx="6" cy="16" r="3" fill="#009ff5"/>
+          <path d="M11.5 16h5" stroke="#009ff5" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="20" cy="11" r="1.6" fill="#009ff5"/>
+          <circle cx="25" cy="11" r="1.6" fill="#009ff5"/>
+          <circle cx="20" cy="16" r="1.6" fill="#009ff5"/>
+          <circle cx="25" cy="16" r="1.6" fill="#009ff5"/>
+          <circle cx="20" cy="21" r="1.6" fill="#009ff5"/>
+          <circle cx="25" cy="21" r="1.6" fill="#009ff5"/>
+        </svg>
+        <span class="font-semibold text-ink">SEO Agent</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-7 text-sm text-ink-soft">
+        <a href="#features" class="hover:text-ink">Features</a>
+        <a href="#how" class="hover:text-ink">How it works</a>
+        <a href="#pricing" class="hover:text-ink">Pricing</a>
+        <a href="#faq" class="hover:text-ink">FAQ</a>
+        <a href="https://github.com/getseoagent/wp-ai-seo-agent" class="hover:text-ink">GitHub</a>
+        <a href="#install" class="px-3.5 py-1.5 bg-primary text-white text-sm font-semibold rounded-md hover:bg-primary-deep transition">Install free</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="border-b border-line">
+    <div class="max-w-7xl mx-auto px-6 pt-16 pb-20">
+      <div class="grid lg:grid-cols-12 gap-12 items-start">
+        <div class="lg:col-span-7">
+          <div class="inline-flex items-center gap-2 px-2.5 py-1 mb-6 rounded-md bg-primary/10 text-primary-deep text-xs font-semibold">
+            <span class="w-1.5 h-1.5 bg-primary rounded-full"></span>
+            v1.0 launching · WordPress.org pending
+          </div>
+          <h1 class="text-5xl lg:text-6xl font-bold tracking-tight text-ink leading-[1.05] mb-6">
+            Approve 5 samples.<br>
+            Apply to <span class="underline-primary">500</span>.
+          </h1>
+          <p class="text-lg text-ink-soft max-w-xl mb-8 leading-relaxed">
+            Bulk SEO rewrites for WordPress, through chat. Sample-and-extrapolate UX over <strong class="text-ink font-semibold">RankMath</strong>, <strong class="text-ink font-semibold">Yoast</strong>, <strong class="text-ink font-semibold">All in One SEO</strong>, or <strong class="text-ink font-semibold">SEOPress</strong>.
+          </p>
+          <div class="flex flex-wrap gap-3 mb-6">
+            <a href="#install" class="px-5 py-2.5 bg-primary text-white font-semibold rounded-md hover:bg-primary-deep transition">Install free plugin</a>
+            <a href="#how" class="px-5 py-2.5 border border-line2 text-ink font-semibold rounded-md hover:bg-cream transition">How it works</a>
+          </div>
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-mute">
+            <span class="flex items-center gap-1.5"><svg class="w-4 h-4 text-ok" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>$0 free tier</span>
+            <span class="flex items-center gap-1.5"><svg class="w-4 h-4 text-ok" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>BYO Anthropic key</span>
+            <span class="flex items-center gap-1.5"><svg class="w-4 h-4 text-ok" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>One-click rollback</span>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5">
+          <div class="bg-cream border border-line rounded-lg overflow-hidden shadow-sm">
+            <div class="border-b border-line px-4 py-2.5 flex items-center justify-between bg-white">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-err/60"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-warn/60"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-ok/60"></span>
+                <span class="ml-2 text-xs font-mono text-mute">SEO Agent — WordPress Admin</span>
+              </div>
+            </div>
+            <div class="p-4 text-sm space-y-3">
+              <div class="flex gap-2.5">
+                <span class="shrink-0 text-xs font-bold text-mute uppercase tracking-wider mt-0.5 w-12">You</span>
+                <p class="text-ink">Rewrite the meta descriptions on my last 50 product pages to feel more conversational.</p>
+              </div>
+              <div class="flex gap-2.5">
+                <span class="shrink-0 text-xs font-bold text-primary uppercase tracking-wider mt-0.5 w-12">Agent</span>
+                <div class="space-y-2 flex-1">
+                  <p class="text-ink">Found 50 product posts. Here are 5 sample diffs:</p>
+                  <div class="bg-white rounded border border-line p-2.5 text-xs space-y-1">
+                    <div class="text-err font-mono">− Best Yacht Charter Service</div>
+                    <div class="text-ok font-mono">+ Want to charter a yacht? Here's how it actually works.</div>
+                  </div>
+                  <div class="bg-white rounded border border-line p-2.5 text-xs space-y-1">
+                    <div class="text-err font-mono">− Premium Marine Equipment</div>
+                    <div class="text-ok font-mono">+ Marine gear that won't fall apart at sea — picked by pros.</div>
+                  </div>
+                  <p class="text-mute text-xs">+3 more samples</p>
+                  <div class="flex gap-2 pt-1">
+                    <button class="px-3 py-1 bg-primary text-white text-xs font-semibold rounded">Apply to remaining 45</button>
+                    <button class="px-3 py-1 border border-line2 text-ink text-xs font-semibold rounded">Refine</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="border-t border-line bg-white px-4 py-2 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2 text-mute">
+                <span class="w-1.5 h-1.5 bg-ok rounded-full"></span>
+                <span>Bulk job: <span class="text-ink font-semibold">38 / 50</span></span>
+              </div>
+              <span class="text-mute">Cancel anytime</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="wedge" class="border-b border-line bg-cream">
+    <div class="max-w-7xl mx-auto px-6 py-16">
+      <div class="grid md:grid-cols-2 gap-10">
+        <div>
+          <div class="text-xs font-semibold text-mute uppercase tracking-widest mb-3">The problem</div>
+          <h2 class="text-3xl font-bold text-ink mb-4 leading-tight">Per-page AI buttons don't scale.</h2>
+          <p class="text-ink-soft leading-relaxed">Other AI SEO plugins give you a "rewrite" button on a single post. One click, one rewrite, one page. That doesn't help when you have 500 product descriptions written in the wrong tone, or 200 blog posts with stale meta descriptions.</p>
+        </div>
+        <div>
+          <div class="text-xs font-semibold text-primary uppercase tracking-widest mb-3">Our approach</div>
+          <h2 class="text-3xl font-bold text-ink mb-4 leading-tight">Sample-and-extrapolate.</h2>
+          <p class="text-ink-soft leading-relaxed">Describe what you want. Agent fetches a sample, proposes 5 diffs, you approve. Then it applies the same style to the remaining N posts in one bulk operation, with full audit history and one-click rollback.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="border-b border-line">
+    <div class="max-w-7xl mx-auto px-6 py-20">
+      <div class="max-w-2xl mb-12">
+        <div class="text-xs font-semibold text-mute uppercase tracking-widest mb-3">Features</div>
+        <h2 class="text-3xl lg:text-4xl font-bold text-ink leading-tight">Everything you need to fix SEO across hundreds of posts.</h2>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="p-6 border border-line rounded-lg hover:border-primary/40 hover:shadow-sm transition">
+          <div class="w-10 h-10 rounded-md bg-primary/10 text-primary flex items-center justify-center mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          </div>
+          <h3 class="font-semibold text-ink mb-2">Chat-driven</h3>
+          <p class="text-sm text-ink-soft leading-relaxed">Describe what you want in natural language. The agent finds the matching posts and rewrites them in one go.</p>
+        </div>
+        <div class="p-6 border border-line rounded-lg hover:border-primary/40 hover:shadow-sm transition">
+          <div class="w-10 h-10 rounded-md bg-primary/10 text-primary flex items-center justify-center mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          </div>
+          <h3 class="font-semibold text-ink mb-2">Sample-and-extrapolate</h3>
+          <p class="text-sm text-ink-soft leading-relaxed">Review 5 sample diffs. Approve, refine the style hint, or skip. No surprises on post #347.</p>
+        </div>
+        <div class="p-6 border border-line rounded-lg hover:border-primary/40 hover:shadow-sm transition">
+          <div class="w-10 h-10 rounded-md bg-primary/10 text-primary flex items-center justify-center mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+          </div>
+          <h3 class="font-semibold text-ink mb-2">One-click rollback</h3>
+          <p class="text-sm text-ink-soft leading-relaxed">Every change recorded with before/after. Roll back an entire bulk job in one click — original values restored.</p>
+        </div>
+        <div class="p-6 border border-line rounded-lg hover:border-primary/40 hover:shadow-sm transition">
+          <div class="w-10 h-10 rounded-md bg-primary/10 text-primary flex items-center justify-center mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          </div>
+          <h3 class="font-semibold text-ink mb-2">Sits on your SEO plugin</h3>
+          <p class="text-sm text-ink-soft leading-relaxed"><strong class="text-ink">RankMath supported in v1.0.</strong> Yoast SEO, All in One SEO, and SEOPress adapters in active development for v1.1. Sitemaps, schema, on-page analysis keep working.</p>
+        </div>
+        <div class="p-6 border border-line rounded-lg hover:border-primary/40 hover:shadow-sm transition">
+          <div class="w-10 h-10 rounded-md bg-primary/10 text-primary flex items-center justify-center mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <h3 class="font-semibold text-ink mb-2">Cancel mid-flight</h3>
+          <p class="text-sm text-ink-soft leading-relaxed">Stop a bulk job at any time. Partial work is preserved and individually rollback-able.</p>
+        </div>
+        <div class="p-6 border border-line rounded-lg hover:border-primary/40 hover:shadow-sm transition">
+          <div class="w-10 h-10 rounded-md bg-primary/10 text-primary flex items-center justify-center mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+          </div>
+          <h3 class="font-semibold text-ink mb-2">BYO API key</h3>
+          <p class="text-sm text-ink-soft leading-relaxed">Bring your own Anthropic key — encrypted at rest, never persisted on our backend. Self-host the backend if you want full sovereignty.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="border-b border-line bg-cream">
+    <div class="max-w-5xl mx-auto px-6 py-20">
+      <div class="mb-12">
+        <div class="text-xs font-semibold text-mute uppercase tracking-widest mb-3">How it works</div>
+        <h2 class="text-3xl lg:text-4xl font-bold text-ink leading-tight">Three steps. No spreadsheets.</h2>
+      </div>
+      <div class="space-y-4">
+        <div class="bg-white border border-line rounded-lg p-6 flex gap-5 items-start">
+          <span class="shrink-0 w-9 h-9 rounded-md bg-primary text-white font-bold flex items-center justify-center">1</span>
+          <div class="flex-1">
+            <h3 class="font-semibold text-ink mb-2">You ask in plain English</h3>
+            <div class="bg-cream border border-line rounded p-3 font-mono text-sm text-ink-soft">
+              "Rewrite the SEO titles on my last 50 product pages to be under 60 chars and front-load the brand."
+            </div>
+          </div>
+        </div>
+        <div class="bg-white border border-line rounded-lg p-6 flex gap-5 items-start">
+          <span class="shrink-0 w-9 h-9 rounded-md bg-primary text-white font-bold flex items-center justify-center">2</span>
+          <div class="flex-1">
+            <h3 class="font-semibold text-ink mb-2">5 sample diffs come back for review</h3>
+            <p class="text-ink-soft text-sm leading-relaxed">Each shows old vs new SEO title with one-line reasoning. Approve, refine the style hint, or skip. The agent never writes anything before you approve.</p>
+          </div>
+        </div>
+        <div class="bg-white border border-line rounded-lg p-6 flex gap-5 items-start">
+          <span class="shrink-0 w-9 h-9 rounded-md bg-primary text-white font-bold flex items-center justify-center">3</span>
+          <div class="flex-1">
+            <h3 class="font-semibold text-ink mb-2">Click "Apply to remaining" — agent does the other 495</h3>
+            <p class="text-ink-soft text-sm leading-relaxed">Live progress bar. Cancel any time. When the job's done, you get a summary card with one-click rollback for the entire batch.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="roadmap" class="border-b border-line">
+    <div class="max-w-6xl mx-auto px-6 py-20">
+      <div class="text-center mb-12">
+        <div class="text-xs font-semibold text-mute uppercase tracking-widest mb-3">Roadmap</div>
+        <h2 class="text-3xl lg:text-4xl font-bold text-ink leading-tight">What ships now. What's coming.</h2>
+        <p class="text-ink-soft mt-3 max-w-xl mx-auto">Honest disclosure of v1.0 scope vs near-term roadmap. We'd rather under-promise.</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-5">
+        <div class="border border-line rounded-lg p-6 bg-white">
+          <div class="flex items-center gap-2 mb-5">
+            <span class="w-2.5 h-2.5 bg-ok rounded-full"></span>
+            <h3 class="font-bold text-ink">Available today (v1.0)</h3>
+          </div>
+          <ul class="space-y-3 text-sm text-ink-soft">
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>Bulk rewrites: SEO title, meta description, focus keyword, OG title</span></li>
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>Sample-and-extrapolate UX (approve 5 → apply to N)</span></li>
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span><strong class="text-ink">RankMath</strong> adapter (read + write)</span></li>
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>Audit log + one-click rollback per bulk job</span></li>
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>Cancel mid-flight; partial work preserved</span></li>
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>BYO Anthropic key (encrypted at rest in WP options)</span></li>
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>Self-hosted backend (Docker Compose / systemd)</span></li>
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>UI in 6 languages: EN, RU, UK, ES, FR, PT-BR</span></li>
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>Recurring billing (Pro / Agency / Enterprise)</span></li>
+          </ul>
+        </div>
+        <div class="border border-line rounded-lg p-6 bg-cream">
+          <div class="flex items-center gap-2 mb-5">
+            <span class="w-2.5 h-2.5 bg-warn rounded-full"></span>
+            <h3 class="font-bold text-ink">Roadmap (next minor releases)</h3>
+          </div>
+          <ul class="space-y-3 text-sm text-ink-soft">
+            <li class="flex gap-2"><span class="text-warn shrink-0">→</span><span><strong class="text-ink">Yoast SEO, All in One SEO, SEOPress</strong> adapters — v1.1</span></li>
+            <li class="flex gap-2"><span class="text-warn shrink-0">→</span><span><strong class="text-ink">Google Search Console</strong> integration (impressions-grounded rewrites) — v1.1</span></li>
+            <li class="flex gap-2"><span class="text-warn shrink-0">→</span><span><strong class="text-ink">Multi-site management</strong> for Agency tier — v1.2</span></li>
+            <li class="flex gap-2"><span class="text-warn shrink-0">→</span><span><strong class="text-ink">Image alt text</strong> bulk rewrites — v1.2</span></li>
+            <li class="flex gap-2"><span class="text-warn shrink-0">→</span><span><strong class="text-ink">Custom prompt library</strong> (save your style hints) — v1.2</span></li>
+            <li class="flex gap-2"><span class="text-warn shrink-0">→</span><span><strong class="text-ink">Schema markup</strong> bulk edits — under evaluation</span></li>
+            <li class="flex gap-2"><span class="text-warn shrink-0">→</span><span><strong class="text-ink">SSO + on-prem polish</strong> for Enterprise — when first customer needs it</span></li>
+            <li class="flex gap-2"><span class="text-warn shrink-0">→</span><span><strong class="text-ink">Shopify App / Chrome Extension</strong> — under evaluation, follows community demand</span></li>
+          </ul>
+          <p class="mt-5 pt-4 border-t border-line text-xs text-mute">Vote on roadmap items in <a href="https://github.com/getseoagent/wp-ai-seo-agent/discussions" class="text-primary hover:underline">GitHub Discussions</a> once the repo is public.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="border-b border-line">
+    <div class="max-w-7xl mx-auto px-6 py-20">
+      <div class="text-center mb-12">
+        <div class="text-xs font-semibold text-mute uppercase tracking-widest mb-3">Pricing</div>
+        <h2 class="text-3xl lg:text-4xl font-bold text-ink leading-tight">Free to try. Honest to scale.</h2>
+        <p class="text-ink-soft mt-3">Cancel any time from the plugin's Subscription tab. No card-on-file lock-in.</p>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="border border-line rounded-lg p-6 flex flex-col">
+          <div class="text-sm font-semibold text-mute uppercase tracking-wider mb-3">Free</div>
+          <div class="text-4xl font-bold text-ink mb-1">$0</div>
+          <div class="text-sm text-mute mb-6">forever</div>
+          <ul class="text-sm space-y-2.5 mb-6 flex-1">
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>Chat with the agent</span></li>
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>Read-only tools</span></li>
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>List posts, audit history</span></li>
+            <li class="flex gap-2 text-mute"><span class="shrink-0">−</span><span>No bulk operations</span></li>
+            <li class="flex gap-2 text-mute"><span class="shrink-0">−</span><span>No write tools</span></li>
+          </ul>
+          <a href="#install" class="block text-center py-2.5 border border-line2 text-ink font-semibold rounded-md hover:bg-cream transition">Install free</a>
+        </div>
+        <div class="border-2 border-primary rounded-lg p-6 flex flex-col relative">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-primary text-white text-xs font-bold rounded">MOST POPULAR</div>
+          <div class="text-sm font-semibold text-primary uppercase tracking-wider mb-3">Pro</div>
+          <div class="text-4xl font-bold text-ink mb-1">$19<span class="text-base text-mute font-normal">/mo</span></div>
+          <div class="text-sm text-mute mb-6">per month</div>
+          <ul class="text-sm space-y-2.5 mb-6 flex-1">
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>Everything in Free</span></li>
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>Write tools + bulk ops</span></li>
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>Audit log + rollback</span></li>
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>One WordPress site</span></li>
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>Email support</span></li>
+          </ul>
+          <a href="#install" class="block text-center py-2.5 bg-primary text-white font-semibold rounded-md hover:bg-primary-deep transition">Go Pro</a>
+        </div>
+        <div class="border border-line rounded-lg p-6 flex flex-col">
+          <div class="text-sm font-semibold text-mute uppercase tracking-wider mb-3">Agency</div>
+          <div class="text-4xl font-bold text-ink mb-1">$79<span class="text-base text-mute font-normal">/mo</span></div>
+          <div class="text-sm text-mute mb-6">per month</div>
+          <ul class="text-sm space-y-2.5 mb-6 flex-1">
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>Everything in Pro</span></li>
+            <li class="flex gap-2"><span class="text-warn shrink-0">→</span><span>Multi-site management <span class="text-mute text-xs">(v1.2)</span></span></li>
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>Priority support</span></li>
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>Concurrent bulk jobs</span></li>
+          </ul>
+          <a href="#install" class="block text-center py-2.5 border border-line2 text-ink font-semibold rounded-md hover:bg-cream transition">Choose Agency</a>
+        </div>
+        <div class="border border-line rounded-lg p-6 flex flex-col">
+          <div class="text-sm font-semibold text-mute uppercase tracking-wider mb-3">Enterprise</div>
+          <div class="text-4xl font-bold text-ink mb-1">$299<span class="text-base text-mute font-normal">/mo</span></div>
+          <div class="text-sm text-mute mb-6">per month</div>
+          <ul class="text-sm space-y-2.5 mb-6 flex-1">
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>Everything in Agency</span></li>
+            <li class="flex gap-2"><span class="text-warn shrink-0">→</span><span>Unlimited sites <span class="text-mute text-xs">(v1.2)</span></span></li>
+            <li class="flex gap-2"><span class="text-warn shrink-0">→</span><span>SSO <span class="text-mute text-xs">(on request)</span></span></li>
+            <li class="flex gap-2"><span class="text-ok shrink-0">✓</span><span>On-premise option (Docker)</span></li>
+            <li class="flex gap-2"><span class="text-warn shrink-0">→</span><span>Custom SLAs <span class="text-mute text-xs">(on request)</span></span></li>
+          </ul>
+          <a href="mailto:artifact861+enterprise@gmail.com" class="block text-center py-2.5 border border-line2 text-ink font-semibold rounded-md hover:bg-cream transition">Contact us</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="border-b border-line bg-cream">
+    <div class="max-w-3xl mx-auto px-6 py-20">
+      <div class="mb-10">
+        <div class="text-xs font-semibold text-mute uppercase tracking-widest mb-3">FAQ</div>
+        <h2 class="text-3xl lg:text-4xl font-bold text-ink leading-tight">Honest answers.</h2>
+      </div>
+      <div class="space-y-3">
+        <details class="bg-white border border-line rounded-lg p-5 hover:border-line2 transition">
+          <summary class="font-semibold text-ink pr-8 cursor-pointer">Do I need an Anthropic account?</summary>
+          <p class="mt-3 text-ink-soft text-sm leading-relaxed">Yes. The plugin is bring-your-own-key — you create an Anthropic account, generate an API key, and paste it into plugin settings. The key is encrypted at rest in your WordPress database, and forwarded once per chat request to our backend, which forwards it to Anthropic for that single request and does not persist it.</p>
+        </details>
+        <details class="bg-white border border-line rounded-lg p-5 hover:border-line2 transition">
+          <summary class="font-semibold text-ink pr-8 cursor-pointer">Does it replace my existing SEO plugin?</summary>
+          <p class="mt-3 text-ink-soft text-sm leading-relaxed">No. AI SEO Agent writes through your existing plugin's storage (RankMath, Yoast, AIOSEO, or SEOPress), so all your analysis, sitemaps, and schema markup keep working unchanged.</p>
+        </details>
+        <details class="bg-white border border-line rounded-lg p-5 hover:border-line2 transition">
+          <summary class="font-semibold text-ink pr-8 cursor-pointer">Can I undo a bulk run?</summary>
+          <p class="mt-3 text-ink-soft text-sm leading-relaxed">Yes. Every change is recorded in an audit log keyed by job ID. Click <strong class="text-ink">Rollback all</strong> on any completed bulk job and the original values are restored.</p>
+        </details>
+        <details class="bg-white border border-line rounded-lg p-5 hover:border-line2 transition">
+          <summary class="font-semibold text-ink pr-8 cursor-pointer">Is my post content sent to a third party?</summary>
+          <p class="mt-3 text-ink-soft text-sm leading-relaxed">To rewrite SEO fields, the relevant post title, content excerpts, and existing SEO field values are sent to Anthropic via our backend, using your API key. We do not retain post content beyond the chat session retention window (default 90 days).</p>
+        </details>
+        <details class="bg-white border border-line rounded-lg p-5 hover:border-line2 transition">
+          <summary class="font-semibold text-ink pr-8 cursor-pointer">Can I self-host the backend?</summary>
+          <p class="mt-3 text-ink-soft text-sm leading-relaxed">Yes. The backend ships as a Docker Compose stack or systemd unit. The plugin from WordPress.org is the same in both cases — it points at whichever backend URL you configure.</p>
+        </details>
+        <details class="bg-white border border-line rounded-lg p-5 hover:border-line2 transition">
+          <summary class="font-semibold text-ink pr-8 cursor-pointer">What's the catch?</summary>
+          <p class="mt-3 text-ink-soft text-sm leading-relaxed">No catch. Free tier is genuinely free forever — chat plus all read-only tools. We charge for write tools and bulk operations because that's where the heavy backend cost lives. Cancel any time, no card-on-file lock-in.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section id="install" class="border-b border-line">
+    <div class="max-w-3xl mx-auto px-6 py-20 text-center">
+      <h2 class="text-3xl lg:text-4xl font-bold text-ink mb-4 leading-tight">Stop rewriting post by post.</h2>
+      <p class="text-ink-soft text-lg mb-8 max-w-xl mx-auto">Install free, paste your Anthropic key, start a chat. Five minutes from now you'll have approved your first 5 samples.</p>
+      <div class="flex flex-col sm:flex-row gap-3 justify-center mb-4">
+        <a href="https://wordpress.org/plugins/seo-agent/" class="px-6 py-3 bg-primary text-white font-semibold rounded-md hover:bg-primary-deep transition">Get the plugin</a>
+        <a href="https://github.com/getseoagent/wp-ai-seo-agent" class="px-6 py-3 border border-line2 text-ink font-semibold rounded-md hover:bg-cream transition">View on GitHub</a>
+      </div>
+      <p class="text-sm text-mute">v1.0 launching · <a href="mailto:artifact861+launch@gmail.com" class="text-primary hover:underline">Get notified</a></p>
+    </div>
+  </section>
+
+  <footer class="bg-white">
+    <div class="max-w-7xl mx-auto px-6 py-12">
+      <div class="grid md:grid-cols-4 gap-8 mb-8">
+        <div class="md:col-span-1">
+          <div class="flex items-center gap-2 mb-3">
+            <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-label="SEO Agent">
+          <circle cx="6" cy="16" r="3" fill="#009ff5"/>
+          <path d="M11.5 16h5" stroke="#009ff5" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="20" cy="11" r="1.6" fill="#009ff5"/>
+          <circle cx="25" cy="11" r="1.6" fill="#009ff5"/>
+          <circle cx="20" cy="16" r="1.6" fill="#009ff5"/>
+          <circle cx="25" cy="16" r="1.6" fill="#009ff5"/>
+          <circle cx="20" cy="21" r="1.6" fill="#009ff5"/>
+          <circle cx="25" cy="21" r="1.6" fill="#009ff5"/>
+        </svg>
+            <span class="font-semibold text-ink">SEO Agent</span>
+          </div>
+          <p class="text-sm text-mute">Bulk SEO rewrites for WordPress, through chat.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold text-ink mb-3 text-sm">Product</h4>
+          <ul class="space-y-2 text-sm text-ink-soft">
+            <li><a href="#features" class="hover:text-ink">Features</a></li>
+            <li><a href="#pricing" class="hover:text-ink">Pricing</a></li>
+            <li><a href="#faq" class="hover:text-ink">FAQ</a></li>
+            <li><a href="https://wordpress.org/plugins/seo-agent/" class="hover:text-ink">WordPress.org</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold text-ink mb-3 text-sm">Resources</h4>
+          <ul class="space-y-2 text-sm text-ink-soft">
+            <li><a href="https://github.com/getseoagent/wp-ai-seo-agent" class="hover:text-ink">GitHub</a></li>
+            <li><a href="https://github.com/getseoagent/wp-ai-seo-agent/blob/main/docs/self-hosting.md" class="hover:text-ink">Self-hosting</a></li>
+            <li><a href="/changelog" class="hover:text-ink">Changelog</a></li>
+            <li><a href="/security" class="hover:text-ink">Security</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold text-ink mb-3 text-sm">Legal</h4>
+          <ul class="space-y-2 text-sm text-ink-soft">
+            <li><a href="/privacy" class="hover:text-ink">Privacy</a></li>
+            <li><a href="/terms" class="hover:text-ink">Terms</a></li>
+            <li><a href="mailto:artifact861+contact@gmail.com" class="hover:text-ink">Contact</a></li>
+            <li><a href="mailto:artifact861+security@gmail.com" class="hover:text-ink">Disclose vulnerability</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-line pt-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-sm text-mute">
+        <div>© 2026 Kyrylo Udruhov (d/b/a SEO-FRIENDLY). All rights reserved.</div>
+        <div>Built by <a href="https://kirill.udruhov.com" class="text-ink hover:text-primary transition">Kyrylo Udruhov</a></div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

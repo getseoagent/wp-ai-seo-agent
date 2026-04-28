@@ -7,7 +7,7 @@ For the architectural tour and deploy story see `README.md` and `docs/self-hosti
 ## Local setup
 
 ```bash
-git clone https://github.com/seo-friendly/wp-ai-seo-agent
+git clone https://github.com/getseoagent/wp-ai-seo-agent
 cd wp-ai-seo-agent
 
 # backend (Bun + Hono + Postgres)

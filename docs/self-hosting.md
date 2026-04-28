@@ -20,7 +20,7 @@ This document covers the self-host path.
 ### A. Docker Compose (simplest)
 
 ```bash
-git clone https://github.com/seo-friendly/wp-ai-seo-agent
+git clone https://github.com/getseoagent/wp-ai-seo-agent
 cd wp-ai-seo-agent/backend
 cp .env.example .env
 # Edit .env — see "Required env" below
@@ -42,7 +42,7 @@ Migrations apply on first boot. To stop and remove (data preserved): `docker com
 Used by the managed instance at www.seo-friendly.org.
 
 ```bash
-git clone https://github.com/seo-friendly/wp-ai-seo-agent
+git clone https://github.com/getseoagent/wp-ai-seo-agent
 cd wp-ai-seo-agent/backend
 bun install --frozen-lockfile --production
 cp .env.example .env

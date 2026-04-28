@@ -38,11 +38,11 @@ require_once SEO_AGENT_DIR . 'includes/class-history-store.php';
 require_once SEO_AGENT_DIR . 'includes/class-jobs-store.php';
 require_once SEO_AGENT_DIR . 'includes/class-backend-client.php';
 
-foreach ( glob( SEO_AGENT_DIR . 'includes/adapters/interface-*.php' ) as $file ) {
-	require_once $file;
+foreach ( glob( SEO_AGENT_DIR . 'includes/adapters/interface-*.php' ) as $seoagent_file ) {
+	require_once $seoagent_file;
 }
-foreach ( glob( SEO_AGENT_DIR . 'includes/adapters/class-*.php' ) as $file ) {
-	require_once $file;
+foreach ( glob( SEO_AGENT_DIR . 'includes/adapters/class-*.php' ) as $seoagent_file ) {
+	require_once $seoagent_file;
 }
 
 /**

@@ -691,6 +691,9 @@ final class REST_Controller {
 		$wpdb   = $GLOBALS['wpdb'] ?? null;
 		$can_tx = is_object( $wpdb ) && method_exists( $wpdb, 'query' );
 		if ( $can_tx ) {
+			// Transaction control statements have no user input — safe to issue
+			// raw. No caching applicable for SQL transaction commands.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->query( 'START TRANSACTION' );
 		}
 
@@ -755,10 +758,12 @@ final class REST_Controller {
 				}
 			}
 			if ( $can_tx ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->query( 'COMMIT' );
 			}
 		} catch ( \Throwable $e ) {
 			if ( $can_tx ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->query( 'ROLLBACK' );
 			}
 			throw $e;
@@ -936,9 +941,12 @@ final class REST_Controller {
 
 		// Allow this script to run as long as the underlying SSE stream is alive.
 		// Bulk runs can exceed PHP's default max_execution_time of 60s.
+		// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
 		set_time_limit( 0 );
 
+		// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
 		@ini_set( 'output_buffering', '0' );
+		// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
 		@ini_set( 'zlib.output_compression', '0' );
 		while ( ob_get_level() > 0 ) {
 			ob_end_clean();
@@ -974,7 +982,10 @@ final class REST_Controller {
 
 		ignore_user_abort( false );
 
+		// SSE streaming requires raw chunk piping; wp_remote_get() buffers the full body.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_init
 		$ch = curl_init( $url );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_setopt_array
 		curl_setopt_array(
 			$ch,
 			array(
@@ -989,6 +1000,8 @@ final class REST_Controller {
 					if ( connection_aborted() ) {
 						return 0; // returning != strlen aborts the cURL transfer
 					}
+					// SSE event-stream bytes from Anthropic — already framed text/event-stream, not HTML.
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					echo $chunk;
 					@ob_flush();
 					@flush();
@@ -1003,12 +1016,13 @@ final class REST_Controller {
 			)
 		);
 
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_exec
 		$ok = curl_exec( $ch );
 		if ( $ok === false ) {
 			// curl_error() can leak internal hostnames / ports
 			// ("Could not resolve host: backend.internal:7117"); log the full
 			// detail and surface a generic message instead.
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log,WordPress.WP.AlternativeFunctions.curl_curl_error
 			error_log( '[seo-agent] proxy_chat: curl_exec failed: ' . curl_error( $ch ) );
 			echo "event: error\ndata: " . wp_json_encode(
 				array(
@@ -1017,6 +1031,7 @@ final class REST_Controller {
 				)
 			) . "\n\n";
 		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_close
 		curl_close( $ch );
 		exit;
 	}

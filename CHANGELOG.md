@@ -173,13 +173,13 @@ Plan 1 — walking skeleton.
 ### Tests
 - backend 11/11 bun, plugin 4/4 phpunit, plugin-app 4/4 vitest.
 
-[Unreleased]: https://github.com/seo-friendly/wp-ai-seo-agent/compare/v0.8.0-recurring-billing...HEAD
-[0.8.0-recurring-billing]: https://github.com/seo-friendly/wp-ai-seo-agent/compare/v0.7.0-jwt-auth...v0.8.0-recurring-billing
-[0.7.0-jwt-auth]: https://github.com/seo-friendly/wp-ai-seo-agent/compare/v0.6.0-bulk-decouple...v0.7.0-jwt-auth
-[0.6.0-bulk-decouple]: https://github.com/seo-friendly/wp-ai-seo-agent/compare/v0.5.1-3c-polish...v0.6.0-bulk-decouple
-[0.5.1-3c-polish]: https://github.com/seo-friendly/wp-ai-seo-agent/compare/v0.5.0-3c-bulk-engine...v0.5.1-3c-polish
-[0.5.0-3c-bulk-engine]: https://github.com/seo-friendly/wp-ai-seo-agent/compare/v0.4.0-3b-craft-pipeline...v0.5.0-3c-bulk-engine
-[0.4.0-3b-craft-pipeline]: https://github.com/seo-friendly/wp-ai-seo-agent/compare/v0.3.0-3a-writes-audit-rollback...v0.4.0-3b-craft-pipeline
-[0.3.0-3a-writes-audit-rollback]: https://github.com/seo-friendly/wp-ai-seo-agent/compare/v0.2.0-read-tools...v0.3.0-3a-writes-audit-rollback
-[0.2.0-read-tools]: https://github.com/seo-friendly/wp-ai-seo-agent/compare/v0.1.0-walking-skeleton...v0.2.0-read-tools
-[0.1.0-walking-skeleton]: https://github.com/seo-friendly/wp-ai-seo-agent/releases/tag/v0.1.0-walking-skeleton
+[Unreleased]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.8.0-recurring-billing...HEAD
+[0.8.0-recurring-billing]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.7.0-jwt-auth...v0.8.0-recurring-billing
+[0.7.0-jwt-auth]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.6.0-bulk-decouple...v0.7.0-jwt-auth
+[0.6.0-bulk-decouple]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.5.1-3c-polish...v0.6.0-bulk-decouple
+[0.5.1-3c-polish]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.5.0-3c-bulk-engine...v0.5.1-3c-polish
+[0.5.0-3c-bulk-engine]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.4.0-3b-craft-pipeline...v0.5.0-3c-bulk-engine
+[0.4.0-3b-craft-pipeline]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.3.0-3a-writes-audit-rollback...v0.4.0-3b-craft-pipeline
+[0.3.0-3a-writes-audit-rollback]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.2.0-read-tools...v0.3.0-3a-writes-audit-rollback
+[0.2.0-read-tools]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.1.0-walking-skeleton...v0.2.0-read-tools
+[0.1.0-walking-skeleton]: https://github.com/getseoagent/wp-ai-seo-agent/releases/tag/v0.1.0-walking-skeleton
