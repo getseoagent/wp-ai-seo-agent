@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — SEO Agent</title>
+  <meta name="description" content="AI SEO Agent privacy policy. How we handle your Anthropic API key, post content, and license data.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><circle cx=%226%22 cy=%2216%22 r=%223%22 fill=%22%23009ff5%22/><path d=%22M11.5 16h5%22 stroke=%22%23009ff5%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/><circle cx=%2220%22 cy=%2211%22 r=%221.6%22 fill=%22%23009ff5%22/><circle cx=%2225%22 cy=%2211%22 r=%221.6%22 fill=%22%23009ff5%22/><circle cx=%2220%22 cy=%2216%22 r=%221.6%22 fill=%22%23009ff5%22/><circle cx=%2225%22 cy=%2216%22 r=%221.6%22 fill=%22%23009ff5%22/><circle cx=%2220%22 cy=%2221%22 r=%221.6%22 fill=%22%23009ff5%22/><circle cx=%2225%22 cy=%2221%22 r=%221.6%22 fill=%22%23009ff5%22/></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: #21252e; background: #ffffff; }
+    .prose h2 { font-size: 1.125rem; font-weight: 600; color: #21252e; margin-top: 2rem; margin-bottom: 0.75rem; }
+    .prose p, .prose ul, .prose ol { color: #4a5060; line-height: 1.65; font-size: 0.9375rem; margin-bottom: 0.75rem; }
+    .prose ul { list-style-type: disc; padding-left: 1.5rem; }
+    .prose ul li { margin-bottom: 0.25rem; }
+    .prose strong { color: #21252e; font-weight: 600; }
+    .prose a { color: #009ff5; }
+    .prose a:hover { text-decoration: underline; }
+    ::selection { background: #009ff5; color: #fff; }
+  </style>
+</head>
+<body class="antialiased">
+  <header class="border-b border-slate-200 bg-white">
+    <div class="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2">
+        <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-label="SEO Agent">
+          <circle cx="6" cy="16" r="3" fill="#009ff5"/>
+          <path d="M11.5 16h5" stroke="#009ff5" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="20" cy="11" r="1.6" fill="#009ff5"/>
+          <circle cx="25" cy="11" r="1.6" fill="#009ff5"/>
+          <circle cx="20" cy="16" r="1.6" fill="#009ff5"/>
+          <circle cx="25" cy="16" r="1.6" fill="#009ff5"/>
+          <circle cx="20" cy="21" r="1.6" fill="#009ff5"/>
+          <circle cx="25" cy="21" r="1.6" fill="#009ff5"/>
+        </svg>
+        <span class="font-semibold text-slate-900">SEO Agent</span>
+      </a>
+      <nav class="hidden sm:flex items-center gap-6 text-sm text-slate-600">
+        <a href="/" class="hover:text-slate-900">Home</a>
+        <a href="/#pricing" class="hover:text-slate-900">Pricing</a>
+        <a href="/#faq" class="hover:text-slate-900">FAQ</a>
+        <a href="https://github.com/getseoagent/wp-ai-seo-agent" class="hover:text-slate-900">GitHub</a>
+      </nav>
+    </div>
+  </header>
+  <main class="max-w-4xl mx-auto px-6 py-12 sm:py-16">
+    <h1 class="text-3xl font-bold text-slate-900 mb-2">Privacy Policy</h1>
+    <p class="text-sm text-slate-500 mb-10">Last updated: April 28, 2026</p>
+
+    <div class="prose">
+
+      <p>This Privacy Policy explains how AI SEO Agent ("we", "us", or "the Service") handles your data when you use the WordPress plugin, the managed backend service hosted at <a href="https://getseoagent.app">getseoagent.app</a>, or the source code distributed through GitHub.</p>
+
+      <h2>1. Information We Collect</h2>
+      <p>When you use AI SEO Agent, we (or services we forward data to) handle the following:</p>
+      <ul>
+        <li><strong>Anthropic API key.</strong> You provide your own Anthropic API key in plugin settings. The key is encrypted at rest in your WordPress database using your site's <code>AUTH_KEY</code>. The key is forwarded once per chat request to our backend, which forwards it to Anthropic for that single request and does <strong>not</strong> persist it.</li>
+        <li><strong>License key.</strong> If you purchase a Pro / Agency / Enterprise tier, your license key is stored encrypted in your WordPress database (also using <code>AUTH_KEY</code>) and verified against our backend on each privileged operation.</li>
+        <li><strong>Site URL.</strong> The URL of your WordPress install is sent to our backend so we can identify which site is making chat requests and gate license entitlements.</li>
+        <li><strong>Chat session messages.</strong> Messages you exchange with the agent are persisted in our backend Postgres database for up to the session retention window (default 90 days, configurable via <code>SESSION_RETENTION_DAYS</code>) so that multi-turn conversations work correctly.</li>
+        <li><strong>Post titles, content excerpts, and existing SEO field values.</strong> When you ask the agent to rewrite SEO fields, the relevant post data is sent to Anthropic via our backend so that Anthropic's model can generate the rewrite.</li>
+        <li><strong>Audit log.</strong> Every SEO-field change is recorded in your WordPress site's own database (<code>wp_seoagent_history</code> table). This is on <strong>your</strong> server, not on ours. Rollback uses this local audit log.</li>
+        <li><strong>JWT session tokens.</strong> A short-lived authentication token (default 24 h TTL) is cached encrypted in your WordPress database to authenticate your plugin to our backend.</li>
+        <li><strong>Payment data.</strong> If you subscribe to a paid tier, masked card details (last 4 digits) and transaction metadata are stored on our backend to support the recurring billing flow. Full card numbers are processed by WayForPay and are never stored on our servers.</li>
+        <li><strong>Email address.</strong> Provided to us through the WayForPay checkout for transactional billing emails (purchase confirmation, renewal reminders, failed-charge notices).</li>
+      </ul>
+
+      <h2>2. How We Use Your Information</h2>
+      <ul>
+        <li>To provide the AI SEO rewrite functionality (the agent loop, sample-and-extrapolate flow, bulk operations).</li>
+        <li>To verify your license entitlements and gate Pro / Agency / Enterprise features.</li>
+        <li>To process recurring subscription payments and surface a billing history.</li>
+        <li>To send transactional emails about your subscription (purchase, upcoming renewal, charge failure, cancellation).</li>
+        <li>To diagnose and fix bugs (limited error logs on the backend, scrubbed of API keys and user content).</li>
+      </ul>
+
+      <h2>3. Data Sharing</h2>
+      <p>We share your data with the following third-party services only to the extent necessary to provide the Service:</p>
+      <ul>
+        <li><strong>Anthropic (anthropic.com).</strong> Chat messages, post titles and content excerpts, and your Anthropic API key are forwarded once per chat request. Anthropic processes the request and returns a response. Anthropic's data handling is governed by their <a href="https://www.anthropic.com/legal/privacy">Privacy Policy</a> and <a href="https://www.anthropic.com/legal/commercial-terms">Commercial Terms</a>.</li>
+        <li><strong>WayForPay (wayforpay.com).</strong> Payment processing for paid tiers. Card data is handled by WayForPay and is not stored on our servers. WayForPay's privacy policy applies to card-data handling.</li>
+        <li><strong>Brevo (brevo.com).</strong> Transactional email delivery for billing notifications. Your email address and the relevant subscription event are shared with Brevo solely to send the email.</li>
+      </ul>
+      <p>We do <strong>not</strong> sell your personal information to third parties. We do not show advertising and we do not use advertising or tracking cookies.</p>
+
+      <h2>4. Data Storage and Security</h2>
+      <p>The managed backend is hosted on commercial cloud infrastructure (currently Hostinger VPS, EU region). Data is stored in a PostgreSQL database with encrypted connections (HTTPS / TLS) and access controls. Sensitive data — including your Anthropic API key, license key, and JWT tokens — is encrypted at rest in your own WordPress database using your site's <code>AUTH_KEY</code>.</p>
+      <p>If you prefer, you can self-host the backend on your own infrastructure (Docker Compose or systemd unit). In self-hosted mode, no data leaves your control except the per-request forward to Anthropic. See the <a href="https://github.com/getseoagent/wp-ai-seo-agent/blob/main/docs/self-hosting.md">self-hosting guide</a>.</p>
+      <p>However, no method of transmission over the Internet is 100% secure.</p>
+
+      <h2>5. Data Retention</h2>
+      <ul>
+        <li><strong>Chat sessions:</strong> Default 90 days, configurable via the <code>SESSION_RETENTION_DAYS</code> environment variable.</li>
+        <li><strong>License records:</strong> Retained for the duration of your active subscription plus a tax/audit retention period required by Ukrainian law (typically 3 years).</li>
+        <li><strong>Audit log of SEO changes:</strong> Stored on your own WordPress site indefinitely. You can purge it at any time from your WordPress database.</li>
+        <li><strong>Account deletion:</strong> Email <a href="mailto:artifact861+contact@gmail.com">artifact861+contact@gmail.com</a> to request deletion of all data associated with your license. We will confirm within 30 days.</li>
+      </ul>
+
+      <h2>6. Cookies and Local Storage</h2>
+      <p>The marketing site at <a href="https://getseoagent.app">getseoagent.app</a> does not set any cookies and does not run analytics scripts. The WordPress plugin uses standard WordPress authentication cookies — these are essential for the plugin to function and are managed by your WordPress install, not by us.</p>
+
+      <h2>7. Your Rights</h2>
+      <p>You have the right to:</p>
+      <ul>
+        <li>Access the personal data we hold about you.</li>
+        <li>Request correction of inaccurate data.</li>
+        <li>Request deletion of your data.</li>
+        <li>Withdraw consent for data processing.</li>
+        <li>Lodge a complaint with the Ukrainian data protection authority if you believe your rights have been infringed.</li>
+      </ul>
+      <p>To exercise any of these rights, email us at <a href="mailto:artifact861+contact@gmail.com">artifact861+contact@gmail.com</a>.</p>
+
+      <h2>8. Children's Privacy</h2>
+      <p>The Service is not intended for users under the age of 16. We do not knowingly collect personal information from children. If we learn that we have collected data from a child, we will take steps to delete it promptly.</p>
+
+      <h2>9. Changes to This Policy</h2>
+      <p>We may update this Privacy Policy from time to time. Material changes will be reflected in the "Last updated" date at the top of this page. Continued use of the Service after changes are posted constitutes acceptance of the updated policy.</p>
+
+      <h2>10. Contact Us</h2>
+      <p>If you have questions about this Privacy Policy or how your data is handled, please contact us at <a href="mailto:artifact861+contact@gmail.com">artifact861+contact@gmail.com</a>.</p>
+
+      <p class="text-sm text-slate-400 mt-8">For security vulnerability disclosures, please follow the <a href="https://github.com/getseoagent/wp-ai-seo-agent/blob/main/SECURITY.md">SECURITY.md</a> coordinated disclosure procedure rather than the contact email above.</p>
+
+    </div>
+  </main>
+  <footer class="border-t border-slate-200 mt-12">
+    <div class="max-w-4xl mx-auto px-6 py-8 flex flex-col sm:flex-row justify-between items-start gap-4 text-sm text-slate-500">
+      <div>© 2026 Kyrylo Udruhov (d/b/a SEO-FRIENDLY). All rights reserved.</div>
+      <div class="flex gap-6">
+        <a href="/privacy" class="hover:text-slate-900">Privacy</a>
+        <a href="/terms" class="hover:text-slate-900">Terms</a>
+        <a href="mailto:artifact861+contact@gmail.com" class="hover:text-slate-900">Contact</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
