@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-28T13:37:51+02:00\n"
+"POT-Creation-Date: 2026-04-28T13:47:09+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: seo-agent\n"
@@ -172,7 +172,7 @@ msgstr ""
 msgid "Cancel failed:"
 msgstr ""
 
-#: src/components/RecentJobsBanner.tsx:42
+#: src/components/RecentJobsBanner.tsx:42 src/lib/notifications.ts:34
 msgid ", %d failed"
 msgstr ""
 
@@ -186,6 +186,10 @@ msgstr ""
 
 #: src/components/BulkProgressBar.tsx:45
 msgid "%1$d / %2$d applied"
+msgstr ""
+
+#: src/lib/notifications.ts:32
+msgid "%1$d/%2$d done"
 msgstr ""
 
 #: src/components/BulkProgressBar.tsx:49
@@ -208,7 +212,7 @@ msgstr ""
 msgid "Applied %1$d / Failed %2$d / Total %3$d"
 msgstr ""
 
-#: src/components/RewriteCard.tsx:233
+#: src/components/RewriteCard.tsx:241
 msgid "Apply to remaining posts"
 msgstr ""
 
@@ -240,12 +244,20 @@ msgstr ""
 msgid "current:"
 msgstr ""
 
+#: src/components/RewriteCard.tsx:166
+msgid "Description"
+msgstr ""
+
 #: src/components/RecentJobsBanner.tsx:47
 msgid "Dismiss"
 msgstr ""
 
-#: src/components/RewriteCard.tsx:253
+#: src/components/RewriteCard.tsx:261
 msgid "Errors (%d)"
+msgstr ""
+
+#: src/components/RewriteCard.tsx:167
+msgid "Focus keyword"
 msgstr ""
 
 #: src/components/format-bulk-summary.ts:106
@@ -273,7 +285,7 @@ msgstr ""
 msgid "No messages yet — say hi to test the pipe."
 msgstr ""
 
-#: src/components/RewriteCard.tsx:212 src/components/RewriteCard.tsx:216
+#: src/components/RewriteCard.tsx:220 src/components/RewriteCard.tsx:224
 msgid "No proposals returned."
 msgstr ""
 
@@ -281,15 +293,15 @@ msgstr ""
 msgid "Post %d"
 msgstr ""
 
-#: src/components/RewriteCard.tsx:223
+#: src/components/RewriteCard.tsx:231
 msgid "Proposals (%d)"
 msgstr ""
 
-#: src/components/RewriteCard.tsx:186
+#: src/components/RewriteCard.tsx:194
 msgid "reasoning"
 msgstr ""
 
-#: src/components/RewriteCard.tsx:237
+#: src/components/RewriteCard.tsx:245
 msgid "refine: e.g. more aggressive, no emoji"
 msgstr ""
 
@@ -315,6 +327,10 @@ msgstr ""
 msgid "Send"
 msgstr ""
 
+#: src/lib/notifications.ts:30
+msgid "SEO bulk done"
+msgstr ""
+
 #: src/App.tsx:16
 msgid "Set your Anthropic API key in the form above to start chatting."
 msgstr ""
@@ -331,6 +347,10 @@ msgstr ""
 
 #: src/components/Chat.tsx:143
 msgid "Stop"
+msgstr ""
+
+#: src/components/RewriteCard.tsx:165
+msgid "Title"
 msgstr ""
 
 #: src/components/RecentJobsBanner.tsx:46

@@ -112,6 +112,11 @@ const TRANSLATIONS: Record<string, Catalog> = {
     "Something went wrong in the chat panel.": "Что-то пошло не так в панели чата.",
     "Reload the page to recover. If the problem repeats, copy the error below into a support thread.": "Перезагрузите страницу. Если проблема повторится, скопируйте ошибку ниже в обращение в поддержку.",
     "Reload page":                     "Перезагрузить страницу",
+    "Title":                           "Заголовок",
+    "Description":                     "Описание",
+    "Focus keyword":                   "Ключевое слово",
+    "SEO bulk done":                   "Массовая SEO-задача завершена",
+    "%1$d/%2$d done":                  "%1$d/%2$d выполнено",
   },
 
   uk: {
@@ -186,6 +191,11 @@ const TRANSLATIONS: Record<string, Catalog> = {
     "Something went wrong in the chat panel.": "Щось пішло не так у панелі чату.",
     "Reload the page to recover. If the problem repeats, copy the error below into a support thread.": "Перезавантажте сторінку. Якщо проблема повториться, скопіюйте помилку нижче у звернення до підтримки.",
     "Reload page":                     "Перезавантажити сторінку",
+    "Title":                           "Заголовок",
+    "Description":                     "Опис",
+    "Focus keyword":                   "Ключове слово",
+    "SEO bulk done":                   "Масова SEO-задача завершена",
+    "%1$d/%2$d done":                  "%1$d/%2$d виконано",
   },
 
   es: {
@@ -260,6 +270,11 @@ const TRANSLATIONS: Record<string, Catalog> = {
     "Something went wrong in the chat panel.": "Algo salió mal en el panel del chat.",
     "Reload the page to recover. If the problem repeats, copy the error below into a support thread.": "Recarga la página para recuperarte. Si el problema se repite, copia el error a continuación en una solicitud de soporte.",
     "Reload page":                     "Recargar página",
+    "Title":                           "Título",
+    "Description":                     "Descripción",
+    "Focus keyword":                   "Palabra clave",
+    "SEO bulk done":                   "Tarea SEO en lote completada",
+    "%1$d/%2$d done":                  "%1$d/%2$d completadas",
   },
 
   fr: {
@@ -334,6 +349,11 @@ const TRANSLATIONS: Record<string, Catalog> = {
     "Something went wrong in the chat panel.": "Une erreur est survenue dans le panneau de chat.",
     "Reload the page to recover. If the problem repeats, copy the error below into a support thread.": "Rechargez la page pour récupérer. Si le problème persiste, copiez l'erreur ci-dessous dans un message d'assistance.",
     "Reload page":                     "Recharger la page",
+    "Title":                           "Titre",
+    "Description":                     "Description",
+    "Focus keyword":                   "Mot-clé principal",
+    "SEO bulk done":                   "Tâche SEO en lot terminée",
+    "%1$d/%2$d done":                  "%1$d/%2$d effectuées",
   },
 
   pt_BR: {
@@ -408,6 +428,11 @@ const TRANSLATIONS: Record<string, Catalog> = {
     "Something went wrong in the chat panel.": "Algo deu errado no painel de chat.",
     "Reload the page to recover. If the problem repeats, copy the error below into a support thread.": "Recarregue a página para recuperar. Se o problema persistir, copie o erro abaixo em um tópico de suporte.",
     "Reload page":                     "Recarregar página",
+    "Title":                           "Título",
+    "Description":                     "Descrição",
+    "Focus keyword":                   "Palavra-chave",
+    "SEO bulk done":                   "Tarefa SEO em lote concluída",
+    "%1$d/%2$d done":                  "%1$d/%2$d concluídas",
   },
 };
 

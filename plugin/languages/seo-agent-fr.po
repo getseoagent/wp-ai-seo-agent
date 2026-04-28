@@ -120,6 +120,9 @@ msgstr "/ Ignorés %d"
 msgid "%1$d / %2$d applied"
 msgstr "%1$d / %2$d appliqués"
 
+msgid "%1$d/%2$d done"
+msgstr "%1$d/%2$d effectuées"
+
 msgid "%d failed"
 msgstr "%d en erreur"
 
@@ -159,11 +162,17 @@ msgstr "Impossible de formater le résumé."
 msgid "current:"
 msgstr "actuel :"
 
+msgid "Description"
+msgstr "Description"
+
 msgid "Dismiss"
 msgstr "Masquer"
 
 msgid "Errors (%d)"
 msgstr "Erreurs (%d)"
+
+msgid "Focus keyword"
+msgstr "Mot-clé principal"
 
 msgid "History #%d"
 msgstr "Historique n°%d"
@@ -207,6 +216,9 @@ msgstr "Annulés %d"
 msgid "Send"
 msgstr "Envoyer"
 
+msgid "SEO bulk done"
+msgstr "Tâche SEO en lot terminée"
+
 msgid "Set your Anthropic API key in the form above to start chatting."
 msgstr "Saisissez votre clé API Anthropic dans le formulaire ci-dessus pour commencer."
 
@@ -220,6 +232,9 @@ msgstr "Une erreur est survenue dans le panneau de chat."
 
 msgid "Stop"
 msgstr "Arrêter"
+
+msgid "Title"
+msgstr "Titre"
 
 msgid "View summary"
 msgstr "Voir le résumé"

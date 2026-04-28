@@ -186,6 +186,15 @@ if (!function_exists('esc_attr')) {
 if (!function_exists('wp_unslash')) {
     function wp_unslash($value) { return is_string($value) ? stripslashes($value) : $value; }
 }
+if (!function_exists('is_multisite')) {
+    function is_multisite(): bool { return false; }
+}
+if (!function_exists('delete_site_option')) {
+    function delete_site_option(string $name): bool {
+        unset($GLOBALS['wp_site_options_store'][$name]);
+        return true;
+    }
+}
 if (!function_exists('sanitize_text_field')) {
     function sanitize_text_field(string $s): string {
         $s = preg_replace('/[\r\n\t ]+/', ' ', $s) ?? $s;

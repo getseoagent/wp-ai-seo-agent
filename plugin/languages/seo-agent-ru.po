@@ -120,6 +120,9 @@ msgstr "/ Пропущено %d"
 msgid "%1$d / %2$d applied"
 msgstr "%1$d / %2$d применено"
 
+msgid "%1$d/%2$d done"
+msgstr "%1$d/%2$d выполнено"
+
 msgid "%d failed"
 msgstr "%d с ошибкой"
 
@@ -159,11 +162,17 @@ msgstr "Не удалось отформатировать сводку."
 msgid "current:"
 msgstr "текущий:"
 
+msgid "Description"
+msgstr "Описание"
+
 msgid "Dismiss"
 msgstr "Скрыть"
 
 msgid "Errors (%d)"
 msgstr "Ошибки (%d)"
+
+msgid "Focus keyword"
+msgstr "Ключевое слово"
 
 msgid "History #%d"
 msgstr "История #%d"
@@ -207,6 +216,9 @@ msgstr "Откачено %d"
 msgid "Send"
 msgstr "Отправить"
 
+msgid "SEO bulk done"
+msgstr "Массовая SEO-задача завершена"
+
 msgid "Set your Anthropic API key in the form above to start chatting."
 msgstr "Введите API-ключ Anthropic в форме выше, чтобы начать чат."
 
@@ -221,6 +233,9 @@ msgstr "Что-то пошло не так в панели чата."
 
 msgid "Stop"
 msgstr "Остановить"
+
+msgid "Title"
+msgstr "Заголовок"
 
 msgid "View summary"
 msgstr "Открыть сводку"

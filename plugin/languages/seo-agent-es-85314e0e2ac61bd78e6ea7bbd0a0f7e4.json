@@ -1,5 +1,5 @@
 {
-  "translation-revision-date": "2026-04-28T11:40:38+00:00",
+  "translation-revision-date": "2026-04-28T11:48:24+00:00",
   "generator": "build-jed-json.ts",
   "domain": "messages",
   "locale_data": {
@@ -11,211 +11,226 @@
         "SEO Agent"
       ],
       "Insufficient permissions.": [
-        "Autorisations insuffisantes."
+        "Permisos insuficientes."
       ],
       "••••••• (set)": [
-        "••••••• (défini)"
+        "••••••• (establecido)"
       ],
       "Settings": [
-        "Réglages"
+        "Configuración"
       ],
       "Anthropic API key": [
-        "Clé API Anthropic"
+        "Clave API de Anthropic"
       ],
       "Save": [
-        "Enregistrer"
+        "Guardar"
       ],
       "Chat": [
         "Chat"
       ],
       "Loading…": [
-        "Chargement…"
+        "Cargando…"
       ],
       "Subscription": [
-        "Abonnement"
+        "Suscripción"
       ],
       "Buy a license": [
-        "Acheter une licence"
+        "Comprar licencia"
       ],
       "Already have a license key?": [
-        "Vous avez déjà une clé de licence ?"
+        "¿Ya tienes una clave de licencia?"
       ],
       "License key": [
-        "Clé de licence"
+        "Clave de licencia"
       ],
       "Could not reach the licensing server. Try again in a minute.": [
-        "Impossible de joindre le serveur de licences. Réessayez dans une minute."
+        "No se pudo contactar con el servidor de licencias. Inténtalo de nuevo en un minuto."
       ],
       "License key on file:": [
-        "Clé enregistrée :"
+        "Clave guardada:"
       ],
       "Tier": [
         "Plan"
       ],
       "Status": [
-        "Statut"
+        "Estado"
       ],
       "Auto-renewal": [
-        "Renouvellement automatique"
+        "Renovación automática"
       ],
       "on": [
         "act."
       ],
       "off": [
-        "désact."
+        "desact."
       ],
       "Active until": [
-        "Actif jusqu'au"
+        "Activa hasta"
       ],
       "Next charge": [
-        "Prochain prélèvement"
+        "Próximo cargo"
       ],
       "Card": [
-        "Carte"
+        "Tarjeta"
       ],
       "Cancel subscription": [
-        "Annuler l'abonnement"
+        "Cancelar suscripción"
       ],
       "Cancellation stops auto-renewal. You keep access until %s.": [
-        "L'annulation arrête le renouvellement automatique. Vous gardez l'accès jusqu'au %s."
+        "La cancelación detiene la renovación automática. Conservas acceso hasta %s."
       ],
       "This subscription is no longer auto-renewing.": [
-        "Cet abonnement ne se renouvelle plus automatiquement."
+        "Esta suscripción ya no se renueva automáticamente."
       ],
       "Manage card on WayForPay": [
-        "Gérer la carte sur WayForPay"
+        "Gestionar tarjeta en WayForPay"
       ],
       "Cancel auto-renewal? You'll keep access until the current period ends.": [
-        "Annuler le renouvellement automatique ? Vous gardez l'accès jusqu'à la fin de la période en cours."
+        "¿Cancelar la renovación automática? Conservas el acceso hasta el final del período actual."
       ],
       "Cancel failed — check the browser console.": [
-        "Échec de l'annulation — vérifiez la console du navigateur."
+        "Cancelación fallida — revisa la consola del navegador."
       ],
       "Cancel failed:": [
-        "Échec de l'annulation :"
+        "Cancelación fallida:"
       ],
       ", %d failed": [
-        ", %d en erreur"
+        ", %d con error"
       ],
       "(no title)": [
-        "(sans titre)"
+        "(sin título)"
       ],
       "/ Skipped %d": [
-        "/ Ignorés %d"
+        "/ Omitidos %d"
       ],
       "%1$d / %2$d applied": [
-        "%1$d / %2$d appliqués"
+        "%1$d / %2$d aplicados"
+      ],
+      "%1$d/%2$d done": [
+        "%1$d/%2$d completadas"
       ],
       "%d failed": [
-        "%d en erreur"
+        "%d con error"
       ],
       "Agent": [
-        "Agent"
+        "Agente"
       ],
       "Agent is thinking…": [
-        "L'agent réfléchit…"
+        "El agente está pensando…"
       ],
       "Applied %1$d / Failed %2$d / Skipped %3$d": [
-        "Appliqués %1$d / Erreurs %2$d / Ignorés %3$d"
+        "Aplicados %1$d / Errores %2$d / Omitidos %3$d"
       ],
       "Applied %1$d / Failed %2$d / Total %3$d": [
-        "Appliqués %1$d / Erreurs %2$d / Total %3$d"
+        "Aplicados %1$d / Errores %2$d / Total %3$d"
       ],
       "Apply to remaining posts": [
-        "Appliquer aux autres articles"
+        "Aplicar al resto de las entradas"
       ],
       "Ask the agent…": [
-        "Demandez à l'agent…"
+        "Pregúntale al agente…"
       ],
       "Bulk job progress: %1$d of %2$d": [
-        "Progression de la tâche en lot : %1$d sur %2$d"
+        "Progreso de la tarea en lote: %1$d de %2$d"
       ],
       "Cancel": [
-        "Annuler"
+        "Cancelar"
       ],
       "Chat history": [
-        "Historique du chat"
+        "Historial del chat"
       ],
       "Configuration missing.": [
-        "Configuration manquante."
+        "Falta la configuración."
       ],
       "Could not format summary.": [
-        "Impossible de formater le résumé."
+        "No se pudo formatear el resumen."
       ],
       "current:": [
-        "actuel :"
+        "actual:"
+      ],
+      "Description": [
+        "Descripción"
       ],
       "Dismiss": [
-        "Masquer"
+        "Descartar"
       ],
       "Errors (%d)": [
-        "Erreurs (%d)"
+        "Errores (%d)"
+      ],
+      "Focus keyword": [
+        "Palabra clave"
       ],
       "History #%d": [
-        "Historique n°%d"
+        "Historial #%d"
       ],
       "job %s": [
-        "tâche %s"
+        "tarea %s"
       ],
       "Job %s": [
-        "Tâche %s"
+        "Tarea %s"
       ],
       "Message to the SEO agent": [
-        "Message à l'agent SEO"
+        "Mensaje al agente SEO"
       ],
       "No messages yet — say hi to test the pipe.": [
-        "Pas encore de messages — dites bonjour pour tester la connexion."
+        "Aún no hay mensajes — saluda para comprobar la conexión."
       ],
       "No proposals returned.": [
-        "Aucune proposition retournée."
+        "No se recibieron propuestas."
       ],
       "Post %d": [
-        "Article %d"
+        "Entrada %d"
       ],
       "Proposals (%d)": [
-        "Propositions (%d)"
+        "Propuestas (%d)"
       ],
       "reasoning": [
-        "raisonnement"
+        "razonamiento"
       ],
       "refine: e.g. more aggressive, no emoji": [
-        "préciser : p. ex. plus direct, sans emoji"
+        "refinar: p. ej. más directo, sin emojis"
       ],
       "Reload page": [
-        "Recharger la page"
+        "Recargar página"
       ],
       "Rollback all in job %s": [
-        "Annuler tout dans la tâche %s"
+        "Revertir todo en la tarea %s"
       ],
       "Rolled back %d": [
-        "Annulés %d"
+        "Revertidos %d"
       ],
       "Send": [
-        "Envoyer"
+        "Enviar"
+      ],
+      "SEO bulk done": [
+        "Tarea SEO en lote completada"
       ],
       "Set your Anthropic API key in the form above to start chatting.": [
-        "Saisissez votre clé API Anthropic dans le formulaire ci-dessus pour commencer."
+        "Introduce tu clave API de Anthropic en el formulario de arriba para empezar a chatear."
       ],
       "show %d row\u0004show %d row": [
-        "afficher %d ligne",
-        "afficher %d lignes"
+        "mostrar %d fila",
+        "mostrar %d filas"
       ],
       "Something went wrong in the chat panel.": [
-        "Une erreur est survenue dans le panneau de chat."
+        "Algo salió mal en el panel del chat."
       ],
       "Stop": [
-        "Arrêter"
+        "Detener"
+      ],
+      "Title": [
+        "Título"
       ],
       "View summary": [
-        "Voir le résumé"
+        "Ver resumen"
       ],
       "You": [
-        "Vous"
+        "Tú"
       ],
       "": {
         "domain": "messages",
         "plural-forms": "nplurals=2; plural=(n != 1);",
-        "lang": "fr"
+        "lang": "es"
       }
     }
   }

@@ -1,5 +1,5 @@
 {
-  "translation-revision-date": "2026-04-28T11:40:38+00:00",
+  "translation-revision-date": "2026-04-28T11:48:24+00:00",
   "generator": "build-jed-json.ts",
   "domain": "messages",
   "locale_data": {
@@ -11,211 +11,226 @@
         "SEO Agent"
       ],
       "Insufficient permissions.": [
-        "Permissões insuficientes."
+        "Autorisations insuffisantes."
       ],
       "••••••• (set)": [
-        "••••••• (definida)"
+        "••••••• (défini)"
       ],
       "Settings": [
-        "Configurações"
+        "Réglages"
       ],
       "Anthropic API key": [
-        "Chave da API Anthropic"
+        "Clé API Anthropic"
       ],
       "Save": [
-        "Salvar"
+        "Enregistrer"
       ],
       "Chat": [
         "Chat"
       ],
       "Loading…": [
-        "Carregando…"
+        "Chargement…"
       ],
       "Subscription": [
-        "Assinatura"
+        "Abonnement"
       ],
       "Buy a license": [
-        "Comprar licença"
+        "Acheter une licence"
       ],
       "Already have a license key?": [
-        "Já tem uma chave de licença?"
+        "Vous avez déjà une clé de licence ?"
       ],
       "License key": [
-        "Chave de licença"
+        "Clé de licence"
       ],
       "Could not reach the licensing server. Try again in a minute.": [
-        "Não foi possível contatar o servidor de licenças. Tente novamente em um minuto."
+        "Impossible de joindre le serveur de licences. Réessayez dans une minute."
       ],
       "License key on file:": [
-        "Chave salva:"
+        "Clé enregistrée :"
       ],
       "Tier": [
-        "Plano"
+        "Plan"
       ],
       "Status": [
-        "Status"
+        "Statut"
       ],
       "Auto-renewal": [
-        "Renovação automática"
+        "Renouvellement automatique"
       ],
       "on": [
-        "lig."
+        "act."
       ],
       "off": [
-        "deslig."
+        "désact."
       ],
       "Active until": [
-        "Ativa até"
+        "Actif jusqu'au"
       ],
       "Next charge": [
-        "Próxima cobrança"
+        "Prochain prélèvement"
       ],
       "Card": [
-        "Cartão"
+        "Carte"
       ],
       "Cancel subscription": [
-        "Cancelar assinatura"
+        "Annuler l'abonnement"
       ],
       "Cancellation stops auto-renewal. You keep access until %s.": [
-        "O cancelamento interrompe a renovação automática. Você mantém o acesso até %s."
+        "L'annulation arrête le renouvellement automatique. Vous gardez l'accès jusqu'au %s."
       ],
       "This subscription is no longer auto-renewing.": [
-        "Esta assinatura não está mais sendo renovada automaticamente."
+        "Cet abonnement ne se renouvelle plus automatiquement."
       ],
       "Manage card on WayForPay": [
-        "Gerenciar cartão no WayForPay"
+        "Gérer la carte sur WayForPay"
       ],
       "Cancel auto-renewal? You'll keep access until the current period ends.": [
-        "Cancelar a renovação automática? Você mantém o acesso até o fim do período atual."
+        "Annuler le renouvellement automatique ? Vous gardez l'accès jusqu'à la fin de la période en cours."
       ],
       "Cancel failed — check the browser console.": [
-        "Falha ao cancelar — verifique o console do navegador."
+        "Échec de l'annulation — vérifiez la console du navigateur."
       ],
       "Cancel failed:": [
-        "Falha ao cancelar:"
+        "Échec de l'annulation :"
       ],
       ", %d failed": [
-        ", %d com erro"
+        ", %d en erreur"
       ],
       "(no title)": [
-        "(sem título)"
+        "(sans titre)"
       ],
       "/ Skipped %d": [
-        "/ Ignorados %d"
+        "/ Ignorés %d"
       ],
       "%1$d / %2$d applied": [
-        "%1$d / %2$d aplicados"
+        "%1$d / %2$d appliqués"
+      ],
+      "%1$d/%2$d done": [
+        "%1$d/%2$d effectuées"
       ],
       "%d failed": [
-        "%d com erro"
+        "%d en erreur"
       ],
       "Agent": [
-        "Agente"
+        "Agent"
       ],
       "Agent is thinking…": [
-        "O agente está pensando…"
+        "L'agent réfléchit…"
       ],
       "Applied %1$d / Failed %2$d / Skipped %3$d": [
-        "Aplicados %1$d / Erros %2$d / Ignorados %3$d"
+        "Appliqués %1$d / Erreurs %2$d / Ignorés %3$d"
       ],
       "Applied %1$d / Failed %2$d / Total %3$d": [
-        "Aplicados %1$d / Erros %2$d / Total %3$d"
+        "Appliqués %1$d / Erreurs %2$d / Total %3$d"
       ],
       "Apply to remaining posts": [
-        "Aplicar aos demais posts"
+        "Appliquer aux autres articles"
       ],
       "Ask the agent…": [
-        "Pergunte ao agente…"
+        "Demandez à l'agent…"
       ],
       "Bulk job progress: %1$d of %2$d": [
-        "Progresso da tarefa em lote: %1$d de %2$d"
+        "Progression de la tâche en lot : %1$d sur %2$d"
       ],
       "Cancel": [
-        "Cancelar"
+        "Annuler"
       ],
       "Chat history": [
-        "Histórico do chat"
+        "Historique du chat"
       ],
       "Configuration missing.": [
-        "Configuração ausente."
+        "Configuration manquante."
       ],
       "Could not format summary.": [
-        "Não foi possível formatar o resumo."
+        "Impossible de formater le résumé."
       ],
       "current:": [
-        "atual:"
+        "actuel :"
+      ],
+      "Description": [
+        "Description"
       ],
       "Dismiss": [
-        "Dispensar"
+        "Masquer"
       ],
       "Errors (%d)": [
-        "Erros (%d)"
+        "Erreurs (%d)"
+      ],
+      "Focus keyword": [
+        "Mot-clé principal"
       ],
       "History #%d": [
-        "Histórico #%d"
+        "Historique n°%d"
       ],
       "job %s": [
-        "tarefa %s"
+        "tâche %s"
       ],
       "Job %s": [
-        "Tarefa %s"
+        "Tâche %s"
       ],
       "Message to the SEO agent": [
-        "Mensagem para o agente SEO"
+        "Message à l'agent SEO"
       ],
       "No messages yet — say hi to test the pipe.": [
-        "Ainda não há mensagens — diga oi para testar a conexão."
+        "Pas encore de messages — dites bonjour pour tester la connexion."
       ],
       "No proposals returned.": [
-        "Nenhuma proposta retornada."
+        "Aucune proposition retournée."
       ],
       "Post %d": [
-        "Post %d"
+        "Article %d"
       ],
       "Proposals (%d)": [
-        "Propostas (%d)"
+        "Propositions (%d)"
       ],
       "reasoning": [
-        "raciocínio"
+        "raisonnement"
       ],
       "refine: e.g. more aggressive, no emoji": [
-        "refinar: ex. «mais agressivo», «sem emoji»"
+        "préciser : p. ex. plus direct, sans emoji"
       ],
       "Reload page": [
-        "Recarregar página"
+        "Recharger la page"
       ],
       "Rollback all in job %s": [
-        "Reverter tudo na tarefa %s"
+        "Annuler tout dans la tâche %s"
       ],
       "Rolled back %d": [
-        "Revertidos %d"
+        "Annulés %d"
       ],
       "Send": [
-        "Enviar"
+        "Envoyer"
+      ],
+      "SEO bulk done": [
+        "Tâche SEO en lot terminée"
       ],
       "Set your Anthropic API key in the form above to start chatting.": [
-        "Informe sua chave da API Anthropic no formulário acima para começar a conversar."
+        "Saisissez votre clé API Anthropic dans le formulaire ci-dessus pour commencer."
       ],
       "show %d row\u0004show %d row": [
-        "mostrar %d linha",
-        "mostrar %d linhas"
+        "afficher %d ligne",
+        "afficher %d lignes"
       ],
       "Something went wrong in the chat panel.": [
-        "Algo deu errado no painel de chat."
+        "Une erreur est survenue dans le panneau de chat."
       ],
       "Stop": [
-        "Parar"
+        "Arrêter"
+      ],
+      "Title": [
+        "Titre"
       ],
       "View summary": [
-        "Ver resumo"
+        "Voir le résumé"
       ],
       "You": [
-        "Você"
+        "Vous"
       ],
       "": {
         "domain": "messages",
         "plural-forms": "nplurals=2; plural=(n != 1);",
-        "lang": "pt_BR"
+        "lang": "fr"
       }
     }
   }

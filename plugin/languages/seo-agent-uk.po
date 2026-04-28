@@ -120,6 +120,9 @@ msgstr "/ Пропущено %d"
 msgid "%1$d / %2$d applied"
 msgstr "%1$d / %2$d застосовано"
 
+msgid "%1$d/%2$d done"
+msgstr "%1$d/%2$d виконано"
+
 msgid "%d failed"
 msgstr "%d з помилкою"
 
@@ -159,11 +162,17 @@ msgstr "Не вдалося сформувати зведення."
 msgid "current:"
 msgstr "поточний:"
 
+msgid "Description"
+msgstr "Опис"
+
 msgid "Dismiss"
 msgstr "Сховати"
 
 msgid "Errors (%d)"
 msgstr "Помилки (%d)"
+
+msgid "Focus keyword"
+msgstr "Ключове слово"
 
 msgid "History #%d"
 msgstr "Історія #%d"
@@ -207,6 +216,9 @@ msgstr "Відкочено %d"
 msgid "Send"
 msgstr "Надіслати"
 
+msgid "SEO bulk done"
+msgstr "Масова SEO-задача завершена"
+
 msgid "Set your Anthropic API key in the form above to start chatting."
 msgstr "Введіть API-ключ Anthropic у форму вище, щоб почати чат."
 
@@ -221,6 +233,9 @@ msgstr "Щось пішло не так у панелі чату."
 
 msgid "Stop"
 msgstr "Зупинити"
+
+msgid "Title"
+msgstr "Заголовок"
 
 msgid "View summary"
 msgstr "Відкрити зведення"

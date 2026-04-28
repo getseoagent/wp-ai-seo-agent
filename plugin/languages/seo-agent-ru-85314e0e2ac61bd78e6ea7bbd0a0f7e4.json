@@ -1,5 +1,5 @@
 {
-  "translation-revision-date": "2026-04-28T11:40:38+00:00",
+  "translation-revision-date": "2026-04-28T11:48:24+00:00",
   "generator": "build-jed-json.ts",
   "domain": "messages",
   "locale_data": {
@@ -106,6 +106,9 @@
       "%1$d / %2$d applied": [
         "%1$d / %2$d применено"
       ],
+      "%1$d/%2$d done": [
+        "%1$d/%2$d выполнено"
+      ],
       "%d failed": [
         "%d с ошибкой"
       ],
@@ -145,11 +148,17 @@
       "current:": [
         "текущий:"
       ],
+      "Description": [
+        "Описание"
+      ],
       "Dismiss": [
         "Скрыть"
       ],
       "Errors (%d)": [
         "Ошибки (%d)"
+      ],
+      "Focus keyword": [
+        "Ключевое слово"
       ],
       "History #%d": [
         "История #%d"
@@ -193,6 +202,9 @@
       "Send": [
         "Отправить"
       ],
+      "SEO bulk done": [
+        "Массовая SEO-задача завершена"
+      ],
       "Set your Anthropic API key in the form above to start chatting.": [
         "Введите API-ключ Anthropic в форме выше, чтобы начать чат."
       ],
@@ -206,6 +218,9 @@
       ],
       "Stop": [
         "Остановить"
+      ],
+      "Title": [
+        "Заголовок"
       ],
       "View summary": [
         "Открыть сводку"

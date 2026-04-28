@@ -160,11 +160,19 @@ function tryFormat(result: unknown): { proposals: FormattedProposal[]; failures:
   }
 }
 
+function fieldLabelText(label: ProposalField["label"]): string {
+  switch (label) {
+    case "title":         return __("Title");
+    case "description":   return __("Description");
+    case "focus_keyword": return __("Focus keyword");
+  }
+}
+
 function FieldRow({ field }: { field: ProposalField }) {
   return (
     <div style={fieldRowStyle}>
       <div style={fieldLabelStyle}>
-        {field.label}
+        {fieldLabelText(field.label)}
         {field.lengthAnnotation && <span style={lengthAnnotationStyle}>{field.lengthAnnotation}</span>}
       </div>
       {field.oldText !== "" && <del style={oldTextStyle}>{field.oldText}</del>}
