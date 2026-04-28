@@ -39,28 +39,4 @@ final class SettingsTest extends TestCase
         $this->assertNull(Settings::get_api_key());
     }
 
-    public function test_license_key_get_returns_null_when_unset(): void
-    {
-        $this->assertNull(Settings::get_license_key());
-    }
-
-    public function test_license_key_roundtrip(): void
-    {
-        Settings::set_license_key('seo_TEST_LICENSE');
-        $this->assertSame('seo_TEST_LICENSE', Settings::get_license_key());
-    }
-
-    public function test_license_key_clear(): void
-    {
-        Settings::set_license_key('seo_X');
-        Settings::clear_license_key();
-        $this->assertNull(Settings::get_license_key());
-    }
-
-    public function test_license_key_setting_empty_string_clears(): void
-    {
-        Settings::set_license_key('seo_X');
-        Settings::set_license_key('   ');
-        $this->assertNull(Settings::get_license_key());
-    }
 }

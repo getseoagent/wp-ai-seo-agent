@@ -5,8 +5,7 @@ namespace SeoAgent;
 
 final class Settings
 {
-    private const OPTION_KEY         = 'seo_agent_api_key';
-    private const LICENSE_OPTION_KEY = 'seo_agent_license_key';
+    private const OPTION_KEY = 'seo_agent_api_key';
 
     public static function init(): void
     {
@@ -36,30 +35,6 @@ final class Settings
     public static function clear_api_key(): void
     {
         delete_option(self::OPTION_KEY);
-    }
-
-    public static function get_license_key(): ?string
-    {
-        $stored = get_option(self::LICENSE_OPTION_KEY, null);
-        if (!is_string($stored) || $stored === '') {
-            return null;
-        }
-        return $stored;
-    }
-
-    public static function set_license_key(string $key): void
-    {
-        $key = trim($key);
-        if ($key === '') {
-            self::clear_license_key();
-            return;
-        }
-        update_option(self::LICENSE_OPTION_KEY, $key);
-    }
-
-    public static function clear_license_key(): void
-    {
-        delete_option(self::LICENSE_OPTION_KEY);
     }
 
     private static function encrypt(string $plain): string

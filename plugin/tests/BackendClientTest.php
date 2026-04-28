@@ -3,14 +3,13 @@ declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
 use SeoAgent\Backend_Client;
-use SeoAgent\Settings;
+use SeoAgent\License;
 
 final class BackendClientTest extends TestCase
 {
     protected function setUp(): void
     {
         $GLOBALS['wp_options_store']      = [];
-        $GLOBALS['_transient_store']      = [];
         $GLOBALS['_remote_post_handler']  = null;
         $GLOBALS['_last_remote_post']     = null;
         $GLOBALS['_seoagent_test_home_url'] = 'https://shop.example';
@@ -38,9 +37,9 @@ final class BackendClientTest extends TestCase
         $this->assertSame('https://shop.example', $body['site_url']);
     }
 
-    public function test_includes_license_key_when_settings_set(): void
+    public function test_includes_license_key_when_set(): void
     {
-        Settings::set_license_key('seo_TEST_KEY');
+        License::set_license_key('seo_TEST_KEY');
         $GLOBALS['_remote_post_handler'] = static function ($url, $args) {
             return ['response' => ['code' => 200], 'body' => json_encode(['token' => 't', 'tier' => 'pro', 'expires_at' => gmdate('c', time() + 600)])];
         };

@@ -5,7 +5,6 @@ namespace SeoAgent;
 
 final class Backend_Client
 {
-    private const TRANSIENT_KEY = 'seo_agent_jwt';
     /** Refresh ahead of expiry so an in-flight request never carries a token that's about to die. */
     private const REFRESH_GRACE_SECONDS = 60;
 
@@ -29,14 +28,9 @@ final class Backend_Client
      */
     public static function get_jwt(): string
     {
-        $cached = get_transient(self::TRANSIENT_KEY);
-        if (is_array($cached)
-            && isset($cached['token'], $cached['exp'])
-            && is_string($cached['token'])
-            && is_int($cached['exp'])
-            && $cached['exp'] - self::REFRESH_GRACE_SECONDS > time()
-        ) {
-            return $cached['token'];
+        $cached = License::get_cached_jwt();
+        if (is_string($cached) && $cached !== '') {
+            return $cached;
         }
         return self::mint_and_cache();
     }
@@ -44,14 +38,14 @@ final class Backend_Client
     /** Force a fresh mint on next call. Use after the backend rejects the cached token (401). */
     public static function clear_jwt(): void
     {
-        delete_transient(self::TRANSIENT_KEY);
+        License::clear_cached_jwt();
     }
 
     private static function mint_and_cache(): string
     {
         $url     = self::backend_url() . '/auth/token';
         $payload = wp_json_encode([
-            'license_key' => Settings::get_license_key(),
+            'license_key' => License::get_license_key(),
             'site_url'    => self::site_url(),
         ]);
 
@@ -82,10 +76,9 @@ final class Backend_Client
             throw new \RuntimeException('auth/token returned unparseable expires_at');
         }
 
-        // WP transient TTL counts down from now; align with JWT exp minus grace so the
-        // transient evicts itself just before the token would actually expire.
-        $ttl = max(60, $expUnix - self::REFRESH_GRACE_SECONDS - time());
-        set_transient(self::TRANSIENT_KEY, ['token' => $data['token'], 'exp' => $expUnix], $ttl);
+        // License::get_cached_jwt() compares exp <= time(), so we shorten the
+        // stored exp by REFRESH_GRACE_SECONDS — no separate "almost-expired" check needed.
+        License::cache_jwt($data['token'], $expUnix - self::REFRESH_GRACE_SECONDS);
 
         return $data['token'];
     }
