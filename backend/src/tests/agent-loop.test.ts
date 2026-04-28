@@ -78,7 +78,8 @@ describe("runAgent", () => {
     }
     const errors = events.filter(e => e.type === "error");
     expect(errors.length).toBe(1);
-    expect(errors[0].message).toMatch(/iteration cap/i);
+    expect(errors[0].code).toBe("iteration_cap");
+    expect(errors[0].message).toMatch(/too many turns/i);
   });
 
   it("emits error tool_result and continues when dispatchTool denies tool", async () => {

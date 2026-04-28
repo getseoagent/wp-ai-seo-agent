@@ -1,6 +1,6 @@
 import { dispatchTool, type Tool } from "./tools";
 import type { WpClient } from "./wp-client";
-import type { SseEvent } from "./sse";
+import { classifyError, type SseEvent } from "./sse";
 import type { CraftDeps } from "./craft";
 import { CHAT_SYSTEM_PROMPT } from "./chat-prompt";
 import { type Tier } from "./license/key-format";
@@ -48,7 +48,7 @@ export async function* runAgent(args: RunAgentArgs): AsyncGenerator<SseEvent> {
 
   for (let iter = 0; iter < max; iter++) {
     if (args.signal.aborted) {
-      yield { type: "error", message: "aborted" };
+      yield { type: "error", code: "aborted", message: "Cancelled." };
       return;
     }
 
@@ -58,8 +58,7 @@ export async function* runAgent(args: RunAgentArgs): AsyncGenerator<SseEvent> {
         if (chunk.type === "text") yield { type: "text", delta: chunk.delta };
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      yield { type: "error", message: msg };
+      yield classifyError(err);
       return;
     }
 
@@ -131,5 +130,9 @@ export async function* runAgent(args: RunAgentArgs): AsyncGenerator<SseEvent> {
     messages.push({ role: "user", content: toolResultBlocks });
   }
 
-  yield { type: "error", message: "iteration cap reached" };
+  yield {
+    type: "error",
+    code: "iteration_cap",
+    message: "Agent took too many turns to finish. Try a more specific request, or break the work into smaller batches.",
+  };
 }

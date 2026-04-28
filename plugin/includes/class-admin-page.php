@@ -115,6 +115,108 @@ final class Admin_Page {
 				<p><button type="submit" class="button button-primary"><?php echo esc_html__( 'Save', 'seo-agent' ); ?></button></p>
 			</form>
 
+			<h2><?php echo esc_html__( 'Diagnose', 'seo-agent' ); ?></h2>
+			<p style="color:#646970;font-size:13px;">
+				<?php echo esc_html__( 'Run a one-click connectivity check before opening a support ticket. Output is safe to share — no secrets included.', 'seo-agent' ); ?>
+			</p>
+			<p>
+				<button type="button" class="button" id="seoagent-diagnose-btn">
+					<?php echo esc_html__( 'Run diagnose', 'seo-agent' ); ?>
+				</button>
+				<button type="button" class="button" id="seoagent-diagnose-copy" style="display:none;margin-left:8px;">
+					<?php echo esc_html__( 'Copy report for support', 'seo-agent' ); ?>
+				</button>
+			</p>
+			<pre id="seoagent-diagnose-out" style="display:none;background:#f4f5f7;border:1px solid #c3c4c7;border-radius:4px;padding:12px;font-size:12px;max-height:400px;overflow:auto;"></pre>
+			<?php
+			$diagnose_url   = esc_url( rest_url( 'seoagent/v1/diagnose' ) );
+			$diagnose_nonce = wp_create_nonce( 'wp_rest' );
+			?>
+			<script>
+(function(){
+	var btn   = document.getElementById('seoagent-diagnose-btn');
+	var copy  = document.getElementById('seoagent-diagnose-copy');
+	var out   = document.getElementById('seoagent-diagnose-out');
+	if (!btn) return;
+	var lastReport = '';
+
+	btn.addEventListener('click', async function() {
+	btn.disabled = true;
+	out.style.display = 'block';
+	out.textContent = <?php echo wp_json_encode( __( 'Running diagnose…', 'seo-agent' ) ); ?>;
+	try {
+		var res = await fetch(<?php echo wp_json_encode( $diagnose_url ); ?>, {
+		method:  'POST',
+		headers: {
+			'content-type': 'application/json',
+			'x-wp-nonce':   <?php echo wp_json_encode( $diagnose_nonce ); ?>,
+		},
+		credentials: 'same-origin',
+		body: '{}',
+		});
+		var data = await res.json();
+		lastReport = formatReport(data);
+		out.textContent = lastReport;
+		copy.style.display = 'inline-block';
+	} catch (e) {
+		out.textContent = <?php echo wp_json_encode( __( 'Diagnose failed:', 'seo-agent' ) ); ?> + ' ' + e.message;
+	} finally {
+		btn.disabled = false;
+	}
+	});
+
+	copy.addEventListener('click', async function() {
+	try {
+		await navigator.clipboard.writeText(lastReport);
+		copy.textContent = <?php echo wp_json_encode( __( 'Copied!', 'seo-agent' ) ); ?>;
+		setTimeout(function(){
+		copy.textContent = <?php echo wp_json_encode( __( 'Copy report for support', 'seo-agent' ) ); ?>;
+		}, 2000);
+	} catch (e) {
+		// Clipboard API can fail in non-https contexts or if user denies permission.
+		// Fall back to a select-all hint so the user can copy manually.
+		window.getSelection().selectAllChildren(out);
+	}
+	});
+
+	// Render the JSON as a checklist + raw block. Only the keys we know are
+	// formatted; unknown keys fall through to the raw JSON dump for debugging.
+	function formatReport(d) {
+	var ok = '✓', bad = '✗', skip = '~';
+	var lines = [];
+	lines.push('# AI SEO Agent diagnostic');
+	lines.push('plugin: ' + d.plugin_version + ' · WP ' + d.wp_version + ' · PHP ' + d.php_version);
+	lines.push('site:    ' + d.site_url);
+	lines.push('backend: ' + d.backend_url);
+	lines.push('took:    ' + d.took_ms + ' ms');
+	lines.push('');
+	lines.push('## Configuration');
+	lines.push('  ' + (d.wp_config && d.wp_config.SEO_AGENT_JWT_SECRET === 'set' ? ok : bad)
+		+ ' SEO_AGENT_JWT_SECRET: ' + (d.wp_config && d.wp_config.SEO_AGENT_JWT_SECRET));
+	lines.push('  ' + ok + ' SEO_AGENT_BACKEND_URL: ' + (d.wp_config && d.wp_config.SEO_AGENT_BACKEND_URL));
+	lines.push('  ' + (d.anthropic_key_set ? ok : bad) + ' Anthropic API key: ' + (d.anthropic_key_set ? 'set' : 'NOT SET'));
+	lines.push('  ' + (d.license_key_set ? ok : skip) + ' License key: ' + (d.license_key_set ? 'set' : 'free tier'));
+	lines.push('');
+	lines.push('## Backend connectivity');
+	var h = d.backend_health || {};
+	lines.push('  ' + (h.status === 'ok' ? ok : bad) + ' /health: ' + (h.status || '?')
+		+ ' (' + (h.http_code !== undefined ? 'HTTP ' + h.http_code + ', ' : '')
+		+ (h.elapsed_ms || 0) + ' ms)');
+	var m = d.jwt_mint || {};
+	var mIcon = m.status === 'ok' ? ok : (m.status === 'skipped' ? skip : bad);
+	lines.push('  ' + mIcon + ' /auth/token mint: ' + (m.status || '?')
+		+ (m.elapsed_ms ? ' (' + m.elapsed_ms + ' ms)' : '')
+		+ (m.error ? ' — ' + m.error : ''));
+	var c = d.jwt_cache || {};
+	lines.push('  ' + (c.present ? ok : skip) + ' JWT cache: ' + (c.present ? 'present' : 'empty'));
+	lines.push('');
+	lines.push('--- raw ---');
+	lines.push(JSON.stringify(d, null, 2));
+	return lines.join('\n');
+	}
+})();
+</script>
+
 			<h2><?php echo esc_html__( 'Chat', 'seo-agent' ); ?></h2>
 			<div id="seo-agent-root"><?php echo esc_html__( 'Loading…', 'seo-agent' ); ?></div>
 		</div>

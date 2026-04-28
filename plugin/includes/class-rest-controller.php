@@ -239,6 +239,19 @@ final class REST_Controller {
 				'permission_callback' => array( self::class, 'permit_admin_or_jwt' ),
 			)
 		);
+
+		// Self-diagnose for the Settings page. Browser-only (admin cookie).
+		register_rest_route(
+			'seoagent/v1',
+			'/diagnose',
+			array(
+				'methods'             => 'POST',
+				'callback'            => static function (): \WP_REST_Response {
+					return new \WP_REST_Response( self::handle_diagnose() );
+				},
+				'permission_callback' => array( self::class, 'permit_admin' ),
+			)
+		);
 	}
 
 	public static function permit_admin(): bool {
@@ -1006,5 +1019,108 @@ final class REST_Controller {
 		}
 		curl_close( $ch );
 		exit;
+	}
+
+	/**
+	 * Self-diagnose for the Settings-page support button. Returns a JSON
+	 * snapshot of every check that's commonly the root cause of a "doesn't
+	 * work" support ticket: backend reachability, JWT mint round-trip, JWT
+	 * cache state, wp-config constants, runtime versions.
+	 *
+	 * No secrets in the response — the JWT cache surface only reports
+	 * presence + expiry, never the token itself.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public static function handle_diagnose(): array {
+		$now = time();
+		$out = array(
+			'plugin_version' => defined( 'SEO_AGENT_VERSION' ) ? SEO_AGENT_VERSION : 'unknown',
+			'wp_version'     => function_exists( 'get_bloginfo' ) ? get_bloginfo( 'version' ) : 'unknown',
+			'php_version'    => PHP_VERSION,
+			'site_url'       => function_exists( 'home_url' ) ? home_url() : '',
+			'backend_url'    => Backend_Client::backend_url(),
+		);
+
+		// 1) wp-config constants we care about.
+		$out['wp_config']         = array(
+			'SEO_AGENT_JWT_SECRET'  => self::diagnose_secret_constant( 'SEO_AGENT_JWT_SECRET', 32 ),
+			'SEO_AGENT_BACKEND_URL' => defined( 'SEO_AGENT_BACKEND_URL' ) ? 'set' : 'using_default',
+		);
+		$out['anthropic_key_set'] = Settings::get_api_key() !== null;
+		$out['license_key_set']   = License::get_license_key() !== null;
+
+		// 2) JWT cache state (no secrets in the response).
+		$cached_jwt       = License::get_cached_jwt();
+		$out['jwt_cache'] = array(
+			'present' => is_string( $cached_jwt ) && $cached_jwt !== '',
+		);
+
+		// 3) Live backend health probe.
+		$health_started = microtime( true );
+		$health_resp    = wp_remote_get( Backend_Client::backend_url() . '/health', array( 'timeout' => 5 ) );
+		$health_elapsed = (int) ( ( microtime( true ) - $health_started ) * 1000 );
+		if ( is_wp_error( $health_resp ) ) {
+			$out['backend_health'] = array(
+				'status'     => 'fail',
+				'error'      => 'transport_error',
+				'elapsed_ms' => $health_elapsed,
+			);
+		} else {
+			$code                  = (int) wp_remote_retrieve_response_code( $health_resp );
+			$out['backend_health'] = array(
+				'status'     => $code === 200 ? 'ok' : 'fail',
+				'http_code'  => $code,
+				'elapsed_ms' => $health_elapsed,
+			);
+		}
+
+		// 4) Live JWT mint probe — ONLY if /health succeeded. Avoids spamming
+		//    /auth/token with a known-broken backend (rate-limit considerate).
+		if ( ( $out['backend_health']['status'] ?? '' ) === 'ok' ) {
+			// Force a fresh mint by clearing cache, so we exercise the actual
+			// /auth/token round-trip even if there's a valid cached token.
+			License::clear_cached_jwt();
+			$mint_started = microtime( true );
+			try {
+				$jwt             = Backend_Client::get_jwt();
+				$out['jwt_mint'] = array(
+					'status'     => 'ok',
+					'token_len'  => strlen( $jwt ),
+					'elapsed_ms' => (int) ( ( microtime( true ) - $mint_started ) * 1000 ),
+				);
+			} catch ( \Throwable $e ) {
+				$out['jwt_mint'] = array(
+					'status'     => 'fail',
+					'error'      => $e->getMessage(),
+					'elapsed_ms' => (int) ( ( microtime( true ) - $mint_started ) * 1000 ),
+				);
+			}
+		} else {
+			$out['jwt_mint'] = array(
+				'status' => 'skipped',
+				'reason' => 'backend unreachable',
+			);
+		}
+
+		$out['took_ms'] = (int) ( ( microtime( true ) - $now ) * 1000 ) ?: 0;
+		return $out;
+	}
+
+	/**
+	 * @return string  one of "set" / "missing" / "too_short"
+	 */
+	private static function diagnose_secret_constant( string $name, int $min_len ): string {
+		if ( ! defined( $name ) ) {
+			return 'missing';
+		}
+		$v = (string) constant( $name );
+		if ( $v === '' ) {
+			return 'missing';
+		}
+		if ( strlen( $v ) < $min_len ) {
+			return 'too_short';
+		}
+		return 'set';
 	}
 }

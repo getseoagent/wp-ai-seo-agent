@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { stream } from "hono/streaming";
 import { requireJwt } from "../lib/auth";
 import type { JwtPayload } from "../lib/jwt";
-import { sseFormat, type SseEvent } from "../lib/sse";
+import { sseFormat, classifyError, type SseEvent } from "../lib/sse";
 import { runAgent, type AgentClient, type Message } from "../lib/agent-loop";
 import type { Tool } from "../lib/tools";
 import type { WpClient } from "../lib/wp-client";
@@ -68,8 +68,7 @@ export function mountChat(app: Hono, deps: ChatDeps): void {
           await deps.sessionStore.appendMessage(body.session_id, { role: "assistant", content: assistantText });
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        await s.write(sseFormat({ type: "error", message: msg }));
+        await s.write(sseFormat(classifyError(err)));
       }
     });
   });
