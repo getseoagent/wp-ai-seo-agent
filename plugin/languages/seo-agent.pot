@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-28T13:17:28+02:00\n"
+"POT-Creation-Date: 2026-04-28T13:37:51+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: seo-agent\n"
@@ -184,12 +184,16 @@ msgstr ""
 msgid "/ Skipped %d"
 msgstr ""
 
-#: src/components/BulkProgressBar.tsx:40
+#: src/components/BulkProgressBar.tsx:45
 msgid "%1$d / %2$d applied"
 msgstr ""
 
-#: src/components/BulkProgressBar.tsx:44
+#: src/components/BulkProgressBar.tsx:49
 msgid "%d failed"
+msgstr ""
+
+#: src/components/MessageList.tsx:96
+msgid "Agent"
 msgstr ""
 
 #: src/components/Chat.tsx:142
@@ -208,12 +212,20 @@ msgstr ""
 msgid "Apply to remaining posts"
 msgstr ""
 
-#: src/components/MessageInput.tsx:19
+#: src/components/MessageInput.tsx:38
 msgid "Ask the agent…"
+msgstr ""
+
+#: src/components/BulkProgressBar.tsx:41
+msgid "Bulk job progress: %1$d of %2$d"
 msgstr ""
 
 #: src/components/BulkProgressBar.tsx:34
 msgid "Cancel"
+msgstr ""
+
+#: src/components/MessageList.tsx:86
+msgid "Chat history"
 msgstr ""
 
 #: src/App.tsx:13
@@ -224,7 +236,7 @@ msgstr ""
 msgid "Could not format summary."
 msgstr ""
 
-#: src/components/BulkProgressBar.tsx:47
+#: src/components/BulkProgressBar.tsx:52
 msgid "current:"
 msgstr ""
 
@@ -253,6 +265,14 @@ msgid ""
 "Last bulk job (%1$d pages) finished while you were away — %2$d/%3$d done"
 msgstr ""
 
+#: src/components/MessageInput.tsx:31
+msgid "Message to the SEO agent"
+msgstr ""
+
+#: src/components/MessageList.tsx:89
+msgid "No messages yet — say hi to test the pipe."
+msgstr ""
+
 #: src/components/RewriteCard.tsx:212 src/components/RewriteCard.tsx:216
 msgid "No proposals returned."
 msgstr ""
@@ -273,6 +293,16 @@ msgstr ""
 msgid "refine: e.g. more aggressive, no emoji"
 msgstr ""
 
+#: src/components/ErrorBoundary.tsx:46
+msgid "Reload page"
+msgstr ""
+
+#: src/components/ErrorBoundary.tsx:39
+msgid ""
+"Reload the page to recover. If the problem repeats, copy the error below "
+"into a support thread."
+msgstr ""
+
 #: src/components/BulkSummaryCard.tsx:82
 msgid "Rollback all in job %s"
 msgstr ""
@@ -281,7 +311,7 @@ msgstr ""
 msgid "Rolled back %d"
 msgstr ""
 
-#: src/components/MessageInput.tsx:24
+#: src/components/MessageInput.tsx:44
 msgid "Send"
 msgstr ""
 
@@ -295,10 +325,18 @@ msgid_plural "show %d rows"
 msgstr[0] ""
 msgstr[1] ""
 
+#: src/components/ErrorBoundary.tsx:38
+msgid "Something went wrong in the chat panel."
+msgstr ""
+
 #: src/components/Chat.tsx:143
 msgid "Stop"
 msgstr ""
 
 #: src/components/RecentJobsBanner.tsx:46
 msgid "View summary"
+msgstr ""
+
+#: src/components/MessageList.tsx:96
+msgid "You"
 msgstr ""

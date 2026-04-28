@@ -34,7 +34,12 @@ export function BulkProgressBar({ job, onSendChat }: BulkProgressBarProps) {
           <button style={buttonStyle} onClick={() => onSendChat(`cancel job ${id}`)}>{__("Cancel")}</button>
         )}
       </div>
-      <progress style={progressStyle} value={done} max={Math.max(total, 1)} />
+      <progress
+        style={progressStyle}
+        value={done}
+        max={Math.max(total, 1)}
+        aria-label={sprintf(__("Bulk job progress: %1$d of %2$d"), done, total)}
+      />
       <div style={statsStyle}>
         {/* Translators: %1$d = applied count, %2$d = total */}
         {sprintf(__("%1$d / %2$d applied"), done, total)}

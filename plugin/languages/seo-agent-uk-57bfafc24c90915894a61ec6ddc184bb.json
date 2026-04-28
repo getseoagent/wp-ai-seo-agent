@@ -1,5 +1,5 @@
 {
-  "translation-revision-date": "2026-04-28T11:26:33+00:00",
+  "translation-revision-date": "2026-04-28T11:40:38+00:00",
   "generator": "build-jed-json.ts",
   "domain": "messages",
   "locale_data": {
@@ -109,6 +109,9 @@
       "%d failed": [
         "%d з помилкою"
       ],
+      "Agent": [
+        "Агент"
+      ],
       "Agent is thinking…": [
         "Агент думає…"
       ],
@@ -124,8 +127,14 @@
       "Ask the agent…": [
         "Запитайте агента…"
       ],
+      "Bulk job progress: %1$d of %2$d": [
+        "Прогрес масової задачі: %1$d з %2$d"
+      ],
       "Cancel": [
         "Скасувати"
+      ],
+      "Chat history": [
+        "Історія чату"
       ],
       "Configuration missing.": [
         "Бракує конфігурації."
@@ -151,6 +160,12 @@
       "Job %s": [
         "Задача %s"
       ],
+      "Message to the SEO agent": [
+        "Повідомлення SEO-агенту"
+      ],
+      "No messages yet — say hi to test the pipe.": [
+        "Повідомлень ще немає — привітайтеся, щоб перевірити зв'язок."
+      ],
       "No proposals returned.": [
         "Пропозицій не отримано."
       ],
@@ -165,6 +180,9 @@
       ],
       "refine: e.g. more aggressive, no emoji": [
         "уточнити: напр. «жорсткіше», «без емодзі»"
+      ],
+      "Reload page": [
+        "Перезавантажити сторінку"
       ],
       "Rollback all in job %s": [
         "Відкотити все в задачі %s"
@@ -183,11 +201,17 @@
         "показати %d рядки",
         "показати %d рядків"
       ],
+      "Something went wrong in the chat panel.": [
+        "Щось пішло не так у панелі чату."
+      ],
       "Stop": [
         "Зупинити"
       ],
       "View summary": [
         "Відкрити зведення"
+      ],
+      "You": [
+        "Ви"
       ],
       "": {
         "domain": "messages",

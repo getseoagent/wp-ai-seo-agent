@@ -123,6 +123,9 @@ msgstr "%1$d / %2$d застосовано"
 msgid "%d failed"
 msgstr "%d з помилкою"
 
+msgid "Agent"
+msgstr "Агент"
+
 msgid "Agent is thinking…"
 msgstr "Агент думає…"
 
@@ -138,8 +141,14 @@ msgstr "Застосувати до решти постів"
 msgid "Ask the agent…"
 msgstr "Запитайте агента…"
 
+msgid "Bulk job progress: %1$d of %2$d"
+msgstr "Прогрес масової задачі: %1$d з %2$d"
+
 msgid "Cancel"
 msgstr "Скасувати"
+
+msgid "Chat history"
+msgstr "Історія чату"
 
 msgid "Configuration missing."
 msgstr "Бракує конфігурації."
@@ -165,6 +174,12 @@ msgstr "задача %s"
 msgid "Job %s"
 msgstr "Задача %s"
 
+msgid "Message to the SEO agent"
+msgstr "Повідомлення SEO-агенту"
+
+msgid "No messages yet — say hi to test the pipe."
+msgstr "Повідомлень ще немає — привітайтеся, щоб перевірити зв'язок."
+
 msgid "No proposals returned."
 msgstr "Пропозицій не отримано."
 
@@ -179,6 +194,9 @@ msgstr "обґрунтування"
 
 msgid "refine: e.g. more aggressive, no emoji"
 msgstr "уточнити: напр. «жорсткіше», «без емодзі»"
+
+msgid "Reload page"
+msgstr "Перезавантажити сторінку"
 
 msgid "Rollback all in job %s"
 msgstr "Відкотити все в задачі %s"
@@ -198,8 +216,14 @@ msgstr[0] "показати %d рядок"
 msgstr[1] "показати %d рядки"
 msgstr[2] "показати %d рядків"
 
+msgid "Something went wrong in the chat panel."
+msgstr "Щось пішло не так у панелі чату."
+
 msgid "Stop"
 msgstr "Зупинити"
 
 msgid "View summary"
 msgstr "Відкрити зведення"
+
+msgid "You"
+msgstr "Ви"

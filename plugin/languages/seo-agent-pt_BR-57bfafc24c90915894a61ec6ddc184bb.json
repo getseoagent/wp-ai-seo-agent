@@ -1,5 +1,5 @@
 {
-  "translation-revision-date": "2026-04-28T11:26:33+00:00",
+  "translation-revision-date": "2026-04-28T11:40:38+00:00",
   "generator": "build-jed-json.ts",
   "domain": "messages",
   "locale_data": {
@@ -109,6 +109,9 @@
       "%d failed": [
         "%d com erro"
       ],
+      "Agent": [
+        "Agente"
+      ],
       "Agent is thinking…": [
         "O agente está pensando…"
       ],
@@ -124,8 +127,14 @@
       "Ask the agent…": [
         "Pergunte ao agente…"
       ],
+      "Bulk job progress: %1$d of %2$d": [
+        "Progresso da tarefa em lote: %1$d de %2$d"
+      ],
       "Cancel": [
         "Cancelar"
+      ],
+      "Chat history": [
+        "Histórico do chat"
       ],
       "Configuration missing.": [
         "Configuração ausente."
@@ -151,6 +160,12 @@
       "Job %s": [
         "Tarefa %s"
       ],
+      "Message to the SEO agent": [
+        "Mensagem para o agente SEO"
+      ],
+      "No messages yet — say hi to test the pipe.": [
+        "Ainda não há mensagens — diga oi para testar a conexão."
+      ],
       "No proposals returned.": [
         "Nenhuma proposta retornada."
       ],
@@ -165,6 +180,9 @@
       ],
       "refine: e.g. more aggressive, no emoji": [
         "refinar: ex. «mais agressivo», «sem emoji»"
+      ],
+      "Reload page": [
+        "Recarregar página"
       ],
       "Rollback all in job %s": [
         "Reverter tudo na tarefa %s"
@@ -182,11 +200,17 @@
         "mostrar %d linha",
         "mostrar %d linhas"
       ],
+      "Something went wrong in the chat panel.": [
+        "Algo deu errado no painel de chat."
+      ],
       "Stop": [
         "Parar"
       ],
       "View summary": [
         "Ver resumo"
+      ],
+      "You": [
+        "Você"
       ],
       "": {
         "domain": "messages",

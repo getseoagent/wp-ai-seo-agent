@@ -123,6 +123,9 @@ msgstr "%1$d / %2$d appliqués"
 msgid "%d failed"
 msgstr "%d en erreur"
 
+msgid "Agent"
+msgstr "Agent"
+
 msgid "Agent is thinking…"
 msgstr "L'agent réfléchit…"
 
@@ -138,8 +141,14 @@ msgstr "Appliquer aux autres articles"
 msgid "Ask the agent…"
 msgstr "Demandez à l'agent…"
 
+msgid "Bulk job progress: %1$d of %2$d"
+msgstr "Progression de la tâche en lot : %1$d sur %2$d"
+
 msgid "Cancel"
 msgstr "Annuler"
+
+msgid "Chat history"
+msgstr "Historique du chat"
 
 msgid "Configuration missing."
 msgstr "Configuration manquante."
@@ -165,6 +174,12 @@ msgstr "tâche %s"
 msgid "Job %s"
 msgstr "Tâche %s"
 
+msgid "Message to the SEO agent"
+msgstr "Message à l'agent SEO"
+
+msgid "No messages yet — say hi to test the pipe."
+msgstr "Pas encore de messages — dites bonjour pour tester la connexion."
+
 msgid "No proposals returned."
 msgstr "Aucune proposition retournée."
 
@@ -179,6 +194,9 @@ msgstr "raisonnement"
 
 msgid "refine: e.g. more aggressive, no emoji"
 msgstr "préciser : p. ex. plus direct, sans emoji"
+
+msgid "Reload page"
+msgstr "Recharger la page"
 
 msgid "Rollback all in job %s"
 msgstr "Annuler tout dans la tâche %s"
@@ -197,8 +215,14 @@ msgid_plural "show %d rows"
 msgstr[0] "afficher %d ligne"
 msgstr[1] "afficher %d lignes"
 
+msgid "Something went wrong in the chat panel."
+msgstr "Une erreur est survenue dans le panneau de chat."
+
 msgid "Stop"
 msgstr "Arrêter"
 
 msgid "View summary"
 msgstr "Voir le résumé"
+
+msgid "You"
+msgstr "Vous"

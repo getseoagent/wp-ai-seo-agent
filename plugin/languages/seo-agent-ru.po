@@ -123,6 +123,9 @@ msgstr "%1$d / %2$d применено"
 msgid "%d failed"
 msgstr "%d с ошибкой"
 
+msgid "Agent"
+msgstr "Агент"
+
 msgid "Agent is thinking…"
 msgstr "Агент думает…"
 
@@ -138,8 +141,14 @@ msgstr "Применить к остальным постам"
 msgid "Ask the agent…"
 msgstr "Спросите агента…"
 
+msgid "Bulk job progress: %1$d of %2$d"
+msgstr "Прогресс массовой задачи: %1$d из %2$d"
+
 msgid "Cancel"
 msgstr "Отмена"
+
+msgid "Chat history"
+msgstr "История чата"
 
 msgid "Configuration missing."
 msgstr "Отсутствует конфигурация."
@@ -165,6 +174,12 @@ msgstr "задача %s"
 msgid "Job %s"
 msgstr "Задача %s"
 
+msgid "Message to the SEO agent"
+msgstr "Сообщение SEO-агенту"
+
+msgid "No messages yet — say hi to test the pipe."
+msgstr "Сообщений пока нет — поздоровайтесь, чтобы проверить связь."
+
 msgid "No proposals returned."
 msgstr "Предложения не получены."
 
@@ -179,6 +194,9 @@ msgstr "обоснование"
 
 msgid "refine: e.g. more aggressive, no emoji"
 msgstr "уточнить: например «жёстче», «без эмодзи»"
+
+msgid "Reload page"
+msgstr "Перезагрузить страницу"
 
 msgid "Rollback all in job %s"
 msgstr "Откатить всё в задаче %s"
@@ -198,8 +216,14 @@ msgstr[0] "показать %d строку"
 msgstr[1] "показать %d строки"
 msgstr[2] "показать %d строк"
 
+msgid "Something went wrong in the chat panel."
+msgstr "Что-то пошло не так в панели чата."
+
 msgid "Stop"
 msgstr "Остановить"
 
 msgid "View summary"
 msgstr "Открыть сводку"
+
+msgid "You"
+msgstr "Вы"

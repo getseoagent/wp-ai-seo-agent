@@ -1,4 +1,5 @@
 import { ToolCallCard, type ToolCall } from "./ToolCallCard";
+import { __ } from "../lib/i18n";
 
 export type Message = { role: "user" | "assistant"; text: string };
 export type ChatItem =
@@ -73,16 +74,26 @@ type MessageListProps = {
 
 export function MessageList({ items, onSendChat }: MessageListProps) {
   return (
-    <div style={containerStyle}>
+    // role="log" + aria-live="polite" tells screen readers to announce new
+    // entries as they're appended (incoming streamed text + tool calls)
+    // without interrupting the user mid-action. aria-relevant="additions"
+    // narrows to "only announce new content, not re-announce on re-render".
+    <div
+      style={containerStyle}
+      role="log"
+      aria-live="polite"
+      aria-relevant="additions"
+      aria-label={__("Chat history")}
+    >
       {items.length === 0 ? (
-        <div style={emptyHintStyle}>No messages yet — say hi to test the pipe.</div>
+        <div style={emptyHintStyle}>{__("No messages yet — say hi to test the pipe.")}</div>
       ) : (
         items.map((it, i) => {
           if (it.kind === "tool") return <ToolCallCard key={i} call={it.tool} onSendChat={onSendChat} />;
           const isUser = it.message.role === "user";
           return (
             <div key={i} style={{ ...rowBase, alignItems: isUser ? "flex-end" : "flex-start" }}>
-              <div style={labelBase}>{isUser ? "You" : "Agent"}</div>
+              <div style={labelBase}>{isUser ? __("You") : __("Agent")}</div>
               <div style={isUser ? userBubble : assistantBubble}>{it.message.text}</div>
             </div>
           );

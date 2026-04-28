@@ -20,22 +20,59 @@ export const app = new Hono();
 mountHealth(app);
 
 const MIN_SECRET_LEN = 32;
-function requireEnv(name: string, hint: string, opts: { minLen?: number } = {}): string {
+const ALLOWED_CURRENCIES = new Set(["USD", "EUR", "UAH"]);
+
+type EnvOpts = {
+  minLen?: number;
+  /** Must parse as `new URL(...)` and use one of the allowed schemes. */
+  url?: { schemes: string[] };
+  /** Must be a bare hostname (no scheme, no path). */
+  hostname?: true;
+  /** Must be one of these (case-sensitive). */
+  oneOf?: string[];
+};
+
+function requireEnv(name: string, hint: string, opts: EnvOpts = {}): string {
   const v = process.env[name];
   if (!v) throw new Error(`${name} is required (${hint})`);
   if (opts.minLen && v.length < opts.minLen) {
     throw new Error(`${name} too short (got ${v.length} chars, need ${opts.minLen}+) — ${hint}`);
   }
+  if (opts.url) {
+    let parsed: URL;
+    try { parsed = new URL(v); }
+    catch { throw new Error(`${name} is not a valid URL: ${JSON.stringify(v)} — ${hint}`); }
+    const scheme = parsed.protocol.replace(/:$/, "");
+    if (!opts.url.schemes.includes(scheme)) {
+      throw new Error(`${name} must use one of [${opts.url.schemes.join(", ")}], got ${scheme}: — ${hint}`);
+    }
+  }
+  if (opts.hostname && (v.includes("://") || v.includes("/"))) {
+    throw new Error(`${name} should be a bare hostname (no scheme, no path), got ${JSON.stringify(v)} — ${hint}`);
+  }
+  if (opts.oneOf && !opts.oneOf.includes(v)) {
+    throw new Error(`${name} must be one of [${opts.oneOf.join(", ")}], got ${JSON.stringify(v)} — ${hint}`);
+  }
   return v;
 }
 
-const wpBaseUrl           = requireEnv("WP_BASE_URL",                   "e.g. https://www.seo-friendly.org");
-const databaseUrl         = requireEnv("DATABASE_URL",                  "e.g. postgres://seoagent:***@127.0.0.1:5432/seoagent");
-const licenseHmacSecret   = requireEnv("LICENSE_HMAC_SECRET",           "32+ random chars; signs license keys",                                       { minLen: MIN_SECRET_LEN });
+const wpBaseUrl           = requireEnv("WP_BASE_URL",                   "e.g. https://www.seo-friendly.org",
+                                                                       { url: { schemes: ["http", "https"] } });
+const databaseUrl         = requireEnv("DATABASE_URL",                  "e.g. postgres://seoagent:***@127.0.0.1:5432/seoagent",
+                                                                       { url: { schemes: ["postgres", "postgresql"] } });
+const licenseHmacSecret   = requireEnv("LICENSE_HMAC_SECRET",           "32+ random chars; signs license keys",
+                                                                       { minLen: MIN_SECRET_LEN });
 const wfpMerchantAccount  = requireEnv("WAYFORPAY_MERCHANT_ACCOUNT",    "matches the merchant account configured in the WFP dashboard");
-const wfpMerchantSecretKey = requireEnv("WAYFORPAY_MERCHANT_SECRET_KEY", "32+ chars; HMAC-MD5 secret for webhook + chargeRecurring",                  { minLen: MIN_SECRET_LEN });
-const wfpDomain           = requireEnv("WAYFORPAY_DOMAIN",              "merchant domain registered with WFP, e.g. www.seo-friendly.org");
-const jwtSecret           = requireEnv("JWT_SECRET",                    "32+ random chars; signs user + service JWTs",                                { minLen: MIN_SECRET_LEN });
+const wfpMerchantSecretKey = requireEnv("WAYFORPAY_MERCHANT_SECRET_KEY", "32+ chars; HMAC-MD5 secret for webhook + chargeRecurring",
+                                                                       { minLen: MIN_SECRET_LEN });
+const wfpDomain           = requireEnv("WAYFORPAY_DOMAIN",              "merchant domain (no scheme, no path), e.g. www.seo-friendly.org",
+                                                                       { hostname: true });
+const jwtSecret           = requireEnv("JWT_SECRET",                    "32+ random chars; signs user + service JWTs",
+                                                                       { minLen: MIN_SECRET_LEN });
+const billingCurrency     = process.env.BILLING_CURRENCY ?? "USD";
+if (!ALLOWED_CURRENCIES.has(billingCurrency)) {
+  throw new Error(`BILLING_CURRENCY must be one of [${[...ALLOWED_CURRENCIES].join(", ")}], got ${JSON.stringify(billingCurrency)}`);
+}
 void databaseUrl;
 const wp = createWpClient({
   baseUrl:   wpBaseUrl,
@@ -86,7 +123,7 @@ const billingWorker = startBillingWorker({
   chargeRecurring: wfpClient.chargeRecurring.bind(wfpClient),
   sendEmail:       (kind, license) => sendTransactionalEmail(kind, license, renderEmail),
   amountForTier:   tier => TIER_PRICES[tier],
-  currency:        process.env.BILLING_CURRENCY ?? "USD",
+  currency:        billingCurrency,
 });
 process.on("SIGTERM", () => billingWorker.stop());
 
