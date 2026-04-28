@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { stream } from "hono/streaming";
-import { requireSharedSecret } from "../lib/auth";
+import { requireJwt } from "../lib/auth";
+import type { JwtPayload } from "../lib/jwt";
 import { sseFormat, type SseEvent } from "../lib/sse";
 import { runAgent, type AgentClient, type Message } from "../lib/agent-loop";
 import type { Tool } from "../lib/tools";
@@ -18,7 +19,7 @@ type ChatDeps = {
 type ChatRequest = { session_id: string; message: string };
 
 export function mountChat(app: Hono, deps: ChatDeps): void {
-  app.use("/chat", requireSharedSecret);
+  app.use("/chat", requireJwt);
 
   app.post("/chat", async (c) => {
     const apiKey = c.req.header("x-anthropic-key");
@@ -32,8 +33,8 @@ export function mountChat(app: Hono, deps: ChatDeps): void {
       return c.json({ error: "session_id and message required" }, 400);
     }
 
-    // Block 3 will replace siteUrl/licenseKey with JWT-derived values.
-    await deps.sessionStore.getOrCreate(body.session_id, { siteUrl: "unknown", licenseKey: null });
+    const jwt = c.get("jwt" as never) as JwtPayload;
+    await deps.sessionStore.getOrCreate(body.session_id, { siteUrl: jwt.site_url, licenseKey: jwt.license_key });
     await deps.sessionStore.appendMessage(body.session_id, { role: "user", content: body.message });
     const messages: Message[] = await deps.sessionStore.getMessages(body.session_id);
 
@@ -58,7 +59,7 @@ export function mountChat(app: Hono, deps: ChatDeps): void {
           tools: deps.tools,
           craft,
           emit,
-          tier: "enterprise",  // PLACEHOLDER — Block 3 Task 3.3 reads from c.get("auth").tier
+          tier: jwt.tier,
         })) {
           if (ev.type === "text") assistantText += ev.delta;
           await s.write(sseFormat(ev));
