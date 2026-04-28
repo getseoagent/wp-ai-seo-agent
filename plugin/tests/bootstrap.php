@@ -192,6 +192,27 @@ if (!function_exists('sanitize_text_field')) {
         return trim($s);
     }
 }
+if (!function_exists('__')) {
+    function __(string $text, string $domain = 'default'): string { return $text; }
+}
+if (!function_exists('esc_html__')) {
+    function esc_html__(string $text, string $domain = 'default'): string {
+        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+}
+if (!function_exists('esc_attr__')) {
+    function esc_attr__(string $text, string $domain = 'default'): string {
+        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+}
+if (!function_exists('_e')) {
+    function _e(string $text, string $domain = 'default'): void { echo $text; }
+}
+if (!function_exists('esc_html_e')) {
+    function esc_html_e(string $text, string $domain = 'default'): void {
+        echo htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+}
 if (!function_exists('rawurlencode')) {
     // PHP built-in; defining as fallback only if missing in some bizarre env.
 }

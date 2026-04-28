@@ -3,136 +3,151 @@ declare(strict_types=1);
 
 namespace SeoAgent;
 
-if (!defined('ABSPATH')) {
-    exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
-final class Backend_Client
-{
-    /** Refresh ahead of expiry so an in-flight request never carries a token that's about to die. */
-    private const REFRESH_GRACE_SECONDS = 60;
+final class Backend_Client {
 
-    public static function backend_url(): string
-    {
-        $configured = defined('SEO_AGENT_BACKEND_URL') ? (string) SEO_AGENT_BACKEND_URL : '';
-        if ($configured !== '') {
-            return rtrim($configured, '/');
-        }
-        return 'http://localhost:8787';
-    }
+	/** Refresh ahead of expiry so an in-flight request never carries a token that's about to die. */
+	private const REFRESH_GRACE_SECONDS = 60;
 
-    /**
-     * Returns a fresh JWT, minting one via /auth/token if no cached token exists or
-     * the cached one is within REFRESH_GRACE_SECONDS of its expiry. Throws on backend error.
-     */
-    public static function get_jwt(): string
-    {
-        $cached = License::get_cached_jwt();
-        if (is_string($cached) && $cached !== '') {
-            return $cached;
-        }
-        return self::mint_and_cache();
-    }
+	public static function backend_url(): string {
+		$configured = defined( 'SEO_AGENT_BACKEND_URL' ) ? (string) SEO_AGENT_BACKEND_URL : '';
+		if ( $configured !== '' ) {
+			return rtrim( $configured, '/' );
+		}
+		return 'http://localhost:8787';
+	}
 
-    /** Force a fresh mint on next call. Use after the backend rejects the cached token (401). */
-    public static function clear_jwt(): void
-    {
-        License::clear_cached_jwt();
-    }
+	/**
+	 * Returns a fresh JWT, minting one via /auth/token if no cached token exists or
+	 * the cached one is within REFRESH_GRACE_SECONDS of its expiry. Throws on backend error.
+	 */
+	public static function get_jwt(): string {
+		$cached = License::get_cached_jwt();
+		if ( is_string( $cached ) && $cached !== '' ) {
+			return $cached;
+		}
+		return self::mint_and_cache();
+	}
 
-    /**
-     * GETs /license/{key}/details from the backend with a Bearer JWT minted
-     * for this license. Returns the decoded payload or null on any failure.
-     * Subscription tab uses this to render tier / next-charge / card last-4.
-     */
-    public static function get_license_status(string $licenseKey): ?array
-    {
-        try {
-            $jwt = self::get_jwt();
-        } catch (\Throwable $e) {
-            return null;
-        }
-        $url = self::backend_url() . '/license/' . rawurlencode($licenseKey) . '/details';
-        $response = wp_remote_get($url, [
-            'headers' => [ 'Authorization' => 'Bearer ' . $jwt ],
-            'timeout' => 10,
-        ]);
-        if (is_wp_error($response)) return null;
-        if ((int) wp_remote_retrieve_response_code($response) !== 200) return null;
-        $body = json_decode((string) wp_remote_retrieve_body($response), true);
-        return is_array($body) ? $body : null;
-    }
+	/** Force a fresh mint on next call. Use after the backend rejects the cached token (401). */
+	public static function clear_jwt(): void {
+		License::clear_cached_jwt();
+	}
 
-    /**
-     * POSTs /license/{key}/cancel. Returns true on 200, false on anything
-     * else. The backend just sets recurring_state='cancelled'; the license
-     * keeps `status='active'` so the customer retains access until expires_at.
-     */
-    public static function cancel_license(string $licenseKey): bool
-    {
-        try {
-            $jwt = self::get_jwt();
-        } catch (\Throwable $e) {
-            return false;
-        }
-        $url = self::backend_url() . '/license/' . rawurlencode($licenseKey) . '/cancel';
-        $response = wp_remote_post($url, [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $jwt,
-                'Content-Type'  => 'application/json',
-            ],
-            'body'    => '{}',
-            'timeout' => 10,
-        ]);
-        if (is_wp_error($response)) return false;
-        return (int) wp_remote_retrieve_response_code($response) === 200;
-    }
+	/**
+	 * GETs /license/{key}/details from the backend with a Bearer JWT minted
+	 * for this license. Returns the decoded payload or null on any failure.
+	 * Subscription tab uses this to render tier / next-charge / card last-4.
+	 */
+	public static function get_license_status( string $licenseKey ): ?array {
+		try {
+			$jwt = self::get_jwt();
+		} catch ( \Throwable $e ) {
+			return null;
+		}
+		$url      = self::backend_url() . '/license/' . rawurlencode( $licenseKey ) . '/details';
+		$response = wp_remote_get(
+			$url,
+			array(
+				'headers' => array( 'Authorization' => 'Bearer ' . $jwt ),
+				'timeout' => 10,
+			)
+		);
+		if ( is_wp_error( $response ) ) {
+			return null;
+		}
+		if ( (int) wp_remote_retrieve_response_code( $response ) !== 200 ) {
+			return null;
+		}
+		$body = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+		return is_array( $body ) ? $body : null;
+	}
 
-    private static function mint_and_cache(): string
-    {
-        $url     = self::backend_url() . '/auth/token';
-        $payload = wp_json_encode([
-            'license_key' => License::get_license_key(),
-            'site_url'    => self::site_url(),
-        ]);
+	/**
+	 * POSTs /license/{key}/cancel. Returns true on 200, false on anything
+	 * else. The backend just sets recurring_state='cancelled'; the license
+	 * keeps `status='active'` so the customer retains access until expires_at.
+	 */
+	public static function cancel_license( string $licenseKey ): bool {
+		try {
+			$jwt = self::get_jwt();
+		} catch ( \Throwable $e ) {
+			return false;
+		}
+		$url      = self::backend_url() . '/license/' . rawurlencode( $licenseKey ) . '/cancel';
+		$response = wp_remote_post(
+			$url,
+			array(
+				'headers' => array(
+					'Authorization' => 'Bearer ' . $jwt,
+					'Content-Type'  => 'application/json',
+				),
+				'body'    => '{}',
+				'timeout' => 10,
+			)
+		);
+		if ( is_wp_error( $response ) ) {
+			return false;
+		}
+		return (int) wp_remote_retrieve_response_code( $response ) === 200;
+	}
 
-        $response = wp_remote_post($url, [
-            'headers' => [ 'Content-Type' => 'application/json' ],
-            'body'    => $payload,
-            'timeout' => 10,
-        ]);
+	private static function mint_and_cache(): string {
+		$url     = self::backend_url() . '/auth/token';
+		$payload = wp_json_encode(
+			array(
+				'license_key' => License::get_license_key(),
+				'site_url'    => self::site_url(),
+			)
+		);
 
-        if (is_wp_error($response)) {
-            throw new \RuntimeException('auth/token request failed: ' . $response->get_error_message());
-        }
-        $code = (int) wp_remote_retrieve_response_code($response);
-        $body = (string) wp_remote_retrieve_body($response);
-        if ($code !== 200) {
-            throw new \RuntimeException("auth/token returned HTTP $code: $body");
-        }
+		$response = wp_remote_post(
+			$url,
+			array(
+				'headers' => array( 'Content-Type' => 'application/json' ),
+				'body'    => $payload,
+				'timeout' => 10,
+			)
+		);
 
-        $data = json_decode($body, true);
-        if (!is_array($data) || !isset($data['token'], $data['expires_at']) || !is_string($data['token']) || !is_string($data['expires_at'])) {
-            throw new \RuntimeException('auth/token returned malformed response');
-        }
-        $expUnix = strtotime($data['expires_at']);
-        if ($expUnix === false) {
-            throw new \RuntimeException('auth/token returned unparseable expires_at');
-        }
+		if ( is_wp_error( $response ) ) {
+			// Exception messages flow to error_log/wp_die, never to HTML output.
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+			throw new \RuntimeException( 'auth/token request failed: ' . $response->get_error_message() );
+		}
+		$code = (int) wp_remote_retrieve_response_code( $response );
+		$body = (string) wp_remote_retrieve_body( $response );
+		if ( $code !== 200 ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+			throw new \RuntimeException( "auth/token returned HTTP $code: $body" );
+		}
 
-        // License::get_cached_jwt() compares exp <= time(), so we shorten the
-        // stored exp by REFRESH_GRACE_SECONDS — no separate "almost-expired" check needed.
-        License::cache_jwt($data['token'], $expUnix - self::REFRESH_GRACE_SECONDS);
+		$data = json_decode( $body, true );
+		if ( ! is_array( $data ) || ! isset( $data['token'], $data['expires_at'] ) || ! is_string( $data['token'] ) || ! is_string( $data['expires_at'] ) ) {
+			throw new \RuntimeException( 'auth/token returned malformed response' );
+		}
+		$expUnix = strtotime( $data['expires_at'] );
+		if ( $expUnix === false ) {
+			throw new \RuntimeException( 'auth/token returned unparseable expires_at' );
+		}
 
-        return $data['token'];
-    }
+		// License::get_cached_jwt() compares exp <= time(), so we shorten the
+		// stored exp by REFRESH_GRACE_SECONDS — no separate "almost-expired" check needed.
+		License::cache_jwt( $data['token'], $expUnix - self::REFRESH_GRACE_SECONDS );
 
-    private static function site_url(): string
-    {
-        if (function_exists('home_url')) {
-            $u = home_url();
-            if (is_string($u) && $u !== '') return $u;
-        }
-        return defined('WP_HOME') ? (string) WP_HOME : '';
-    }
+		return $data['token'];
+	}
+
+	private static function site_url(): string {
+		if ( function_exists( 'home_url' ) ) {
+			$u = home_url();
+			if ( is_string( $u ) && $u !== '' ) {
+				return $u;
+			}
+		}
+		return defined( 'WP_HOME' ) ? (string) WP_HOME : '';
+	}
 }
