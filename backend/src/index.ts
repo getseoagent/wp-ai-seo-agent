@@ -12,6 +12,8 @@ import { runMigrations } from "./lib/migrations";
 import { getDb } from "./lib/db";
 import { createWayForPayClient } from "./lib/billing/wayforpay-client";
 import { startBillingWorker } from "./lib/billing/billing-worker";
+import { sendTransactionalEmail } from "./lib/billing/emails/transport";
+import { renderEmail } from "./lib/billing/emails";
 import type { Tier } from "./lib/license/key-format";
 
 export const app = new Hono();
@@ -79,21 +81,18 @@ mountLicenseWebhookRoute(app, {
   cache: licenseCache,
   wfpClient,
   licenseHmacSecret,
+  sendEmail: (kind, license) => sendTransactionalEmail(kind, license, renderEmail),
 });
 
-// Pricing for the recurring billing worker (Block 4 Task 4.3). Free is never
-// charged — included so the Tier-keyed lookup is total. Update on tier-price
-// changes; existing licenses keep their original price unless a re-purchase
-// flows through the WFP webhook.
+// Pricing for the recurring billing worker. Free is never charged — included
+// so the Tier-keyed lookup is total. Update on tier-price changes; existing
+// licenses keep their original price unless a re-purchase flows through the
+// WFP webhook.
 const TIER_PRICES: Record<Tier, number> = { free: 0, pro: 19, agency: 79, enterprise: 299 };
-// Email transport lands in Task 4.4; until then the worker logs and skips.
-const noopSendEmail = async (kind: string, license: { key: string }) => {
-  console.log(`[email-stub] would send ${kind} to license ${license.key}`);
-};
 const billingWorker = startBillingWorker({
   sql:             getDb(),
   chargeRecurring: wfpClient.chargeRecurring.bind(wfpClient),
-  sendEmail:       noopSendEmail,
+  sendEmail:       (kind, license) => sendTransactionalEmail(kind, license, renderEmail),
   amountForTier:   tier => TIER_PRICES[tier],
   currency:        process.env.BILLING_CURRENCY ?? "USD",
 });

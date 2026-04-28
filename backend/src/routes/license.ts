@@ -56,8 +56,8 @@ export type WebhookDeps = {
   cache: LicenseCache;
   wfpClient: WayForPayClient;
   licenseHmacSecret: string;
-  /** Optional email sender for license-issued template; null in tests. */
-  sendLicenseIssuedEmail?: (to: string, key: string, tier: Tier) => Promise<void>;
+  /** Optional emitter for the license-issued transactional email. Null in tests. */
+  sendEmail?: (kind: "license-issued", license: { key: string; email: string | null; tier: Tier }) => Promise<void>;
 };
 
 const PRODUCT_TO_TIER: Record<string, { tier: Tier; maxSites: number }> = {
@@ -153,9 +153,9 @@ export function mountLicenseWebhookRoute(app: Hono, deps: WebhookDeps): void {
         )
       `;
 
-      if (deps.sendLicenseIssuedEmail && payload.clientEmail) {
+      if (deps.sendEmail && payload.clientEmail) {
         try {
-          await deps.sendLicenseIssuedEmail(payload.clientEmail, key, productMapping.tier);
+          await deps.sendEmail("license-issued", { key, email: payload.clientEmail, tier: productMapping.tier });
         } catch (err) {
           console.error("[wfp-webhook] license-issued email failed:", err);
         }
