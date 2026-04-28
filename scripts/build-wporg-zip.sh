@@ -54,9 +54,23 @@ cp -r "$PLUGIN/includes"    "$STAGE/"
 mkdir -p "$STAGE/assets"
 cp -r "$PLUGIN/assets/dist" "$STAGE/assets/"
 
-# Languages dir is optional today (no .mo/.po yet). Ship as empty so
-# Domain Path: /languages in the header resolves on disk.
+# Vite emits a placeholder index.html and a hidden `.vite/manifest.json`.
+# - index.html is dev-server scaffolding the plugin doesn't load — drop it.
+# - manifest.json is required by class-admin-page.php (it's how we resolve
+#   the fingerprinted JS bundle name); promote it out of the hidden dir so
+#   the ZIP has no dot-prefixed directories.
+rm -f "$STAGE/assets/dist/index.html"
+if [[ -f "$STAGE/assets/dist/.vite/manifest.json" ]]; then
+  mv "$STAGE/assets/dist/.vite/manifest.json" "$STAGE/assets/dist/manifest.json"
+  rmdir "$STAGE/assets/dist/.vite" 2>/dev/null || true
+fi
+
+# Languages directory ships even when empty so Domain Path: /languages
+# in the header resolves on disk. seo-agent.pot lives here when present.
 mkdir -p "$STAGE/languages"
+if [[ -f "$PLUGIN/languages/seo-agent.pot" ]]; then
+  cp "$PLUGIN/languages/seo-agent.pot" "$STAGE/languages/"
+fi
 
 # Strip noise that may have snuck in (defensive — every entry above is a
 # whitelisted path, but cp -r can pull editor swap files).

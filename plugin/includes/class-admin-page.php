@@ -34,7 +34,14 @@ final class Admin_Page {
 			return;
 		}
 
-		$manifest_path = SEO_AGENT_DIR . 'assets/dist/.vite/manifest.json';
+		// build-wporg-zip.sh promotes Vite's manifest.json out of the hidden
+		// .vite/ directory so the shipping ZIP has no dot-prefixed dirs;
+		// dev builds (Vite's normal output) still write to .vite/manifest.json.
+		// Check both — production-ZIP wins if both exist.
+		$manifest_path = SEO_AGENT_DIR . 'assets/dist/manifest.json';
+		if ( ! file_exists( $manifest_path ) ) {
+			$manifest_path = SEO_AGENT_DIR . 'assets/dist/.vite/manifest.json';
+		}
 		if ( ! file_exists( $manifest_path ) ) {
 			return;
 		}
