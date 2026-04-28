@@ -1,0 +1,44 @@
+[Unit]
+Description=AI SEO Agent backend (Bun + Hono)
+Documentation=https://www.seo-friendly.org/ai-seo-agent
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=dev
+Group=dev
+WorkingDirectory=/home/seo-friendly/htdocs/wp-ai-seo-agent/backend
+EnvironmentFile=/home/seo-friendly/htdocs/wp-ai-seo-agent/backend/.env
+ExecStart=/home/dev/.bun/bin/bun run src/index.ts
+
+# Auto-restart on crash; back off so a tight loop doesn't burn a CPU.
+Restart=on-failure
+RestartSec=5s
+# Cap restart spam — if we're failing >10 times in 5min something's wrong;
+# stop and let the operator look at journalctl.
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+# Hardening — none of these affect correctness, all are defense-in-depth.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/home/seo-friendly/htdocs/wp-ai-seo-agent/backend
+ProtectHome=read-only
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+
+# Logs go to journald (`journalctl -u seoagent-backend -f`); the in-tree
+# server.log file from the nohup era is no longer written to.
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=seoagent-backend
+
+[Install]
+WantedBy=multi-user.target
