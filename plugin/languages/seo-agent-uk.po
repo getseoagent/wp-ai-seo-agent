@@ -1,0 +1,205 @@
+# Translation of AI SEO Agent into uk.
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: AI SEO Agent 1.0.0\n"
+"Language: uk\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"X-Domain: seo-agent\n"
+
+msgid "AI SEO Agent"
+msgstr "AI SEO Agent"
+
+msgid "https://www.seo-friendly.org/ai-seo-agent"
+msgstr ""
+
+msgid "SEO-FRIENDLY"
+msgstr ""
+
+msgid "https://www.seo-friendly.org"
+msgstr ""
+
+msgid "SEO Agent"
+msgstr "SEO Agent"
+
+msgid "Insufficient permissions."
+msgstr "Недостатньо прав."
+
+msgid "••••••• (set)"
+msgstr "••••••• (задано)"
+
+msgid "Settings"
+msgstr "Налаштування"
+
+msgid "Anthropic API key"
+msgstr "API-ключ Anthropic"
+
+msgid "Save"
+msgstr "Зберегти"
+
+msgid "Chat"
+msgstr "Чат"
+
+msgid "Loading…"
+msgstr "Завантаження…"
+
+msgid "Subscription"
+msgstr "Підписка"
+
+msgid "Buy a license"
+msgstr "Купити ліцензію"
+
+msgid "Already have a license key?"
+msgstr "Уже маєте ліцензійний ключ?"
+
+msgid "License key"
+msgstr "Ліцензійний ключ"
+
+msgid "Could not reach the licensing server. Try again in a minute."
+msgstr "Не вдалося зв'язатися з сервером ліцензій. Спробуйте за хвилину."
+
+msgid "License key on file:"
+msgstr "Збережений ключ:"
+
+msgid "Tier"
+msgstr "Тариф"
+
+msgid "Status"
+msgstr "Статус"
+
+msgid "Auto-renewal"
+msgstr "Автопоновлення"
+
+msgid "on"
+msgstr "увімк"
+
+msgid "off"
+msgstr "вимк"
+
+msgid "Active until"
+msgstr "Активно до"
+
+msgid "Next charge"
+msgstr "Наступне списання"
+
+msgid "Card"
+msgstr "Картка"
+
+msgid "Cancel subscription"
+msgstr "Скасувати підписку"
+
+msgid "Cancellation stops auto-renewal. You keep access until %s."
+msgstr "Скасування зупиняє автопоновлення. Доступ зберігається до %s."
+
+msgid "This subscription is no longer auto-renewing."
+msgstr "Ця підписка більше не поновлюється автоматично."
+
+msgid "Manage card on WayForPay"
+msgstr "Керування карткою на WayForPay"
+
+msgid "Cancel auto-renewal? You'll keep access until the current period ends."
+msgstr "Скасувати автопоновлення? Доступ збережеться до кінця поточного періоду."
+
+msgid "Cancel failed — check the browser console."
+msgstr "Не вдалося скасувати — перевірте консоль браузера."
+
+msgid "Cancel failed:"
+msgstr "Не вдалося скасувати:"
+
+msgid ", %d failed"
+msgstr ", %d з помилкою"
+
+msgid "(no title)"
+msgstr "(без заголовка)"
+
+msgid "/ Skipped %d"
+msgstr "/ Пропущено %d"
+
+msgid "%1$d / %2$d applied"
+msgstr "%1$d / %2$d застосовано"
+
+msgid "%d failed"
+msgstr "%d з помилкою"
+
+msgid "Agent is thinking…"
+msgstr "Агент думає…"
+
+msgid "Applied %1$d / Failed %2$d / Skipped %3$d"
+msgstr "Застосовано %1$d / Помилок %2$d / Пропущено %3$d"
+
+msgid "Applied %1$d / Failed %2$d / Total %3$d"
+msgstr "Застосовано %1$d / Помилок %2$d / Усього %3$d"
+
+msgid "Apply to remaining posts"
+msgstr "Застосувати до решти постів"
+
+msgid "Ask the agent…"
+msgstr "Запитайте агента…"
+
+msgid "Cancel"
+msgstr "Скасувати"
+
+msgid "Configuration missing."
+msgstr "Бракує конфігурації."
+
+msgid "Could not format summary."
+msgstr "Не вдалося сформувати зведення."
+
+msgid "current:"
+msgstr "поточний:"
+
+msgid "Dismiss"
+msgstr "Сховати"
+
+msgid "Errors (%d)"
+msgstr "Помилки (%d)"
+
+msgid "History #%d"
+msgstr "Історія #%d"
+
+msgid "job %s"
+msgstr "задача %s"
+
+msgid "Job %s"
+msgstr "Задача %s"
+
+msgid "No proposals returned."
+msgstr "Пропозицій не отримано."
+
+msgid "Post %d"
+msgstr "Пост %d"
+
+msgid "Proposals (%d)"
+msgstr "Пропозиції (%d)"
+
+msgid "reasoning"
+msgstr "обґрунтування"
+
+msgid "refine: e.g. more aggressive, no emoji"
+msgstr "уточнити: напр. «жорсткіше», «без емодзі»"
+
+msgid "Rollback all in job %s"
+msgstr "Відкотити все в задачі %s"
+
+msgid "Rolled back %d"
+msgstr "Відкочено %d"
+
+msgid "Send"
+msgstr "Надіслати"
+
+msgid "Set your Anthropic API key in the form above to start chatting."
+msgstr "Введіть API-ключ Anthropic у форму вище, щоб почати чат."
+
+msgid "show %d row"
+msgid_plural "show %d rows"
+msgstr[0] "показати %d рядок"
+msgstr[1] "показати %d рядки"
+msgstr[2] "показати %d рядків"
+
+msgid "Stop"
+msgstr "Зупинити"
+
+msgid "View summary"
+msgstr "Відкрити зведення"

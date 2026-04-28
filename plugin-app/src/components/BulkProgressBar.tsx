@@ -1,5 +1,6 @@
 import { BULK_COLORS } from "./bulk-styles";
 import type { Job } from "../hooks/useJobPolling";
+import { __, sprintf } from "../lib/i18n";
 
 const containerStyle: React.CSSProperties = { fontSize: 12, padding: 8, background: BULK_COLORS.surfaceFill, border: `1px solid ${BULK_COLORS.borderGray}`, borderRadius: 6, marginTop: 6 };
 const headerStyle: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, marginBottom: 4 };
@@ -27,16 +28,23 @@ export function BulkProgressBar({ job, onSendChat }: BulkProgressBarProps) {
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
-        <strong>Job {id}</strong>
+        {/* Translators: %s = job UUID */}
+        <strong>{sprintf(__("Job %s"), id)}</strong>
         {onSendChat && (
-          <button style={buttonStyle} onClick={() => onSendChat(`cancel job ${id}`)}>Cancel</button>
+          <button style={buttonStyle} onClick={() => onSendChat(`cancel job ${id}`)}>{__("Cancel")}</button>
         )}
       </div>
       <progress style={progressStyle} value={done} max={Math.max(total, 1)} />
       <div style={statsStyle}>
-        {done} / {total} applied
-        {failed_count > 0 && <>, <span style={{ color: BULK_COLORS.destructiveRed }}>{failed_count} failed</span></>}
-        {current_post_title && <> — current: <em>{current_post_title}</em></>}
+        {/* Translators: %1$d = applied count, %2$d = total */}
+        {sprintf(__("%1$d / %2$d applied"), done, total)}
+        {failed_count > 0 && (
+          <>, <span style={{ color: BULK_COLORS.destructiveRed }}>
+            {/* Translators: %d = failed count */}
+            {sprintf(__("%d failed"), failed_count)}
+          </span></>
+        )}
+        {current_post_title && <> — {__("current:")} <em>{current_post_title}</em></>}
       </div>
     </div>
   );

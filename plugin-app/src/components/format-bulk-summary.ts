@@ -1,4 +1,5 @@
 import type { Job } from "../hooks/useJobPolling";
+import { __, sprintf } from "../lib/i18n";
 
 export type FormattedBulkSummary = {
   mode: "apply" | "rollback";
@@ -26,7 +27,8 @@ export function formatBulkSummaryFromJob(job: Job): FormattedBulkSummary {
   return {
     mode: "apply",
     jobId: job.id,
-    headline: `Applied ${succeeded} / Failed ${failed} / Total ${job.total}`,
+    // Translators: %1$d = applied, %2$d = failed, %3$d = total
+    headline: sprintf(__("Applied %1$d / Failed %2$d / Total %3$d"), succeeded, failed, job.total),
     statusBadge: job.status,
     rows: [],
     canRollback: succeeded > 0 && job.status === "completed",
@@ -71,13 +73,15 @@ export function formatBulkSummary(input: unknown): FormattedBulkSummary {
     return {
       mode: "apply",
       jobId: input.job_id,
-      headline: `Applied ${input.applied} / Failed ${input.failed} / Skipped ${input.skipped}`,
+      // Translators: %1$d = applied, %2$d = failed, %3$d = skipped
+      headline: sprintf(__("Applied %1$d / Failed %2$d / Skipped %3$d"), input.applied, input.failed, input.skipped),
       statusBadge: input.status,
       rows: input.results.map(r => ({
-        label: `Post ${r.post_id}`,
+        // Translators: %d = post ID
+        label: sprintf(__("Post %d"), r.post_id),
         status: r.status,
         detail: r.status === "applied"
-          ? `${r.title_before ?? "(no title)"} → ${r.title_after}`
+          ? `${r.title_before ?? __("(no title)")} → ${r.title_after}`
           : r.reason,
       })),
       canRollback: input.applied > 0 && input.status !== "failed",
@@ -88,13 +92,18 @@ export function formatBulkSummary(input: unknown): FormattedBulkSummary {
   const results = r.results ?? [];
   const rolled = results.filter(x => x.status === "rolled_back").length;
   const skipped = results.filter(x => x.status !== "rolled_back").length;
+  // Translators: %d = number of items rolled back
+  const rolledPart = sprintf(__("Rolled back %d"), rolled);
+  // Translators: %d = number of items skipped
+  const skippedPart = skipped > 0 ? " " + sprintf(__("/ Skipped %d"), skipped) : "";
   return {
     mode: "rollback",
     jobId: r.job_id,
-    headline: `Rolled back ${rolled} ${skipped > 0 ? `/ Skipped ${skipped}` : ""}`.trim(),
+    headline: rolledPart + skippedPart,
     statusBadge: "rolled_back",
     rows: results.map(x => ({
-      label: `History #${x.history_id}`,
+      // Translators: %d = history row ID
+      label: sprintf(__("History #%d"), x.history_id),
       status: x.status,
       detail: x.reason,
     })),

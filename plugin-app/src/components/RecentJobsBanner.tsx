@@ -1,5 +1,6 @@
 import type { Job } from "../hooks/useJobPolling";
 import { BULK_COLORS } from "./bulk-styles";
+import { __, sprintf } from "../lib/i18n";
 
 const wrapStyle: React.CSSProperties = {
   display: "flex", alignItems: "center", gap: 12,
@@ -32,14 +33,18 @@ type Props = {
  * BulkSummaryCard for that job; click [×] to permanently dismiss this job.
  */
 export function RecentJobsBanner({ job, onView, onDismiss }: Props) {
+  // Translators: %1$d = total pages in job, %2$d = pages done, %3$d = total again
+  const headline = sprintf(
+    __("Last bulk job (%1$d pages) finished while you were away — %2$d/%3$d done"),
+    job.total, job.done, job.total,
+  );
+  // Translators: %d = failed page count
+  const failedSuffix = job.failed_count > 0 ? sprintf(__(", %d failed"), job.failed_count) : "";
   return (
     <div style={wrapStyle}>
-      <span>
-        Last bulk job ({job.total} pages) finished while you were away — {job.done}/{job.total} done
-        {job.failed_count > 0 ? `, ${job.failed_count} failed` : ""}.
-      </span>
-      <button style={viewBtnStyle} onClick={() => onView(job)}>View summary</button>
-      <button style={dismissBtnStyle} aria-label="Dismiss" onClick={onDismiss}>×</button>
+      <span>{headline}{failedSuffix}.</span>
+      <button style={viewBtnStyle} onClick={() => onView(job)}>{__("View summary")}</button>
+      <button style={dismissBtnStyle} aria-label={__("Dismiss")} onClick={onDismiss}>×</button>
     </div>
   );
 }

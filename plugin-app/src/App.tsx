@@ -1,4 +1,5 @@
 import { Chat } from "./components/Chat";
+import { __ } from "./lib/i18n";
 
 declare global {
   interface Window {
@@ -9,10 +10,10 @@ declare global {
 export function App() {
   const config = window.SEO_AGENT;
   if (!config) {
-    return <div>Configuration missing.</div>;
+    return <div>{__("Configuration missing.")}</div>;
   }
   if (!config.hasKey) {
-    return <div>Set your Anthropic API key in the form above to start chatting.</div>;
+    return <div>{__("Set your Anthropic API key in the form above to start chatting.")}</div>;
   }
   return <Chat restUrl={config.restUrl} nonce={config.nonce} />;
 }

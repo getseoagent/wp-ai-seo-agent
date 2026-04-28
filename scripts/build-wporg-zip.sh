@@ -65,12 +65,21 @@ if [[ -f "$STAGE/assets/dist/.vite/manifest.json" ]]; then
   rmdir "$STAGE/assets/dist/.vite" 2>/dev/null || true
 fi
 
-# Languages directory ships even when empty so Domain Path: /languages
-# in the header resolves on disk. seo-agent.pot lives here when present.
+# Languages directory ships:
+#  - seo-agent.pot — translation template (for translators)
+#  - seo-agent-{locale}.mo — compiled PHP translations
+#  - seo-agent-{locale}-{md5}.json — Jed-format JS translations for
+#    wp_set_script_translations()
+# Source .po files do NOT ship — they're regenerated from build-translations.ts.
 mkdir -p "$STAGE/languages"
 if [[ -f "$PLUGIN/languages/seo-agent.pot" ]]; then
   cp "$PLUGIN/languages/seo-agent.pot" "$STAGE/languages/"
 fi
+shopt -s nullglob
+for f in "$PLUGIN/languages/"*.mo "$PLUGIN/languages/"*.json; do
+  cp "$f" "$STAGE/languages/"
+done
+shopt -u nullglob
 
 # Strip noise that may have snuck in (defensive — every entry above is a
 # whitelisted path, but cp -r can pull editor swap files).

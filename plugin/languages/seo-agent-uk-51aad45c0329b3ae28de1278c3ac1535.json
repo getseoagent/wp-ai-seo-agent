@@ -1,0 +1,199 @@
+{
+  "translation-revision-date": "2026-04-28T11:26:33+00:00",
+  "generator": "build-jed-json.ts",
+  "domain": "messages",
+  "locale_data": {
+    "messages": {
+      "AI SEO Agent": [
+        "AI SEO Agent"
+      ],
+      "SEO Agent": [
+        "SEO Agent"
+      ],
+      "Insufficient permissions.": [
+        "Недостатньо прав."
+      ],
+      "••••••• (set)": [
+        "••••••• (задано)"
+      ],
+      "Settings": [
+        "Налаштування"
+      ],
+      "Anthropic API key": [
+        "API-ключ Anthropic"
+      ],
+      "Save": [
+        "Зберегти"
+      ],
+      "Chat": [
+        "Чат"
+      ],
+      "Loading…": [
+        "Завантаження…"
+      ],
+      "Subscription": [
+        "Підписка"
+      ],
+      "Buy a license": [
+        "Купити ліцензію"
+      ],
+      "Already have a license key?": [
+        "Уже маєте ліцензійний ключ?"
+      ],
+      "License key": [
+        "Ліцензійний ключ"
+      ],
+      "Could not reach the licensing server. Try again in a minute.": [
+        "Не вдалося зв'язатися з сервером ліцензій. Спробуйте за хвилину."
+      ],
+      "License key on file:": [
+        "Збережений ключ:"
+      ],
+      "Tier": [
+        "Тариф"
+      ],
+      "Status": [
+        "Статус"
+      ],
+      "Auto-renewal": [
+        "Автопоновлення"
+      ],
+      "on": [
+        "увімк"
+      ],
+      "off": [
+        "вимк"
+      ],
+      "Active until": [
+        "Активно до"
+      ],
+      "Next charge": [
+        "Наступне списання"
+      ],
+      "Card": [
+        "Картка"
+      ],
+      "Cancel subscription": [
+        "Скасувати підписку"
+      ],
+      "Cancellation stops auto-renewal. You keep access until %s.": [
+        "Скасування зупиняє автопоновлення. Доступ зберігається до %s."
+      ],
+      "This subscription is no longer auto-renewing.": [
+        "Ця підписка більше не поновлюється автоматично."
+      ],
+      "Manage card on WayForPay": [
+        "Керування карткою на WayForPay"
+      ],
+      "Cancel auto-renewal? You'll keep access until the current period ends.": [
+        "Скасувати автопоновлення? Доступ збережеться до кінця поточного періоду."
+      ],
+      "Cancel failed — check the browser console.": [
+        "Не вдалося скасувати — перевірте консоль браузера."
+      ],
+      "Cancel failed:": [
+        "Не вдалося скасувати:"
+      ],
+      ", %d failed": [
+        ", %d з помилкою"
+      ],
+      "(no title)": [
+        "(без заголовка)"
+      ],
+      "/ Skipped %d": [
+        "/ Пропущено %d"
+      ],
+      "%1$d / %2$d applied": [
+        "%1$d / %2$d застосовано"
+      ],
+      "%d failed": [
+        "%d з помилкою"
+      ],
+      "Agent is thinking…": [
+        "Агент думає…"
+      ],
+      "Applied %1$d / Failed %2$d / Skipped %3$d": [
+        "Застосовано %1$d / Помилок %2$d / Пропущено %3$d"
+      ],
+      "Applied %1$d / Failed %2$d / Total %3$d": [
+        "Застосовано %1$d / Помилок %2$d / Усього %3$d"
+      ],
+      "Apply to remaining posts": [
+        "Застосувати до решти постів"
+      ],
+      "Ask the agent…": [
+        "Запитайте агента…"
+      ],
+      "Cancel": [
+        "Скасувати"
+      ],
+      "Configuration missing.": [
+        "Бракує конфігурації."
+      ],
+      "Could not format summary.": [
+        "Не вдалося сформувати зведення."
+      ],
+      "current:": [
+        "поточний:"
+      ],
+      "Dismiss": [
+        "Сховати"
+      ],
+      "Errors (%d)": [
+        "Помилки (%d)"
+      ],
+      "History #%d": [
+        "Історія #%d"
+      ],
+      "job %s": [
+        "задача %s"
+      ],
+      "Job %s": [
+        "Задача %s"
+      ],
+      "No proposals returned.": [
+        "Пропозицій не отримано."
+      ],
+      "Post %d": [
+        "Пост %d"
+      ],
+      "Proposals (%d)": [
+        "Пропозиції (%d)"
+      ],
+      "reasoning": [
+        "обґрунтування"
+      ],
+      "refine: e.g. more aggressive, no emoji": [
+        "уточнити: напр. «жорсткіше», «без емодзі»"
+      ],
+      "Rollback all in job %s": [
+        "Відкотити все в задачі %s"
+      ],
+      "Rolled back %d": [
+        "Відкочено %d"
+      ],
+      "Send": [
+        "Надіслати"
+      ],
+      "Set your Anthropic API key in the form above to start chatting.": [
+        "Введіть API-ключ Anthropic у форму вище, щоб почати чат."
+      ],
+      "show %d row\u0004show %d row": [
+        "показати %d рядок",
+        "показати %d рядки",
+        "показати %d рядків"
+      ],
+      "Stop": [
+        "Зупинити"
+      ],
+      "View summary": [
+        "Відкрити зведення"
+      ],
+      "": {
+        "domain": "messages",
+        "plural-forms": "nplurals=2; plural=(n != 1);",
+        "lang": "uk"
+      }
+    }
+  }
+}

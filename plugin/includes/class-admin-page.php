@@ -57,10 +57,17 @@ final class Admin_Page {
 			wp_enqueue_script(
 				'seo-agent-app',
 				SEO_AGENT_URL . 'assets/dist/' . $entry['file'],
-				array(),
+				array( 'wp-i18n' ),
 				SEO_AGENT_VERSION,
 				true
 			);
+			// Bind translations to the script handle. WP looks up
+			// languages/seo-agent-{locale}-{md5-of-script-path}.json — but
+			// we ship locale-only files (seo-agent-{locale}.json) and let WP's
+			// fallback machinery find them via the Domain Path: /languages
+			// header. This is the standard pattern for plugin-app translations.
+			wp_set_script_translations( 'seo-agent-app', 'seo-agent', SEO_AGENT_DIR . 'languages' );
+
 			wp_add_inline_script(
 				'seo-agent-app',
 				'window.SEO_AGENT = ' . wp_json_encode(

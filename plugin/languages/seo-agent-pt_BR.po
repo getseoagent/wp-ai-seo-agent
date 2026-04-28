@@ -1,0 +1,204 @@
+# Translation of AI SEO Agent into pt_BR.
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: AI SEO Agent 1.0.0\n"
+"Language: pt_BR\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: seo-agent\n"
+
+msgid "AI SEO Agent"
+msgstr "AI SEO Agent"
+
+msgid "https://www.seo-friendly.org/ai-seo-agent"
+msgstr ""
+
+msgid "SEO-FRIENDLY"
+msgstr ""
+
+msgid "https://www.seo-friendly.org"
+msgstr ""
+
+msgid "SEO Agent"
+msgstr "SEO Agent"
+
+msgid "Insufficient permissions."
+msgstr "Permissões insuficientes."
+
+msgid "••••••• (set)"
+msgstr "••••••• (definida)"
+
+msgid "Settings"
+msgstr "Configurações"
+
+msgid "Anthropic API key"
+msgstr "Chave da API Anthropic"
+
+msgid "Save"
+msgstr "Salvar"
+
+msgid "Chat"
+msgstr "Chat"
+
+msgid "Loading…"
+msgstr "Carregando…"
+
+msgid "Subscription"
+msgstr "Assinatura"
+
+msgid "Buy a license"
+msgstr "Comprar licença"
+
+msgid "Already have a license key?"
+msgstr "Já tem uma chave de licença?"
+
+msgid "License key"
+msgstr "Chave de licença"
+
+msgid "Could not reach the licensing server. Try again in a minute."
+msgstr "Não foi possível contatar o servidor de licenças. Tente novamente em um minuto."
+
+msgid "License key on file:"
+msgstr "Chave salva:"
+
+msgid "Tier"
+msgstr "Plano"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Auto-renewal"
+msgstr "Renovação automática"
+
+msgid "on"
+msgstr "lig."
+
+msgid "off"
+msgstr "deslig."
+
+msgid "Active until"
+msgstr "Ativa até"
+
+msgid "Next charge"
+msgstr "Próxima cobrança"
+
+msgid "Card"
+msgstr "Cartão"
+
+msgid "Cancel subscription"
+msgstr "Cancelar assinatura"
+
+msgid "Cancellation stops auto-renewal. You keep access until %s."
+msgstr "O cancelamento interrompe a renovação automática. Você mantém o acesso até %s."
+
+msgid "This subscription is no longer auto-renewing."
+msgstr "Esta assinatura não está mais sendo renovada automaticamente."
+
+msgid "Manage card on WayForPay"
+msgstr "Gerenciar cartão no WayForPay"
+
+msgid "Cancel auto-renewal? You'll keep access until the current period ends."
+msgstr "Cancelar a renovação automática? Você mantém o acesso até o fim do período atual."
+
+msgid "Cancel failed — check the browser console."
+msgstr "Falha ao cancelar — verifique o console do navegador."
+
+msgid "Cancel failed:"
+msgstr "Falha ao cancelar:"
+
+msgid ", %d failed"
+msgstr ", %d com erro"
+
+msgid "(no title)"
+msgstr "(sem título)"
+
+msgid "/ Skipped %d"
+msgstr "/ Ignorados %d"
+
+msgid "%1$d / %2$d applied"
+msgstr "%1$d / %2$d aplicados"
+
+msgid "%d failed"
+msgstr "%d com erro"
+
+msgid "Agent is thinking…"
+msgstr "O agente está pensando…"
+
+msgid "Applied %1$d / Failed %2$d / Skipped %3$d"
+msgstr "Aplicados %1$d / Erros %2$d / Ignorados %3$d"
+
+msgid "Applied %1$d / Failed %2$d / Total %3$d"
+msgstr "Aplicados %1$d / Erros %2$d / Total %3$d"
+
+msgid "Apply to remaining posts"
+msgstr "Aplicar aos demais posts"
+
+msgid "Ask the agent…"
+msgstr "Pergunte ao agente…"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Configuration missing."
+msgstr "Configuração ausente."
+
+msgid "Could not format summary."
+msgstr "Não foi possível formatar o resumo."
+
+msgid "current:"
+msgstr "atual:"
+
+msgid "Dismiss"
+msgstr "Dispensar"
+
+msgid "Errors (%d)"
+msgstr "Erros (%d)"
+
+msgid "History #%d"
+msgstr "Histórico #%d"
+
+msgid "job %s"
+msgstr "tarefa %s"
+
+msgid "Job %s"
+msgstr "Tarefa %s"
+
+msgid "No proposals returned."
+msgstr "Nenhuma proposta retornada."
+
+msgid "Post %d"
+msgstr "Post %d"
+
+msgid "Proposals (%d)"
+msgstr "Propostas (%d)"
+
+msgid "reasoning"
+msgstr "raciocínio"
+
+msgid "refine: e.g. more aggressive, no emoji"
+msgstr "refinar: ex. «mais agressivo», «sem emoji»"
+
+msgid "Rollback all in job %s"
+msgstr "Reverter tudo na tarefa %s"
+
+msgid "Rolled back %d"
+msgstr "Revertidos %d"
+
+msgid "Send"
+msgstr "Enviar"
+
+msgid "Set your Anthropic API key in the form above to start chatting."
+msgstr "Informe sua chave da API Anthropic no formulário acima para começar a conversar."
+
+msgid "show %d row"
+msgid_plural "show %d rows"
+msgstr[0] "mostrar %d linha"
+msgstr[1] "mostrar %d linhas"
+
+msgid "Stop"
+msgstr "Parar"
+
+msgid "View summary"
+msgstr "Ver resumo"

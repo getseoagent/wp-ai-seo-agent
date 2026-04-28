@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { __ } from "../lib/i18n";
 
 export function MessageInput({ onSend, disabled }: { onSend: (text: string) => void; disabled: boolean }) {
   const [text, setText] = useState("");
@@ -15,12 +16,12 @@ export function MessageInput({ onSend, disabled }: { onSend: (text: string) => v
         type="text"
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="Ask the agent..."
+        placeholder={__("Ask the agent…")}
         disabled={disabled}
         style={{ width: "70%", padding: 8 }}
       />
       <button type="submit" disabled={disabled} className="button button-primary" style={{ marginLeft: 8 }}>
-        Send
+        {__("Send")}
       </button>
     </form>
   );

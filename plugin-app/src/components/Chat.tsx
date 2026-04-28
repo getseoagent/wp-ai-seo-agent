@@ -8,6 +8,7 @@ import { useRecentJobsBanner } from "../hooks/useRecentJobsBanner";
 import { BulkProgressBar } from "./BulkProgressBar";
 import { BulkSummaryCard } from "./BulkSummaryCard";
 import { RecentJobsBanner } from "./RecentJobsBanner";
+import { __ } from "../lib/i18n";
 import { requestNotificationPermissionOnce, notifyJobComplete } from "../lib/notifications";
 import { BULK_COLORS } from "./bulk-styles";
 
@@ -138,8 +139,8 @@ export function Chat({ restUrl, nonce }: { restUrl: string; nonce: string }) {
       {busy && (
         <div style={typingIndicatorStyle}>
           <span style={dotsStyle}>•••</span>
-          <span style={typingTextStyle}>Agent is thinking…</span>
-          <button style={stopButtonStyle} onClick={cancel}>Stop</button>
+          <span style={typingTextStyle}>{__("Agent is thinking…")}</span>
+          <button style={stopButtonStyle} onClick={cancel}>{__("Stop")}</button>
         </div>
       )}
       <MessageInput onSend={handleSend} disabled={busy} />

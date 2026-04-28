@@ -1,0 +1,198 @@
+{
+  "translation-revision-date": "2026-04-28T11:26:33+00:00",
+  "generator": "build-jed-json.ts",
+  "domain": "messages",
+  "locale_data": {
+    "messages": {
+      "AI SEO Agent": [
+        "AI SEO Agent"
+      ],
+      "SEO Agent": [
+        "SEO Agent"
+      ],
+      "Insufficient permissions.": [
+        "Permissões insuficientes."
+      ],
+      "••••••• (set)": [
+        "••••••• (definida)"
+      ],
+      "Settings": [
+        "Configurações"
+      ],
+      "Anthropic API key": [
+        "Chave da API Anthropic"
+      ],
+      "Save": [
+        "Salvar"
+      ],
+      "Chat": [
+        "Chat"
+      ],
+      "Loading…": [
+        "Carregando…"
+      ],
+      "Subscription": [
+        "Assinatura"
+      ],
+      "Buy a license": [
+        "Comprar licença"
+      ],
+      "Already have a license key?": [
+        "Já tem uma chave de licença?"
+      ],
+      "License key": [
+        "Chave de licença"
+      ],
+      "Could not reach the licensing server. Try again in a minute.": [
+        "Não foi possível contatar o servidor de licenças. Tente novamente em um minuto."
+      ],
+      "License key on file:": [
+        "Chave salva:"
+      ],
+      "Tier": [
+        "Plano"
+      ],
+      "Status": [
+        "Status"
+      ],
+      "Auto-renewal": [
+        "Renovação automática"
+      ],
+      "on": [
+        "lig."
+      ],
+      "off": [
+        "deslig."
+      ],
+      "Active until": [
+        "Ativa até"
+      ],
+      "Next charge": [
+        "Próxima cobrança"
+      ],
+      "Card": [
+        "Cartão"
+      ],
+      "Cancel subscription": [
+        "Cancelar assinatura"
+      ],
+      "Cancellation stops auto-renewal. You keep access until %s.": [
+        "O cancelamento interrompe a renovação automática. Você mantém o acesso até %s."
+      ],
+      "This subscription is no longer auto-renewing.": [
+        "Esta assinatura não está mais sendo renovada automaticamente."
+      ],
+      "Manage card on WayForPay": [
+        "Gerenciar cartão no WayForPay"
+      ],
+      "Cancel auto-renewal? You'll keep access until the current period ends.": [
+        "Cancelar a renovação automática? Você mantém o acesso até o fim do período atual."
+      ],
+      "Cancel failed — check the browser console.": [
+        "Falha ao cancelar — verifique o console do navegador."
+      ],
+      "Cancel failed:": [
+        "Falha ao cancelar:"
+      ],
+      ", %d failed": [
+        ", %d com erro"
+      ],
+      "(no title)": [
+        "(sem título)"
+      ],
+      "/ Skipped %d": [
+        "/ Ignorados %d"
+      ],
+      "%1$d / %2$d applied": [
+        "%1$d / %2$d aplicados"
+      ],
+      "%d failed": [
+        "%d com erro"
+      ],
+      "Agent is thinking…": [
+        "O agente está pensando…"
+      ],
+      "Applied %1$d / Failed %2$d / Skipped %3$d": [
+        "Aplicados %1$d / Erros %2$d / Ignorados %3$d"
+      ],
+      "Applied %1$d / Failed %2$d / Total %3$d": [
+        "Aplicados %1$d / Erros %2$d / Total %3$d"
+      ],
+      "Apply to remaining posts": [
+        "Aplicar aos demais posts"
+      ],
+      "Ask the agent…": [
+        "Pergunte ao agente…"
+      ],
+      "Cancel": [
+        "Cancelar"
+      ],
+      "Configuration missing.": [
+        "Configuração ausente."
+      ],
+      "Could not format summary.": [
+        "Não foi possível formatar o resumo."
+      ],
+      "current:": [
+        "atual:"
+      ],
+      "Dismiss": [
+        "Dispensar"
+      ],
+      "Errors (%d)": [
+        "Erros (%d)"
+      ],
+      "History #%d": [
+        "Histórico #%d"
+      ],
+      "job %s": [
+        "tarefa %s"
+      ],
+      "Job %s": [
+        "Tarefa %s"
+      ],
+      "No proposals returned.": [
+        "Nenhuma proposta retornada."
+      ],
+      "Post %d": [
+        "Post %d"
+      ],
+      "Proposals (%d)": [
+        "Propostas (%d)"
+      ],
+      "reasoning": [
+        "raciocínio"
+      ],
+      "refine: e.g. more aggressive, no emoji": [
+        "refinar: ex. «mais agressivo», «sem emoji»"
+      ],
+      "Rollback all in job %s": [
+        "Reverter tudo na tarefa %s"
+      ],
+      "Rolled back %d": [
+        "Revertidos %d"
+      ],
+      "Send": [
+        "Enviar"
+      ],
+      "Set your Anthropic API key in the form above to start chatting.": [
+        "Informe sua chave da API Anthropic no formulário acima para começar a conversar."
+      ],
+      "show %d row\u0004show %d row": [
+        "mostrar %d linha",
+        "mostrar %d linhas"
+      ],
+      "Stop": [
+        "Parar"
+      ],
+      "View summary": [
+        "Ver resumo"
+      ],
+      "": {
+        "domain": "messages",
+        "plural-forms": "nplurals=2; plural=(n != 1);",
+        "lang": "pt_BR"
+      }
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { formatRewriteCard, type FormattedProposal, type FormattedFailure, type ProposalField, type RawProposal, type RawFailure } from "./format-rewrite";
+import { __, sprintf } from "../lib/i18n";
 
 const containerStyle: React.CSSProperties = {
   border: "1px solid #dbe4ec",
@@ -182,7 +183,7 @@ function ProposalBlock({ proposal }: { proposal: FormattedProposal }) {
       {proposal.fields.map((f) => <FieldRow key={f.label} field={f} />)}
       {proposal.reasoning && (
         <details style={reasoningStyle}>
-          <summary style={{ cursor: "pointer", color: "#646970" }}>reasoning</summary>
+          <summary style={{ cursor: "pointer", color: "#646970" }}>{__("reasoning")}</summary>
           <div style={{ marginTop: 4, whiteSpace: "pre-wrap" }}>{proposal.reasoning}</div>
         </details>
       )}
@@ -208,17 +209,18 @@ export function RewriteCard({ result, onSendChat }: RewriteCardProps) {
   const [refineText, setRefineText] = useState("");
   const formatted = tryFormat(result);
   if (!formatted) {
-    return <div style={containerStyle}>No proposals returned.</div>;
+    return <div style={containerStyle}>{__("No proposals returned.")}</div>;
   }
   const { proposals, failures } = formatted;
   if (proposals.length === 0 && failures.length === 0) {
-    return <div style={containerStyle}>No proposals returned.</div>;
+    return <div style={containerStyle}>{__("No proposals returned.")}</div>;
   }
   return (
     <div style={containerStyle}>
       {proposals.length > 0 && (
         <div>
-          <div style={sectionHeaderStyle}>Proposals ({proposals.length})</div>
+          {/* Translators: %d = number of rewrite proposals */}
+          <div style={sectionHeaderStyle}>{sprintf(__("Proposals (%d)"), proposals.length)}</div>
           {proposals.map((p) => <ProposalBlock key={p.postId} proposal={p} />)}
         </div>
       )}
@@ -228,11 +230,11 @@ export function RewriteCard({ result, onSendChat }: RewriteCardProps) {
             style={actionButtonStyle}
             onClick={() => onSendChat(`apply this style to all the remaining posts in the batch`)}
           >
-            Apply to remaining posts
+            {__("Apply to remaining posts")}
           </button>
           <input
             style={refineInputStyle}
-            placeholder="refine: e.g. more aggressive, no emoji"
+            placeholder={__("refine: e.g. more aggressive, no emoji")}
             value={refineText}
             onChange={e => setRefineText(e.target.value)}
             onKeyDown={e => {
@@ -247,7 +249,8 @@ export function RewriteCard({ result, onSendChat }: RewriteCardProps) {
       {failures.length > 0 && (
         <div style={errorsSectionStyle}>
           <div style={{ ...sectionHeaderStyle, color: "#842029", marginBottom: 6 }}>
-            Errors ({failures.length})
+            {/* Translators: %d = number of failures */}
+            {sprintf(__("Errors (%d)"), failures.length)}
           </div>
           {failures.map((f, i) => <FailureRow key={`${f.postId}-${i}`} failure={f} />)}
         </div>

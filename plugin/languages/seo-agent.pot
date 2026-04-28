@@ -9,15 +9,14 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-28T12:25:18+02:00\n"
+"POT-Creation-Date: 2026-04-28T13:17:28+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: seo-agent\n"
 
 #. Plugin Name of the plugin
-#: seo-agent.php
-#: includes/class-admin-page.php:22
-#: includes/class-admin-page.php:96
+#: seo-agent.php includes/class-admin-page.php:22
+#: includes/class-admin-page.php:103
 msgid "AI SEO Agent"
 msgstr ""
 
@@ -28,7 +27,9 @@ msgstr ""
 
 #. Description of the plugin
 #: seo-agent.php
-msgid "Bulk SEO rewrites through chat. Sample-and-extrapolate UX over RankMath/Yoast/AIOSEO/SEOPress."
+msgid ""
+"Bulk SEO rewrites through chat. Sample-and-extrapolate UX over RankMath/"
+"Yoast/AIOSEO/SEOPress."
 msgstr ""
 
 #. Author of the plugin
@@ -45,35 +46,33 @@ msgstr ""
 msgid "SEO Agent"
 msgstr ""
 
-#: includes/class-admin-page.php:88
-#: includes/class-admin-page.php:119
+#: includes/class-admin-page.php:95 includes/class-admin-page.php:126
 #: includes/class-subscription-page.php:43
 #: includes/class-subscription-page.php:179
 msgid "Insufficient permissions."
 msgstr ""
 
-#: includes/class-admin-page.php:93
+#: includes/class-admin-page.php:100
 msgid "••••••• (set)"
 msgstr ""
 
-#: includes/class-admin-page.php:98
+#: includes/class-admin-page.php:105
 msgid "Settings"
 msgstr ""
 
-#: includes/class-admin-page.php:103
+#: includes/class-admin-page.php:110
 msgid "Anthropic API key"
 msgstr ""
 
-#: includes/class-admin-page.php:108
-#: includes/class-subscription-page.php:72
+#: includes/class-admin-page.php:115 includes/class-subscription-page.php:72
 msgid "Save"
 msgstr ""
 
-#: includes/class-admin-page.php:111
+#: includes/class-admin-page.php:118
 msgid "Chat"
 msgstr ""
 
-#: includes/class-admin-page.php:112
+#: includes/class-admin-page.php:119
 msgid "Loading…"
 msgstr ""
 
@@ -85,7 +84,9 @@ msgid "Subscription"
 msgstr ""
 
 #: includes/class-subscription-page.php:60
-msgid "You're on the free tier. Upgrade to Pro or Agency to unlock write tools and bulk operations."
+msgid ""
+"You're on the free tier. Upgrade to Pro or Agency to unlock write tools and "
+"bulk operations."
 msgstr ""
 
 #: includes/class-subscription-page.php:61
@@ -169,4 +170,135 @@ msgstr ""
 
 #: includes/class-subscription-page.php:132
 msgid "Cancel failed:"
+msgstr ""
+
+#: src/components/RecentJobsBanner.tsx:42
+msgid ", %d failed"
+msgstr ""
+
+#: src/components/format-bulk-summary.ts:84
+msgid "(no title)"
+msgstr ""
+
+#: src/components/format-bulk-summary.ts:98
+msgid "/ Skipped %d"
+msgstr ""
+
+#: src/components/BulkProgressBar.tsx:40
+msgid "%1$d / %2$d applied"
+msgstr ""
+
+#: src/components/BulkProgressBar.tsx:44
+msgid "%d failed"
+msgstr ""
+
+#: src/components/Chat.tsx:142
+msgid "Agent is thinking…"
+msgstr ""
+
+#: src/components/format-bulk-summary.ts:77
+msgid "Applied %1$d / Failed %2$d / Skipped %3$d"
+msgstr ""
+
+#: src/components/format-bulk-summary.ts:31
+msgid "Applied %1$d / Failed %2$d / Total %3$d"
+msgstr ""
+
+#: src/components/RewriteCard.tsx:233
+msgid "Apply to remaining posts"
+msgstr ""
+
+#: src/components/MessageInput.tsx:19
+msgid "Ask the agent…"
+msgstr ""
+
+#: src/components/BulkProgressBar.tsx:34
+msgid "Cancel"
+msgstr ""
+
+#: src/App.tsx:13
+msgid "Configuration missing."
+msgstr ""
+
+#: src/components/BulkSummaryCard.tsx:50
+msgid "Could not format summary."
+msgstr ""
+
+#: src/components/BulkProgressBar.tsx:47
+msgid "current:"
+msgstr ""
+
+#: src/components/RecentJobsBanner.tsx:47
+msgid "Dismiss"
+msgstr ""
+
+#: src/components/RewriteCard.tsx:253
+msgid "Errors (%d)"
+msgstr ""
+
+#: src/components/format-bulk-summary.ts:106
+msgid "History #%d"
+msgstr ""
+
+#: src/components/BulkSummaryCard.tsx:59
+msgid "job %s"
+msgstr ""
+
+#: src/components/BulkProgressBar.tsx:32
+msgid "Job %s"
+msgstr ""
+
+#: src/components/RecentJobsBanner.tsx:38
+msgid ""
+"Last bulk job (%1$d pages) finished while you were away — %2$d/%3$d done"
+msgstr ""
+
+#: src/components/RewriteCard.tsx:212 src/components/RewriteCard.tsx:216
+msgid "No proposals returned."
+msgstr ""
+
+#: src/components/format-bulk-summary.ts:81
+msgid "Post %d"
+msgstr ""
+
+#: src/components/RewriteCard.tsx:223
+msgid "Proposals (%d)"
+msgstr ""
+
+#: src/components/RewriteCard.tsx:186
+msgid "reasoning"
+msgstr ""
+
+#: src/components/RewriteCard.tsx:237
+msgid "refine: e.g. more aggressive, no emoji"
+msgstr ""
+
+#: src/components/BulkSummaryCard.tsx:82
+msgid "Rollback all in job %s"
+msgstr ""
+
+#: src/components/format-bulk-summary.ts:96
+msgid "Rolled back %d"
+msgstr ""
+
+#: src/components/MessageInput.tsx:24
+msgid "Send"
+msgstr ""
+
+#: src/App.tsx:16
+msgid "Set your Anthropic API key in the form above to start chatting."
+msgstr ""
+
+#: src/components/BulkSummaryCard.tsx:64
+msgid "show %d row"
+msgid_plural "show %d rows"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/components/Chat.tsx:143
+msgid "Stop"
+msgstr ""
+
+#: src/components/RecentJobsBanner.tsx:46
+msgid "View summary"
 msgstr ""

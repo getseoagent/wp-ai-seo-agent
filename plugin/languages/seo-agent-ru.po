@@ -1,0 +1,205 @@
+# Translation of AI SEO Agent into ru.
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: AI SEO Agent 1.0.0\n"
+"Language: ru\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"X-Domain: seo-agent\n"
+
+msgid "AI SEO Agent"
+msgstr "AI SEO Agent"
+
+msgid "https://www.seo-friendly.org/ai-seo-agent"
+msgstr ""
+
+msgid "SEO-FRIENDLY"
+msgstr ""
+
+msgid "https://www.seo-friendly.org"
+msgstr ""
+
+msgid "SEO Agent"
+msgstr "SEO Agent"
+
+msgid "Insufficient permissions."
+msgstr "Недостаточно прав."
+
+msgid "••••••• (set)"
+msgstr "••••••• (задан)"
+
+msgid "Settings"
+msgstr "Настройки"
+
+msgid "Anthropic API key"
+msgstr "API-ключ Anthropic"
+
+msgid "Save"
+msgstr "Сохранить"
+
+msgid "Chat"
+msgstr "Чат"
+
+msgid "Loading…"
+msgstr "Загрузка…"
+
+msgid "Subscription"
+msgstr "Подписка"
+
+msgid "Buy a license"
+msgstr "Купить лицензию"
+
+msgid "Already have a license key?"
+msgstr "Уже есть лицензионный ключ?"
+
+msgid "License key"
+msgstr "Лицензионный ключ"
+
+msgid "Could not reach the licensing server. Try again in a minute."
+msgstr "Не удалось связаться с сервером лицензий. Повторите через минуту."
+
+msgid "License key on file:"
+msgstr "Сохранённый ключ:"
+
+msgid "Tier"
+msgstr "Тариф"
+
+msgid "Status"
+msgstr "Статус"
+
+msgid "Auto-renewal"
+msgstr "Автопродление"
+
+msgid "on"
+msgstr "вкл"
+
+msgid "off"
+msgstr "выкл"
+
+msgid "Active until"
+msgstr "Действует до"
+
+msgid "Next charge"
+msgstr "Следующее списание"
+
+msgid "Card"
+msgstr "Карта"
+
+msgid "Cancel subscription"
+msgstr "Отменить подписку"
+
+msgid "Cancellation stops auto-renewal. You keep access until %s."
+msgstr "Отмена останавливает автопродление. Доступ сохраняется до %s."
+
+msgid "This subscription is no longer auto-renewing."
+msgstr "Эта подписка больше не продлевается автоматически."
+
+msgid "Manage card on WayForPay"
+msgstr "Управление картой на WayForPay"
+
+msgid "Cancel auto-renewal? You'll keep access until the current period ends."
+msgstr "Отменить автопродление? Доступ сохранится до конца текущего периода."
+
+msgid "Cancel failed — check the browser console."
+msgstr "Не удалось отменить — проверьте консоль браузера."
+
+msgid "Cancel failed:"
+msgstr "Не удалось отменить:"
+
+msgid ", %d failed"
+msgstr ", %d с ошибкой"
+
+msgid "(no title)"
+msgstr "(без заголовка)"
+
+msgid "/ Skipped %d"
+msgstr "/ Пропущено %d"
+
+msgid "%1$d / %2$d applied"
+msgstr "%1$d / %2$d применено"
+
+msgid "%d failed"
+msgstr "%d с ошибкой"
+
+msgid "Agent is thinking…"
+msgstr "Агент думает…"
+
+msgid "Applied %1$d / Failed %2$d / Skipped %3$d"
+msgstr "Применено %1$d / Ошибок %2$d / Пропущено %3$d"
+
+msgid "Applied %1$d / Failed %2$d / Total %3$d"
+msgstr "Применено %1$d / Ошибок %2$d / Всего %3$d"
+
+msgid "Apply to remaining posts"
+msgstr "Применить к остальным постам"
+
+msgid "Ask the agent…"
+msgstr "Спросите агента…"
+
+msgid "Cancel"
+msgstr "Отмена"
+
+msgid "Configuration missing."
+msgstr "Отсутствует конфигурация."
+
+msgid "Could not format summary."
+msgstr "Не удалось отформатировать сводку."
+
+msgid "current:"
+msgstr "текущий:"
+
+msgid "Dismiss"
+msgstr "Скрыть"
+
+msgid "Errors (%d)"
+msgstr "Ошибки (%d)"
+
+msgid "History #%d"
+msgstr "История #%d"
+
+msgid "job %s"
+msgstr "задача %s"
+
+msgid "Job %s"
+msgstr "Задача %s"
+
+msgid "No proposals returned."
+msgstr "Предложения не получены."
+
+msgid "Post %d"
+msgstr "Пост %d"
+
+msgid "Proposals (%d)"
+msgstr "Предложения (%d)"
+
+msgid "reasoning"
+msgstr "обоснование"
+
+msgid "refine: e.g. more aggressive, no emoji"
+msgstr "уточнить: например «жёстче», «без эмодзи»"
+
+msgid "Rollback all in job %s"
+msgstr "Откатить всё в задаче %s"
+
+msgid "Rolled back %d"
+msgstr "Откачено %d"
+
+msgid "Send"
+msgstr "Отправить"
+
+msgid "Set your Anthropic API key in the form above to start chatting."
+msgstr "Введите API-ключ Anthropic в форме выше, чтобы начать чат."
+
+msgid "show %d row"
+msgid_plural "show %d rows"
+msgstr[0] "показать %d строку"
+msgstr[1] "показать %d строки"
+msgstr[2] "показать %d строк"
+
+msgid "Stop"
+msgstr "Остановить"
+
+msgid "View summary"
+msgstr "Открыть сводку"

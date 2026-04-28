@@ -1,0 +1,199 @@
+{
+  "translation-revision-date": "2026-04-28T11:26:33+00:00",
+  "generator": "build-jed-json.ts",
+  "domain": "messages",
+  "locale_data": {
+    "messages": {
+      "AI SEO Agent": [
+        "AI SEO Agent"
+      ],
+      "SEO Agent": [
+        "SEO Agent"
+      ],
+      "Insufficient permissions.": [
+        "Недостаточно прав."
+      ],
+      "••••••• (set)": [
+        "••••••• (задан)"
+      ],
+      "Settings": [
+        "Настройки"
+      ],
+      "Anthropic API key": [
+        "API-ключ Anthropic"
+      ],
+      "Save": [
+        "Сохранить"
+      ],
+      "Chat": [
+        "Чат"
+      ],
+      "Loading…": [
+        "Загрузка…"
+      ],
+      "Subscription": [
+        "Подписка"
+      ],
+      "Buy a license": [
+        "Купить лицензию"
+      ],
+      "Already have a license key?": [
+        "Уже есть лицензионный ключ?"
+      ],
+      "License key": [
+        "Лицензионный ключ"
+      ],
+      "Could not reach the licensing server. Try again in a minute.": [
+        "Не удалось связаться с сервером лицензий. Повторите через минуту."
+      ],
+      "License key on file:": [
+        "Сохранённый ключ:"
+      ],
+      "Tier": [
+        "Тариф"
+      ],
+      "Status": [
+        "Статус"
+      ],
+      "Auto-renewal": [
+        "Автопродление"
+      ],
+      "on": [
+        "вкл"
+      ],
+      "off": [
+        "выкл"
+      ],
+      "Active until": [
+        "Действует до"
+      ],
+      "Next charge": [
+        "Следующее списание"
+      ],
+      "Card": [
+        "Карта"
+      ],
+      "Cancel subscription": [
+        "Отменить подписку"
+      ],
+      "Cancellation stops auto-renewal. You keep access until %s.": [
+        "Отмена останавливает автопродление. Доступ сохраняется до %s."
+      ],
+      "This subscription is no longer auto-renewing.": [
+        "Эта подписка больше не продлевается автоматически."
+      ],
+      "Manage card on WayForPay": [
+        "Управление картой на WayForPay"
+      ],
+      "Cancel auto-renewal? You'll keep access until the current period ends.": [
+        "Отменить автопродление? Доступ сохранится до конца текущего периода."
+      ],
+      "Cancel failed — check the browser console.": [
+        "Не удалось отменить — проверьте консоль браузера."
+      ],
+      "Cancel failed:": [
+        "Не удалось отменить:"
+      ],
+      ", %d failed": [
+        ", %d с ошибкой"
+      ],
+      "(no title)": [
+        "(без заголовка)"
+      ],
+      "/ Skipped %d": [
+        "/ Пропущено %d"
+      ],
+      "%1$d / %2$d applied": [
+        "%1$d / %2$d применено"
+      ],
+      "%d failed": [
+        "%d с ошибкой"
+      ],
+      "Agent is thinking…": [
+        "Агент думает…"
+      ],
+      "Applied %1$d / Failed %2$d / Skipped %3$d": [
+        "Применено %1$d / Ошибок %2$d / Пропущено %3$d"
+      ],
+      "Applied %1$d / Failed %2$d / Total %3$d": [
+        "Применено %1$d / Ошибок %2$d / Всего %3$d"
+      ],
+      "Apply to remaining posts": [
+        "Применить к остальным постам"
+      ],
+      "Ask the agent…": [
+        "Спросите агента…"
+      ],
+      "Cancel": [
+        "Отмена"
+      ],
+      "Configuration missing.": [
+        "Отсутствует конфигурация."
+      ],
+      "Could not format summary.": [
+        "Не удалось отформатировать сводку."
+      ],
+      "current:": [
+        "текущий:"
+      ],
+      "Dismiss": [
+        "Скрыть"
+      ],
+      "Errors (%d)": [
+        "Ошибки (%d)"
+      ],
+      "History #%d": [
+        "История #%d"
+      ],
+      "job %s": [
+        "задача %s"
+      ],
+      "Job %s": [
+        "Задача %s"
+      ],
+      "No proposals returned.": [
+        "Предложения не получены."
+      ],
+      "Post %d": [
+        "Пост %d"
+      ],
+      "Proposals (%d)": [
+        "Предложения (%d)"
+      ],
+      "reasoning": [
+        "обоснование"
+      ],
+      "refine: e.g. more aggressive, no emoji": [
+        "уточнить: например «жёстче», «без эмодзи»"
+      ],
+      "Rollback all in job %s": [
+        "Откатить всё в задаче %s"
+      ],
+      "Rolled back %d": [
+        "Откачено %d"
+      ],
+      "Send": [
+        "Отправить"
+      ],
+      "Set your Anthropic API key in the form above to start chatting.": [
+        "Введите API-ключ Anthropic в форме выше, чтобы начать чат."
+      ],
+      "show %d row\u0004show %d row": [
+        "показать %d строку",
+        "показать %d строки",
+        "показать %d строк"
+      ],
+      "Stop": [
+        "Остановить"
+      ],
+      "View summary": [
+        "Открыть сводку"
+      ],
+      "": {
+        "domain": "messages",
+        "plural-forms": "nplurals=2; plural=(n != 1);",
+        "lang": "ru"
+      }
+    }
+  }
+}

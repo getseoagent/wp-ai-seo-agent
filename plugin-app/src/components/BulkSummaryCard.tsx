@@ -1,6 +1,7 @@
 import { formatBulkSummary, formatBulkSummaryFromJob, type FormattedBulkSummary } from "./format-bulk-summary";
 import { BULK_COLORS, BULK_STATUS_BG } from "./bulk-styles";
 import type { Job } from "../hooks/useJobPolling";
+import { __, _n, sprintf } from "../lib/i18n";
 
 const containerStyle: React.CSSProperties = { fontSize: 13, fontFamily: "system-ui, -apple-system, sans-serif" };
 const headerStyle: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" };
@@ -46,7 +47,7 @@ export function BulkSummaryCard({ result, pollingJob, onSendChat }: BulkSummaryC
       ? formatBulkSummaryFromJob(pollingJob)
       : formatBulkSummary(result);
   } catch {
-    return <div style={containerStyle}>Could not format summary.</div>;
+    return <div style={containerStyle}>{__("Could not format summary.")}</div>;
   }
   const badge = { ...statusBadgeStyle, ...(statusColors[summary.statusBadge] ?? statusColors.completed) };
   return (
@@ -54,10 +55,14 @@ export function BulkSummaryCard({ result, pollingJob, onSendChat }: BulkSummaryC
       <header style={headerStyle}>
         <span style={headlineStyle}>{summary.headline}</span>
         <span style={badge}>{summary.statusBadge}</span>
-        <span style={jobIdStyle}>job {summary.jobId}</span>
+        {/* Translators: %s = job UUID */}
+        <span style={jobIdStyle}>{sprintf(__("job %s"), summary.jobId)}</span>
       </header>
       <details style={detailsStyle}>
-        <summary>show {summary.rows.length} {summary.rows.length === 1 ? "row" : "rows"}</summary>
+        <summary>
+          {/* Translators: %d = number of rows. Singular/plural via _n. */}
+          {sprintf(_n("show %d row", "show %d rows", summary.rows.length), summary.rows.length)}
+        </summary>
         <div>
           {summary.rows.map((r, i) => (
             <div key={i} style={{ ...rowStyle, ...rowColor(r.status) }}>
@@ -73,7 +78,8 @@ export function BulkSummaryCard({ result, pollingJob, onSendChat }: BulkSummaryC
             style={buttonStyle}
             onClick={() => onSendChat(`rollback job ${summary.jobId}`)}
           >
-            Rollback all in job {summary.jobId}
+            {/* Translators: %s = job UUID */}
+            {sprintf(__("Rollback all in job %s"), summary.jobId)}
           </button>
         </div>
       )}
