@@ -12,7 +12,7 @@ export type RenderedEmail = { subject: string; html: string };
 export type EmailRenderer = (kind: EmailKind, license: LicenseSnapshot) => RenderedEmail;
 
 const FROM_NAME       = "AI SEO Agent";
-const FROM_EMAIL      = "no-reply@seo-friendly.org";
+const FROM_EMAIL      = "noreply@getseoagent.app";
 const BREVO_ENDPOINT  = "https://api.brevo.com/v3/smtp/email";
 const MAX_ATTEMPTS    = 2;
 
