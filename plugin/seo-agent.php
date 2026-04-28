@@ -27,6 +27,7 @@ require_once SEO_AGENT_DIR . 'includes/class-settings.php';
 require_once SEO_AGENT_DIR . 'includes/class-license.php';
 require_once SEO_AGENT_DIR . 'includes/class-jwt-verifier.php';
 require_once SEO_AGENT_DIR . 'includes/class-admin-page.php';
+require_once SEO_AGENT_DIR . 'includes/class-subscription-page.php';
 require_once SEO_AGENT_DIR . 'includes/class-rest-controller.php';
 require_once SEO_AGENT_DIR . 'includes/class-history-store.php';
 require_once SEO_AGENT_DIR . 'includes/class-jobs-store.php';
@@ -107,5 +108,6 @@ add_action('plugins_loaded', static function (): void {
 
     \SeoAgent\Settings::init();
     \SeoAgent\Admin_Page::init();
+    \SeoAgent\Subscription_Page::init();
     \SeoAgent\REST_Controller::init();
 });

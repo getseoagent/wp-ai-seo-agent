@@ -66,8 +66,11 @@ describe("license routes", () => {
     expect(res.status).toBe(200);
     const body = await res.json() as any;
     expect(body.cancelled).toBe(true);
-    const rows = await sql`SELECT status, disabled_reason FROM licenses WHERE key = ${key}`;
+    const rows = await sql`SELECT status, recurring_state, cancelled_at, disabled_reason FROM licenses WHERE key = ${key}`;
     expect(rows[0].status).toBe("active");
+    expect(rows[0].recurring_state).toBe("cancelled");
+    expect(rows[0].cancelled_at).not.toBeNull();
+    expect(rows[0].disabled_reason).toBe("user_cancelled");
   });
 
   it("POST /license/<key>/cancel rejects without JWT (401)", async () => {
@@ -92,6 +95,36 @@ describe("license routes", () => {
     await sql`INSERT INTO licenses (key, tier, max_sites, expires_at) VALUES (${key}, 'pro', 1, NOW() + INTERVAL '5 days')`;
     const res = await app.request(`/license/${key}/cancel`, { method: "POST", headers: { authorization: bearerFor(null, "free") } });
     expect(res.status).toBe(403);
+  });
+
+  it("GET /license/<key>/details returns rich row to matching JWT", async () => {
+    const { key } = generateKey({ tier: "pro", expirySeconds: 30 * 86400, secret: SECRET });
+    await sql`
+      INSERT INTO licenses (key, tier, max_sites, expires_at, next_charge_at, wayforpay_card_pan)
+      VALUES (${key}, 'pro', 1, NOW() + INTERVAL '30 days', NOW() + INTERVAL '29 days', '411111****1234')
+    `;
+    const res = await app.request(`/license/${key}/details`, { headers: { authorization: bearerFor(key) } });
+    expect(res.status).toBe(200);
+    const body = await res.json() as any;
+    expect(body.tier).toBe("pro");
+    expect(body.recurring_state).toBe("active");
+    expect(body.card_last4).toBe("1234");
+    expect(body.next_charge_at).not.toBeNull();
+  });
+
+  it("GET /license/<key>/details rejects mismatched JWT (403)", async () => {
+    const { key: keyA } = generateKey({ tier: "pro", expirySeconds: 30 * 86400, secret: SECRET });
+    const { key: keyB } = generateKey({ tier: "pro", expirySeconds: 30 * 86400, secret: SECRET });
+    await sql`INSERT INTO licenses (key, tier, max_sites, expires_at) VALUES (${keyA}, 'pro', 1, NOW() + INTERVAL '30 days')`;
+    const res = await app.request(`/license/${keyA}/details`, { headers: { authorization: bearerFor(keyB) } });
+    expect(res.status).toBe(403);
+  });
+
+  it("GET /license/<key>/details rejects without JWT (401)", async () => {
+    const { key } = generateKey({ tier: "pro", expirySeconds: 30 * 86400, secret: SECRET });
+    await sql`INSERT INTO licenses (key, tier, max_sites, expires_at) VALUES (${key}, 'pro', 1, NOW() + INTERVAL '30 days')`;
+    const res = await app.request(`/license/${key}/details`);
+    expect(res.status).toBe(401);
   });
 
   it("GET /license/<key>/verify returns 404 not_found for valid HMAC but missing DB row", async () => {

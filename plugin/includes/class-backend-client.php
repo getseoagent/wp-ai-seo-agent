@@ -36,6 +36,54 @@ final class Backend_Client
         License::clear_cached_jwt();
     }
 
+    /**
+     * GETs /license/{key}/details from the backend with a Bearer JWT minted
+     * for this license. Returns the decoded payload or null on any failure.
+     * Subscription tab uses this to render tier / next-charge / card last-4.
+     */
+    public static function get_license_status(string $licenseKey): ?array
+    {
+        try {
+            $jwt = self::get_jwt();
+        } catch (\Throwable $e) {
+            return null;
+        }
+        $url = self::backend_url() . '/license/' . rawurlencode($licenseKey) . '/details';
+        $response = wp_remote_get($url, [
+            'headers' => [ 'Authorization' => 'Bearer ' . $jwt ],
+            'timeout' => 10,
+        ]);
+        if (is_wp_error($response)) return null;
+        if ((int) wp_remote_retrieve_response_code($response) !== 200) return null;
+        $body = json_decode((string) wp_remote_retrieve_body($response), true);
+        return is_array($body) ? $body : null;
+    }
+
+    /**
+     * POSTs /license/{key}/cancel. Returns true on 200, false on anything
+     * else. The backend just sets recurring_state='cancelled'; the license
+     * keeps `status='active'` so the customer retains access until expires_at.
+     */
+    public static function cancel_license(string $licenseKey): bool
+    {
+        try {
+            $jwt = self::get_jwt();
+        } catch (\Throwable $e) {
+            return false;
+        }
+        $url = self::backend_url() . '/license/' . rawurlencode($licenseKey) . '/cancel';
+        $response = wp_remote_post($url, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $jwt,
+                'Content-Type'  => 'application/json',
+            ],
+            'body'    => '{}',
+            'timeout' => 10,
+        ]);
+        if (is_wp_error($response)) return false;
+        return (int) wp_remote_retrieve_response_code($response) === 200;
+    }
+
     private static function mint_and_cache(): string
     {
         $url     = self::backend_url() . '/auth/token';

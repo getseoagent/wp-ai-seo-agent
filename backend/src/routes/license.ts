@@ -45,9 +45,52 @@ export function mountLicenseRoutes(app: Hono, deps: LicenseRouteDeps): void {
     if (jwt.license_key !== key) {
       return c.json({ error: "license_mismatch" }, 403);
     }
-    await deps.sql`UPDATE licenses SET disabled_reason = 'user_cancelled' WHERE key = ${key}`;
+    // Stop the auto-renewal *and* record the cancellation timestamp; status
+    // stays 'active' so the customer keeps access until expires_at.
+    await deps.sql`
+      UPDATE licenses
+         SET recurring_state = 'cancelled',
+             cancelled_at    = NOW(),
+             disabled_reason = 'user_cancelled'
+       WHERE key = ${key}
+    `;
     deps.cache.invalidate(key);
     return c.json({ cancelled: true });
+  });
+
+  // Richer status for the plugin's Subscription tab. Same JWT + license_key
+  // match guard as /cancel — only the customer who minted the token can see
+  // their own card last-4 + next-charge date.
+  app.use("/license/:key/details", requireJwt);
+  app.get("/license/:key/details", async c => {
+    const key = c.req.param("key");
+    const jwt = c.get("jwt" as never) as JwtPayload;
+    if (jwt.license_key !== key) {
+      return c.json({ error: "license_mismatch" }, 403);
+    }
+    const rows = await deps.sql`
+      SELECT key, status, tier, expires_at, recurring_state, next_charge_at,
+             wayforpay_card_pan, cancelled_at
+        FROM licenses
+       WHERE key = ${key}
+    ` as Array<{
+      key: string; status: string; tier: string;
+      expires_at: string; recurring_state: string;
+      next_charge_at: string | null; wayforpay_card_pan: string | null;
+      cancelled_at: string | null;
+    }>;
+    const row = rows[0];
+    if (!row) return c.json({ error: "not_found" }, 404);
+    return c.json({
+      key:             row.key,
+      status:          row.status,
+      tier:            row.tier,
+      expires_at:      row.expires_at,
+      recurring_state: row.recurring_state,
+      next_charge_at:  row.next_charge_at,
+      card_last4:      row.wayforpay_card_pan ? row.wayforpay_card_pan.slice(-4) : null,
+      cancelled_at:    row.cancelled_at,
+    });
   });
 }
 

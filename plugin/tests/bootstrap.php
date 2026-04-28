@@ -7,6 +7,8 @@ require_once dirname(__DIR__) . '/includes/class-settings.php';
 require_once dirname(__DIR__) . '/includes/class-license.php';
 require_once dirname(__DIR__) . '/includes/class-jwt-verifier.php';
 require_once dirname(__DIR__) . '/includes/class-backend-client.php';
+require_once dirname(__DIR__) . '/includes/class-admin-page.php';
+require_once dirname(__DIR__) . '/includes/class-subscription-page.php';
 require_once dirname(__DIR__) . '/includes/class-rest-controller.php';
 require_once dirname(__DIR__) . '/includes/class-history-store.php';
 require_once dirname(__DIR__) . '/includes/class-jobs-store.php';
@@ -114,6 +116,75 @@ if (!function_exists('delete_transient')) {
         unset($GLOBALS['_transient_store'][$key]);
         return true;
     }
+}
+if (!function_exists('wp_remote_get')) {
+    function wp_remote_get(string $url, array $args = []) {
+        $GLOBALS['_last_remote_get'] = ['url' => $url, 'args' => $args];
+        $handler = $GLOBALS['_remote_get_handler'] ?? null;
+        if (is_callable($handler)) return $handler($url, $args);
+        return ['response' => ['code' => 200], 'body' => ''];
+    }
+}
+if (!function_exists('wp_send_json_success')) {
+    function wp_send_json_success($data = null): void {
+        $GLOBALS['_seoagent_test_json_response'] = ['success' => true, 'data' => $data];
+        throw new \RuntimeException('wp_send_json_success'); // halts test like real wp_send_json's exit
+    }
+}
+if (!function_exists('wp_send_json_error')) {
+    function wp_send_json_error($data = null, int $code = 0): void {
+        $GLOBALS['_seoagent_test_json_response'] = ['success' => false, 'data' => $data, 'code' => $code];
+        throw new \RuntimeException('wp_send_json_error');
+    }
+}
+if (!function_exists('wp_create_nonce')) {
+    function wp_create_nonce(string $action): string { return 'nonce-' . md5($action); }
+}
+if (!function_exists('check_ajax_referer')) {
+    function check_ajax_referer(string $action, string $query_arg = '_wpnonce', bool $die = true): bool {
+        return true;
+    }
+}
+if (!function_exists('check_admin_referer')) {
+    function check_admin_referer(string $action, string $query_arg = '_wpnonce'): bool {
+        return true;
+    }
+}
+if (!function_exists('admin_url')) {
+    function admin_url(string $path = ''): string { return 'http://example.test/wp-admin/' . $path; }
+}
+if (!function_exists('wp_safe_redirect')) {
+    function wp_safe_redirect(string $location): bool {
+        $GLOBALS['_seoagent_test_redirect'] = $location;
+        throw new \RuntimeException('wp_safe_redirect');
+    }
+}
+if (!function_exists('wp_die')) {
+    function wp_die(string $msg = ''): void { throw new \RuntimeException('wp_die: ' . $msg); }
+}
+if (!function_exists('add_action')) {
+    function add_action(string $hook, $cb, int $priority = 10, int $accepted_args = 1): bool { return true; }
+}
+if (!function_exists('add_submenu_page')) {
+    function add_submenu_page(string $parent, string $page_title, string $menu_title, string $cap, string $slug, $cb = null): string { return $slug; }
+}
+if (!function_exists('add_menu_page')) {
+    function add_menu_page(string $page_title, string $menu_title, string $cap, string $slug, $cb = null, string $icon = '', ?int $pos = null): string { return $slug; }
+}
+if (!function_exists('esc_html')) {
+    function esc_html(string $s): string { return htmlspecialchars($s, ENT_QUOTES, 'UTF-8'); }
+}
+if (!function_exists('esc_url')) {
+    function esc_url(string $s): string { return $s; }
+}
+if (!function_exists('esc_attr')) {
+    function esc_attr(string $s): string { return htmlspecialchars($s, ENT_QUOTES, 'UTF-8'); }
+}
+if (!function_exists('wp_unslash')) {
+    function wp_unslash($value) { return is_string($value) ? stripslashes($value) : $value; }
+}
+if (!function_exists('rawurlencode')) {
+    // PHP built-in; defining as fallback only if missing in some bizarre env.
 }
 
 if (!function_exists('update_post_meta')) {
