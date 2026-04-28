@@ -1,13 +1,17 @@
 <?php
 /**
- * Plugin Name: AI SEO Agent
- * Description: Bulk SEO operations through dialog. Augments RankMath/Yoast/AIOSEO/SEOPress.
- * Version: 0.1.0
+ * Plugin Name:       AI SEO Agent
+ * Plugin URI:        https://www.seo-friendly.org/ai-seo-agent
+ * Description:       Bulk SEO rewrites through chat. Sample-and-extrapolate UX over RankMath/Yoast/AIOSEO/SEOPress.
+ * Version:           1.0.0
  * Requires at least: 6.4
- * Requires PHP: 8.1
- * Author: artifact861
- * License: GPL-2.0-or-later
- * Text Domain: seo-agent
+ * Requires PHP:      8.1
+ * Author:            SEO-FRIENDLY
+ * Author URI:        https://www.seo-friendly.org
+ * License:           GPL-2.0-or-later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       seo-agent
+ * Domain Path:       /languages
  */
 
 declare(strict_types=1);
@@ -18,7 +22,7 @@ if (!defined('ABSPATH')) {
 
 // Bump on any schema change; plugins_loaded compares against the stored
 // `seoagent_db_version` option and re-runs dbDelta when they differ.
-define('SEO_AGENT_VERSION', '0.6.0');
+define('SEO_AGENT_VERSION', '1.0.0');
 define('SEO_AGENT_FILE', __FILE__);
 define('SEO_AGENT_DIR', plugin_dir_path(__FILE__));
 define('SEO_AGENT_URL', plugin_dir_url(__FILE__));

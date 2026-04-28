@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace SeoAgent;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 /**
  * Pure HS256 JWT verifier — no third-party deps. Wire-compatible with the
  * backend `lib/jwt.ts`: same {alg:HS256, typ:JWT} header, same base64url

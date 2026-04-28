@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace SeoAgent;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 /**
  * License + JWT-cache storage. Both blobs ride encrypted in wp_options under
  * AUTH_KEY (same envelope as Settings::api_key) so a DB dump on a restored

@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace SeoAgent;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 final class Admin_Page
 {
     public const SLUG = 'seo-agent';
@@ -104,7 +108,7 @@ final class Admin_Page
             wp_die('Insufficient permissions.');
         }
         check_admin_referer('seo_agent_save_api_key');
-        $raw = isset($_POST['api_key']) ? (string) wp_unslash($_POST['api_key']) : '';
+        $raw = isset($_POST['api_key']) ? sanitize_text_field(wp_unslash((string) $_POST['api_key'])) : '';
         if ($raw !== '') {
             Settings::set_api_key($raw);
         }

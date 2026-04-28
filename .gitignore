@@ -22,3 +22,6 @@ composer.lock
 
 # Logs
 *.log
+
+# wp.org build output
+dist/

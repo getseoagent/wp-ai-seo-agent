@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace SeoAgent\Adapters;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 final class Fallback_Adapter implements Seo_Fields_Adapter
 {
     /** @var \Closure(int): ?string */

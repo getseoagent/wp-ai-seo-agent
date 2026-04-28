@@ -3,6 +3,15 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+// Plugin source files now have an `if (!defined('ABSPATH')) exit;` guard, so
+// ABSPATH must be defined before they're loaded.
+if (!defined('ABSPATH')) {
+    define('ABSPATH', __DIR__);
+}
+if (!defined('AUTH_KEY')) {
+    define('AUTH_KEY', 'test-auth-key-do-not-use-in-prod');
+}
+
 require_once dirname(__DIR__) . '/includes/class-settings.php';
 require_once dirname(__DIR__) . '/includes/class-license.php';
 require_once dirname(__DIR__) . '/includes/class-jwt-verifier.php';
@@ -18,13 +27,6 @@ foreach (glob(dirname(__DIR__) . '/includes/adapters/interface-*.php') as $adapt
 }
 foreach (glob(dirname(__DIR__) . '/includes/adapters/class-*.php') as $adapter_file) {
     require_once $adapter_file;
-}
-
-if (!defined('ABSPATH')) {
-    define('ABSPATH', __DIR__);
-}
-if (!defined('AUTH_KEY')) {
-    define('AUTH_KEY', 'test-auth-key-do-not-use-in-prod');
 }
 
 // Minimal WP function stubs for unit tests
@@ -182,6 +184,13 @@ if (!function_exists('esc_attr')) {
 }
 if (!function_exists('wp_unslash')) {
     function wp_unslash($value) { return is_string($value) ? stripslashes($value) : $value; }
+}
+if (!function_exists('sanitize_text_field')) {
+    function sanitize_text_field(string $s): string {
+        $s = preg_replace('/[\r\n\t ]+/', ' ', $s) ?? $s;
+        $s = strip_tags($s);
+        return trim($s);
+    }
 }
 if (!function_exists('rawurlencode')) {
     // PHP built-in; defining as fallback only if missing in some bizarre env.

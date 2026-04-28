@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace SeoAgent\Adapters;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 final class Adapter_Factory
 {
     /**

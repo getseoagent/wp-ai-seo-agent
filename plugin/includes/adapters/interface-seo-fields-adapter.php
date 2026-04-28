@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace SeoAgent\Adapters;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 interface Seo_Fields_Adapter
 {
     public function get_seo_title(int $post_id): ?string;

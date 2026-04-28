@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace SeoAgent\Adapters;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 final class Rank_Math_Adapter implements Seo_Fields_Adapter
 {
     private const META_TITLE       = 'rank_math_title';

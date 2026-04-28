@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace SeoAgent;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 final class Settings
 {
     private const OPTION_KEY = 'seo_agent_api_key';

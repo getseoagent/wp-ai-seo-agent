@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace SeoAgent;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 /**
  * Subscription admin tab — sub-menu under SEO Agent. Reads license status
  * via Backend_Client::get_license_status (which mints a JWT and hits
@@ -169,7 +173,7 @@ final class Subscription_Page
             wp_die('Insufficient permissions.');
         }
         check_admin_referer('seoagent_save_license_key');
-        $raw = isset($_POST['license_key']) ? (string) wp_unslash($_POST['license_key']) : '';
+        $raw = isset($_POST['license_key']) ? sanitize_text_field(wp_unslash((string) $_POST['license_key'])) : '';
         if ($raw !== '') {
             License::set_license_key($raw);
         }

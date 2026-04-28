@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace SeoAgent;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 final class Backend_Client
 {
     /** Refresh ahead of expiry so an in-flight request never carries a token that's about to die. */

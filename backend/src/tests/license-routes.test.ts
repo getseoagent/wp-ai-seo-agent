@@ -25,7 +25,9 @@ describe("license routes", () => {
   let app: Hono;
 
   beforeAll(async () => {
-    process.env.JWT_SECRET ??= JWT_SECRET;
+    // Force-override — backend/.env may carry a real prod JWT_SECRET; the test
+    // signer must match what requireJwt verifies against.
+    process.env.JWT_SECRET = JWT_SECRET;
     sql = new SQL(TEST_DB_URL);
     await sql`DROP TABLE IF EXISTS session_messages, sessions, licenses, migrations CASCADE`;
     await runMigrations(sql, MIG_DIR);

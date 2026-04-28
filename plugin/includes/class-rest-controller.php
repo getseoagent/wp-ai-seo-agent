@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace SeoAgent;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 use SeoAgent\Adapters;
 use SeoAgent\History_Store;
 use SeoAgent\Jobs_Store;
