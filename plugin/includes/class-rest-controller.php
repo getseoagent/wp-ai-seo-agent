@@ -281,7 +281,21 @@ final class REST_Controller {
 		$post_type     = is_array( $post_type_raw )
 			? array_values( array_filter( array_map( static fn( $s ) => sanitize_key( (string) $s ), $post_type_raw ) ) )
 			: sanitize_key( (string) $post_type_raw );
-		$args          = array(
+		// Whitelist against publicly-queryable post types. Without this an
+		// authenticated caller could request post_type=revision / oembed_cache
+		// / etc. and exfiltrate non-public bodies through the listing.
+		if ( function_exists( 'get_post_types' ) ) {
+			$public_types = get_post_types( array( 'public' => true ), 'names' );
+			if ( is_array( $post_type ) ) {
+				$post_type = array_values( array_intersect( $post_type, $public_types ) );
+				if ( empty( $post_type ) ) {
+					$post_type = 'post';
+				}
+			} elseif ( ! in_array( $post_type, $public_types, true ) ) {
+				$post_type = 'post';
+			}
+		}
+		$args = array(
 			'post_type'      => $post_type,
 			'post_status'    => $params['status'] ?? 'publish',
 			'posts_per_page' => $limit,
@@ -290,10 +304,10 @@ final class REST_Controller {
 			'order'          => 'DESC',
 		);
 		if ( ! empty( $params['category'] ) ) {
-			$args['category_name'] = (string) $params['category'];
+			$args['category_name'] = sanitize_title( (string) $params['category'] );
 		}
 		if ( ! empty( $params['tag'] ) ) {
-			$args['tag'] = (string) $params['tag'];
+			$args['tag'] = sanitize_title( (string) $params['tag'] );
 		}
 		if ( ! empty( $params['after'] ) ) {
 			$args['date_query'][] = array( 'after' => (string) $params['after'] );
@@ -479,7 +493,11 @@ final class REST_Controller {
 			}
 
 			$before = self::adapter_get( $adapter, $field, $post_id );
-			$after  = wp_kses_post( $value );
+			// SEO fields are plain text (title / description / focus_keyword /
+			// og_title); none of them render HTML through any adapter we ship.
+			// sanitize_text_field strips tags + collapses whitespace; using
+			// wp_kses_post here would leak <a>/<img> through to <title>.
+			$after = sanitize_text_field( (string) $value );
 
 			if ( $before === $after ) {
 				$store->insert(
@@ -927,10 +945,15 @@ final class REST_Controller {
 		try {
 			$jwt = Backend_Client::get_jwt();
 		} catch ( \Throwable $e ) {
+			// Log full detail server-side so an operator can diagnose; surface a
+			// generic message to the browser so we don't leak the backend URL,
+			// connection-refused hostnames, or other internals.
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( '[seo-agent] proxy_chat: get_jwt() failed: ' . $e->getMessage() );
 			echo "event: error\ndata: " . wp_json_encode(
 				array(
 					'type'    => 'error',
-					'message' => $e->getMessage(),
+					'message' => 'Could not authenticate with the SEO Agent backend. Check site logs for details.',
 				)
 			) . "\n\n";
 			exit;
@@ -969,11 +992,15 @@ final class REST_Controller {
 
 		$ok = curl_exec( $ch );
 		if ( $ok === false ) {
-			$err = curl_error( $ch );
+			// curl_error() can leak internal hostnames / ports
+			// ("Could not resolve host: backend.internal:7117"); log the full
+			// detail and surface a generic message instead.
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( '[seo-agent] proxy_chat: curl_exec failed: ' . curl_error( $ch ) );
 			echo "event: error\ndata: " . wp_json_encode(
 				array(
 					'type'    => 'error',
-					'message' => $err,
+					'message' => 'Upstream connection to the SEO Agent backend failed. Check site logs for details.',
 				)
 			) . "\n\n";
 		}

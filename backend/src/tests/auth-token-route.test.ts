@@ -35,6 +35,10 @@ describe("POST /auth/token", () => {
       cache: createLicenseCache({ ttlMs: 60_000 }),
       licenseHmacSecret: HMAC_SECRET,
       tokenTtlSeconds: 3600,
+      // Tests fire multiple requests per case + a fresh app per beforeEach,
+      // but beforeEach doesn't reset the rate-limit bucket if perMin is small.
+      // Bump the cap so route logic is what's under test, not the limiter.
+      rateLimitPerMin: 10_000,
     });
   });
 

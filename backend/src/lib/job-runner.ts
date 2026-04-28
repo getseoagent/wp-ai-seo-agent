@@ -149,13 +149,16 @@ export async function runBulkJob(args: RunBulkJobArgs): Promise<BulkApplyResult>
     };
     try {
       const updateResult = await wp.updateSeoFields(postId, fields, jobId, innerSignal);
-      const titleResult = updateResult.results.find((r: any) => r.field === "title");
+      type FieldResult = { field?: unknown; before?: unknown; after?: unknown };
+      const titleResult = (updateResult.results as FieldResult[]).find(r => r.field === "title");
+      const titleBefore = typeof titleResult?.before === "string" ? titleResult.before : null;
+      const titleAfter  = typeof titleResult?.after  === "string" ? titleResult.after  : undefined;
       results.push({
         post_id: postId,
         status: "applied",
         history_id: undefined,  // updateResult doesn't expose this in current Plan 3a shape
-        title_before: titleResult?.before ?? null,
-        title_after: titleResult?.after,
+        title_before: titleBefore,
+        title_after:  titleAfter,
       });
       applied++;
     } catch (err) {

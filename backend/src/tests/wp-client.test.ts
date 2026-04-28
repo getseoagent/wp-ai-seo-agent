@@ -11,7 +11,7 @@ describe("WpClient", () => {
     globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) => {
       calls.push({ url: String(url), init: init ?? {} });
       return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { "content-type": "application/json" } });
-    }) as typeof fetch;
+    }) as unknown as typeof fetch;
     restoreFetch = () => { globalThis.fetch = original; };
   });
   afterEach(() => restoreFetch());
@@ -27,7 +27,7 @@ describe("WpClient", () => {
         next_cursor: null,
         total: 1,
       }), { status: 200, headers: { "content-type": "application/json" } });
-    }) as typeof fetch;
+    }) as unknown as typeof fetch;
     try {
       const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
       const result = await wp.listPosts({ category: "news", limit: 5 });
@@ -60,7 +60,7 @@ describe("WpClient", () => {
       word_count: 5,
       content_preview: "preview text",
       current_seo: { title: null, description: null, focus_keyword: null, og_title: null },
-    }), { status: 200, headers: { "content-type": "application/json" } })) as typeof fetch;
+    }), { status: 200, headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
     try {
       const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
       const result = await wp.getPostSummary(42);
@@ -71,7 +71,7 @@ describe("WpClient", () => {
   });
 
   it("throws on non-2xx", async () => {
-    globalThis.fetch = (async () => new Response("nope", { status: 500 })) as typeof fetch;
+    globalThis.fetch = (async () => new Response("nope", { status: 500 })) as unknown as typeof fetch;
     const wp = createWpClient({ baseUrl: "https://site.example", jwtSecret: "test-jwt-secret-32-bytes-min-pls!" });
     await expect(wp.listPosts({})).rejects.toThrow(/500/);
   });
@@ -137,7 +137,7 @@ describe("WpClient — jobs", () => {
         started_at: "2026-04-26 12:00:00", finished_at: null,
         cancel_requested_at: null, last_progress_at: null,
       }), { status: 200, headers: { "content-type": "application/json" } });
-    }) as typeof fetch;
+    }) as unknown as typeof fetch;
 
     const orig = globalThis.fetch;
     globalThis.fetch = mockFetch;
@@ -159,7 +159,7 @@ describe("WpClient — jobs", () => {
         return new Response(JSON.stringify({ id: "jx", status: "running", total: 5, done: 1, failed_count: 0, started_at: "x", finished_at: null, cancel_requested_at: null, last_progress_at: null, user_id: 0, tool_name: "t", style_hints: null, params_json: null }), { status: 200, headers: { "content-type": "application/json" } });
       }
       return new Response("not found", { status: 404 });
-    }) as typeof fetch;
+    }) as unknown as typeof fetch;
     const orig = globalThis.fetch;
     globalThis.fetch = mockFetch;
     try {
@@ -172,7 +172,7 @@ describe("WpClient — jobs", () => {
   });
 
   it("getJob returns null on 404", async () => {
-    const mockFetch = (async () => new Response("not found", { status: 404 })) as typeof fetch;
+    const mockFetch = (async () => new Response("not found", { status: 404 })) as unknown as typeof fetch;
     const orig = globalThis.fetch;
     globalThis.fetch = mockFetch;
     try {
@@ -189,7 +189,7 @@ describe("WpClient — jobs", () => {
     const mockFetch = (async (url: string, opts: any) => {
       captured = { url, body: JSON.parse(opts.body), method: opts.method };
       return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { "content-type": "application/json" } });
-    }) as typeof fetch;
+    }) as unknown as typeof fetch;
     const orig = globalThis.fetch;
     globalThis.fetch = mockFetch;
     try {
@@ -208,7 +208,7 @@ describe("WpClient — jobs", () => {
     const mockFetch = (async (url: string, opts: any) => {
       captured = { url, body: JSON.parse(opts.body) };
       return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { "content-type": "application/json" } });
-    }) as typeof fetch;
+    }) as unknown as typeof fetch;
     const orig = globalThis.fetch;
     globalThis.fetch = mockFetch;
     try {
@@ -226,7 +226,7 @@ describe("WpClient — jobs", () => {
     const mockFetch = (async (url: string, opts: any) => {
       captured = { url, method: opts.method };
       return new Response(JSON.stringify({ status: "cancel_requested" }), { status: 200, headers: { "content-type": "application/json" } });
-    }) as typeof fetch;
+    }) as unknown as typeof fetch;
     const orig = globalThis.fetch;
     globalThis.fetch = mockFetch;
     try {
@@ -246,7 +246,7 @@ describe("WpClient — jobs", () => {
         return new Response(JSON.stringify({ jobs: [{ id: "j1", user_id: 7, status: "running", total: 5, done: 0, failed_count: 0, tool_name: "t", style_hints: null, params_json: null, started_at: "x", finished_at: null, cancel_requested_at: null, last_progress_at: null }] }), { status: 200, headers: { "content-type": "application/json" } });
       }
       return new Response(JSON.stringify({ jobs: [] }), { status: 200, headers: { "content-type": "application/json" } });
-    }) as typeof fetch;
+    }) as unknown as typeof fetch;
     const orig = globalThis.fetch;
     globalThis.fetch = mockFetch;
     try {

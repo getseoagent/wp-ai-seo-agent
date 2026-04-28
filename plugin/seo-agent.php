@@ -77,7 +77,7 @@ function seoagent_run_db_migrations(): void {
         PRIMARY KEY  (id),
         KEY idx_post_created (post_id, created_at),
         KEY idx_job (job_id)
-    ) {$charset_collate};";
+    ) ENGINE=InnoDB {$charset_collate};";
 	dbDelta( $history_sql );
 
 	// Plan 4-B: + current_post_id, current_post_title — populated by job-runner
@@ -102,7 +102,7 @@ function seoagent_run_db_migrations(): void {
         PRIMARY KEY  (id),
         KEY idx_user_status (user_id, status),
         KEY idx_started (started_at)
-    ) {$charset_collate};";
+    ) ENGINE=InnoDB {$charset_collate};";
 	dbDelta( $jobs_sql );
 }
 

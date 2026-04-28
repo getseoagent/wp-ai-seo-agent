@@ -354,10 +354,10 @@ describe("cancel_job tool", () => {
     expect(tools.some(t => t.name === "cancel_job")).toBe(true);
   });
   it("calls wp.cancelJob", async () => {
-    let cancelled: string | null = null;
-    const wp = { ...fakeWp, cancelJob: async (id: string) => { cancelled = id; } };
+    const captured: { id: string | null } = { id: null };
+    const wp = { ...fakeWp, cancelJob: async (id: string) => { captured.id = id; } };
     const out: any = await dispatchTool("cancel_job", { job_id: "jX" }, wp as any);
-    expect(cancelled).toBe("jX");
+    expect(captured.id).toBe("jX");
     expect(out.status).toBe("cancel_requested");
   });
   it("is idempotent across calls (dispatch always calls wp.cancelJob)", async () => {
@@ -462,7 +462,7 @@ describe("apply_style_to_batch detachment", () => {
     title: { current: "c", new: "n", diff_summary: "" },
     description: { current: "c", new: "n", diff_summary: "" },
     focus_keyword: { current: "c", new: "n", diff_summary: "" },
-  } as RewriteProposal;
+  } as unknown as RewriteProposal;
 
   it("returns {status:'running'} immediately without awaiting bulk job completion", async () => {
     let getPostSummaryHang = true;

@@ -33,7 +33,7 @@ describe("createWayForPayClient", () => {
         amount: 19.0,
         currency: "USD",
       }), { status: 200, headers: { "content-type": "application/json" } });
-    }) as typeof fetch;
+    }) as unknown as typeof fetch;
     globalThis.fetch = mockFetch;
     try {
       const result = await client.chargeRecurring({
@@ -58,7 +58,7 @@ describe("createWayForPayClient", () => {
       transactionStatus: "Declined",
       reasonCode: 1003,
       reason: "Insufficient funds",
-    }), { status: 200, headers: { "content-type": "application/json" } })) as typeof fetch;
+    }), { status: 200, headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
     try {
       const result = await client.chargeRecurring({ recToken: "x", orderReference: "y", amount: 1, currency: "USD", productName: "p" });
       expect(result.transactionStatus).toBe("Declined");

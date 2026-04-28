@@ -54,11 +54,13 @@ const licenseCache = createLicenseCache({ ttlMs: 60_000 });
 mountLicenseRoutes(app, { sql: getDb(), cache: licenseCache, licenseHmacSecret });
 
 const tokenTtlSeconds = Number(process.env.JWT_TOKEN_TTL_SECONDS ?? 86400);
+const authRateLimitPerMin = Number(process.env.AUTH_TOKEN_RATE_LIMIT_PER_MIN ?? 10);
 mountAuthTokenRoute(app, {
   sql: getDb(),
   cache: licenseCache,
   licenseHmacSecret,
   tokenTtlSeconds,
+  rateLimitPerMin: authRateLimitPerMin,
 });
 
 const wfpClient = createWayForPayClient({

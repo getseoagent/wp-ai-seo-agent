@@ -17,8 +17,8 @@ function scriptedClient(scripts: Array<{ deltas: string[]; toolCalls?: Array<{ i
     stream() {
       const script = scripts[i++];
       const blocks = [
-        ...script.deltas.map(d => ({ type: "text", text: d })),
-        ...(script.toolCalls ?? []).map(tc => ({ type: "tool_use", id: tc.id, name: tc.name, input: tc.input })),
+        ...script.deltas.map(d => ({ type: "text" as const, text: d })),
+        ...(script.toolCalls ?? []).map(tc => ({ type: "tool_use" as const, id: tc.id, name: tc.name, input: tc.input })),
       ];
       const final = { content: blocks, stop_reason: script.stop };
       const chunks = script.deltas.map(d => ({ type: "text", delta: d } as const));

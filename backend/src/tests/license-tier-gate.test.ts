@@ -14,7 +14,7 @@ describe("tierAllows", () => {
     expect(tierAllows("propose_seo_rewrites", "free", { post_ids: [1,2,3,4,5] }).ok).toBe(true);
     const overFreeCap = tierAllows("propose_seo_rewrites", "free", { post_ids: [1,2,3,4,5,6] });
     expect(overFreeCap.ok).toBe(false);
-    expect(overFreeCap.error?.message).toMatch(/Pro/i);
+    if (!overFreeCap.ok) expect(overFreeCap.error.message).toMatch(/Pro/i);
     expect(tierAllows("propose_seo_rewrites", "pro", { post_ids: Array(20).fill(1) }).ok).toBe(true);
   });
 
@@ -30,7 +30,7 @@ describe("tierAllows", () => {
     expect(tierAllows("apply_style_to_batch", "pro", { post_ids: Array(20).fill(1) }).ok).toBe(true);
     const proOver = tierAllows("apply_style_to_batch", "pro", { post_ids: Array(50).fill(1) });
     expect(proOver.ok).toBe(false);
-    expect(proOver.error?.message).toMatch(/Agency/i);
+    if (!proOver.ok) expect(proOver.error.message).toMatch(/Agency/i);
     expect(tierAllows("apply_style_to_batch", "agency", { post_ids: Array(200).fill(1) }).ok).toBe(true);
     expect(tierAllows("apply_style_to_batch", "enterprise", { post_ids: Array(200).fill(1) }).ok).toBe(true);
   });

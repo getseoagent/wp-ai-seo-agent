@@ -3,6 +3,7 @@ import type { SQL } from "bun";
 import { signJwt } from "../lib/jwt";
 import type { LicenseCache } from "../lib/license/cache";
 import { parseKey, type Tier } from "../lib/license/key-format";
+import { makeRateLimit } from "../lib/rate-limit";
 
 export type AuthTokenDeps = {
   sql: SQL;
@@ -10,11 +11,16 @@ export type AuthTokenDeps = {
   licenseHmacSecret: string;
   /** JWT lifetime in seconds. Plugin should refresh ahead of expiry. */
   tokenTtlSeconds: number;
+  /** Max mints per minute per IP. Defaults to 10 — a legit plugin mints once
+   *  per JWT_TOKEN_TTL_SECONDS (default 24h), so 10/min is far above honest use. */
+  rateLimitPerMin?: number;
 };
 
 type Body = { license_key?: string | null; site_url?: string };
 
 export function mountAuthTokenRoute(app: Hono, deps: AuthTokenDeps): void {
+  const rateLimit = makeRateLimit({ perMin: deps.rateLimitPerMin ?? 10 });
+  app.use("/auth/token", rateLimit);
   app.post("/auth/token", async c => {
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) return c.json({ error: "server misconfigured: JWT_SECRET unset" }, 500);
