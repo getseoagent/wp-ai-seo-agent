@@ -1,4 +1,32 @@
-type Cfg = { baseUrl: string; sharedSecret: string; writeSecret?: string };
+import { signJwt } from "./jwt";
+
+type Cfg = {
+  baseUrl: string;
+  /** HS256 secret for signing service JWTs sent to the plugin (Plan 4-A Task 3.5). */
+  jwtSecret: string;
+  /** Legacy shared secret — kept while plugin is in dual-mode soak (Task 3.5 → 3.6). */
+  sharedSecret?: string;
+  /** Legacy write secret — kept while plugin is in dual-mode soak. */
+  writeSecret?: string;
+};
+
+/** Sign a short-lived (60s) service JWT carrying the requested scope. */
+function signServiceJwt(secret: string, scope: "read" | "write"): string {
+  const iat = Math.floor(Date.now() / 1000);
+  return signJwt(
+    {
+      site_url:    "service",
+      license_key: null,
+      tier:        "enterprise",
+      iat,
+      exp: iat + 60,
+      // sub/scope are non-standard claims the plugin's permit_admin_or_jwt reads.
+      // The plan extends the user-JWT shape rather than introducing a separate type.
+      ...({ sub: "service", scope } as object),
+    } as never,
+    { current: secret },
+  );
+}
 
 export type ListPostsArgs = {
   category?: string;
@@ -80,12 +108,14 @@ export function createWpClient(cfg: Cfg) {
         else url.searchParams.set(k, String(v));
       }
     }
-    const headers: Record<string, string> = {};
-    if ((opts.secretKind ?? "read") === "write") {
-      headers["X-Write-Secret"] = cfg.writeSecret ?? "";
-    } else {
-      headers["x-shared-secret"] = cfg.sharedSecret;
-    }
+    const scope: "read" | "write" = (opts.secretKind ?? "read") === "write" ? "write" : "read";
+    const headers: Record<string, string> = {
+      authorization: `Bearer ${signServiceJwt(cfg.jwtSecret, scope)}`,
+    };
+    // Legacy headers — sent during the dual-mode soak window so plugin instances
+    // that haven't picked up Task 3.5 yet keep working. Removed in Task 3.6.
+    if (scope === "write" && cfg.writeSecret) headers["X-Write-Secret"] = cfg.writeSecret;
+    if (cfg.sharedSecret)                      headers["x-shared-secret"] = cfg.sharedSecret;
     if (opts.headers) Object.assign(headers, opts.headers);
     const init: RequestInit = {
       method: opts.method ?? "GET",

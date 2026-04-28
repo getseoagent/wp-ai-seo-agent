@@ -43,8 +43,13 @@ const wfpDomain = process.env.WAYFORPAY_DOMAIN;
 if (!wfpDomain) {
   throw new Error("WAYFORPAY_DOMAIN is required (merchant domain registered with WFP, e.g. www.seo-friendly.org)");
 }
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret) {
+  throw new Error("JWT_SECRET is required (32+ random chars; signs auth tokens + service tokens)");
+}
 const wp = createWpClient({
   baseUrl:      wpBaseUrl,
+  jwtSecret,
   sharedSecret: process.env.SHARED_SECRET ?? "",
   writeSecret,
 });
@@ -60,10 +65,6 @@ mountChat(app, {
 const licenseCache = createLicenseCache({ ttlMs: 60_000 });
 mountLicenseRoutes(app, { sql: getDb(), cache: licenseCache, licenseHmacSecret });
 
-const jwtSecret = process.env.JWT_SECRET;
-if (!jwtSecret) {
-  throw new Error("JWT_SECRET is required (32+ random chars; signs auth tokens)");
-}
 const tokenTtlSeconds = Number(process.env.JWT_TOKEN_TTL_SECONDS ?? 86400);
 mountAuthTokenRoute(app, {
   sql: getDb(),

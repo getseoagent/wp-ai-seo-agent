@@ -5,6 +5,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 require_once dirname(__DIR__) . '/includes/class-settings.php';
 require_once dirname(__DIR__) . '/includes/class-license.php';
+require_once dirname(__DIR__) . '/includes/class-jwt-verifier.php';
 require_once dirname(__DIR__) . '/includes/class-backend-client.php';
 require_once dirname(__DIR__) . '/includes/class-rest-controller.php';
 require_once dirname(__DIR__) . '/includes/class-history-store.php';

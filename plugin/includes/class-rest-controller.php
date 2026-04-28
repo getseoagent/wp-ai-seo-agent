@@ -35,7 +35,7 @@ final class REST_Controller
             'callback'            => static function (): \WP_REST_Response {
                 return new \WP_REST_Response(self::handle_detect_seo_plugin());
             },
-            'permission_callback' => [self::class, 'permit_admin_or_secret'],
+            'permission_callback' => [self::class, 'permit_admin_or_jwt'],
         ]);
 
         register_rest_route('seoagent/v1', '/posts', [
@@ -43,7 +43,7 @@ final class REST_Controller
             'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
                 return new \WP_REST_Response(self::handle_list_posts($req->get_query_params()));
             },
-            'permission_callback' => [self::class, 'permit_admin_or_secret'],
+            'permission_callback' => [self::class, 'permit_admin_or_jwt'],
         ]);
 
         register_rest_route('seoagent/v1', '/post/(?P<id>\d+)/summary', [
@@ -55,20 +55,20 @@ final class REST_Controller
                 }
                 return new \WP_REST_Response($payload);
             },
-            'permission_callback' => [self::class, 'permit_admin_or_secret'],
+            'permission_callback' => [self::class, 'permit_admin_or_jwt'],
         ]);
 
         register_rest_route('seoagent/v1', '/categories', [
             'methods'             => 'GET',
             'callback'            => static fn(): \WP_REST_Response =>
                 new \WP_REST_Response(self::handle_get_taxonomy_terms('category')),
-            'permission_callback' => [self::class, 'permit_admin_or_secret'],
+            'permission_callback' => [self::class, 'permit_admin_or_jwt'],
         ]);
         register_rest_route('seoagent/v1', '/tags', [
             'methods'             => 'GET',
             'callback'            => static fn(): \WP_REST_Response =>
                 new \WP_REST_Response(self::handle_get_taxonomy_terms('post_tag')),
-            'permission_callback' => [self::class, 'permit_admin_or_secret'],
+            'permission_callback' => [self::class, 'permit_admin_or_jwt'],
         ]);
 
         register_rest_route('seoagent/v1', '/post/(?P<id>\d+)/seo-fields', [
@@ -79,7 +79,7 @@ final class REST_Controller
                     $req->get_json_params() ?? []
                 ));
             },
-            'permission_callback' => [self::class, 'permit_admin_or_write_secret'],
+            'permission_callback' => [self::class, 'permit_admin_or_jwt'],
         ]);
 
         register_rest_route('seoagent/v1', '/history', [
@@ -91,7 +91,7 @@ final class REST_Controller
                 }
                 return new \WP_REST_Response(self::handle_get_history($params));
             },
-            'permission_callback' => [self::class, 'permit_admin_or_secret'],
+            'permission_callback' => [self::class, 'permit_admin_or_jwt'],
         ]);
 
         register_rest_route('seoagent/v1', '/rollback', [
@@ -99,7 +99,7 @@ final class REST_Controller
             'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
                 return new \WP_REST_Response(self::handle_rollback($req->get_json_params() ?? []));
             },
-            'permission_callback' => [self::class, 'permit_admin_or_write_secret'],
+            'permission_callback' => [self::class, 'permit_admin_or_jwt'],
         ]);
 
         register_rest_route('seoagent/v1', '/jobs', [
@@ -108,7 +108,7 @@ final class REST_Controller
                 $params = $req->get_json_params() ?? [];
                 return new \WP_REST_Response(self::handle_create_job($params));
             },
-            'permission_callback' => [self::class, 'permit_admin_or_write_secret'],
+            'permission_callback' => [self::class, 'permit_admin_or_jwt'],
         ]);
 
         register_rest_route('seoagent/v1', '/jobs', [
@@ -116,7 +116,7 @@ final class REST_Controller
             'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
                 return new \WP_REST_Response(self::handle_list_jobs($req->get_query_params()));
             },
-            'permission_callback' => [self::class, 'permit_admin_or_secret'],
+            'permission_callback' => [self::class, 'permit_admin_or_jwt'],
         ]);
 
         register_rest_route('seoagent/v1', '/jobs/(?P<id>[a-zA-Z0-9-]+)', [
@@ -128,7 +128,7 @@ final class REST_Controller
                 }
                 return new \WP_REST_Response($job);
             },
-            'permission_callback' => [self::class, 'permit_admin_or_secret'],
+            'permission_callback' => [self::class, 'permit_admin_or_jwt'],
         ]);
 
         register_rest_route('seoagent/v1', '/jobs/(?P<id>[a-zA-Z0-9-]+)/progress', [
@@ -137,7 +137,7 @@ final class REST_Controller
                 $params = $req->get_json_params() ?? [];
                 return new \WP_REST_Response(self::handle_update_job_progress((string) $req['id'], $params));
             },
-            'permission_callback' => [self::class, 'permit_admin_or_write_secret'],
+            'permission_callback' => [self::class, 'permit_admin_or_jwt'],
         ]);
 
         register_rest_route('seoagent/v1', '/jobs/(?P<id>[a-zA-Z0-9-]+)/done', [
@@ -146,7 +146,7 @@ final class REST_Controller
                 $params = $req->get_json_params() ?? [];
                 return new \WP_REST_Response(self::handle_mark_job_done((string) $req['id'], $params));
             },
-            'permission_callback' => [self::class, 'permit_admin_or_write_secret'],
+            'permission_callback' => [self::class, 'permit_admin_or_jwt'],
         ]);
 
         register_rest_route('seoagent/v1', '/jobs/(?P<id>[a-zA-Z0-9-]+)/cancel', [
@@ -154,7 +154,7 @@ final class REST_Controller
             'callback'            => static function (\WP_REST_Request $req): \WP_REST_Response {
                 return new \WP_REST_Response(self::handle_cancel_job((string) $req['id']));
             },
-            'permission_callback' => [self::class, 'permit_admin_or_write_secret'],
+            'permission_callback' => [self::class, 'permit_admin_or_jwt'],
         ]);
 
         register_rest_route('seoagent/v1', '/jobs/sweep-interrupted', [
@@ -163,7 +163,7 @@ final class REST_Controller
                 $params = $req->get_json_params() ?? [];
                 return new \WP_REST_Response(self::handle_sweep_interrupted($params));
             },
-            'permission_callback' => [self::class, 'permit_admin_or_write_secret'],
+            'permission_callback' => [self::class, 'permit_admin_or_jwt'],
         ]);
     }
 
@@ -204,6 +204,39 @@ final class REST_Controller
             return false;
         }
         return hash_equals($expected, (string) $request->get_header('x-write-secret'));
+    }
+
+    /**
+     * Single permission callback covering admin + service-JWT (backend→plugin).
+     * During the dual-mode soak window (Tasks 3.5 → 3.6) it also accepts the
+     * legacy shared-secret / write-secret headers so unmigrated callers don't
+     * break mid-deploy. Task 3.6 strips the dual-mode arms entirely.
+     */
+    public static function permit_admin_or_jwt(\WP_REST_Request $request): bool
+    {
+        if (current_user_can('manage_options')) {
+            return true;
+        }
+
+        if (defined('SEO_AGENT_JWT_SECRET')) {
+            $auth = (string) $request->get_header('authorization');
+            if ($auth !== '' && preg_match('/^bearer\s+(.+)$/i', $auth, $m)) {
+                $verified = JwtVerifier::verify($m[1], (string) SEO_AGENT_JWT_SECRET);
+                if (!empty($verified['ok'])) return true;
+            }
+        }
+
+        // --- Dual-mode legacy fallbacks (removed in Task 3.6) -----------------
+        $shared = defined('SEO_AGENT_SHARED_SECRET') ? (string) SEO_AGENT_SHARED_SECRET : '';
+        if ($shared !== '' && hash_equals($shared, (string) $request->get_header('x-shared-secret'))) {
+            return true;
+        }
+        $write = defined('SEO_AGENT_WRITE_SECRET') ? (string) SEO_AGENT_WRITE_SECRET : '';
+        if ($write !== '' && hash_equals($write, (string) $request->get_header('x-write-secret'))) {
+            return true;
+        }
+
+        return false;
     }
 
     /** @return array{name: string} */

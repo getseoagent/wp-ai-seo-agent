@@ -24,13 +24,13 @@ final class RestControllerWritesTest extends TestCase
 
     public function test_permit_admin_or_write_secret_passes_for_matching_secret(): void
     {
-        $req = self::fake_request(['x-write-secret' => 'test-write-secret']);
+        $req = self::fake_request(['x-write-secret' => SEO_AGENT_WRITE_SECRET]);
         $this->assertTrue(REST_Controller::permit_admin_or_write_secret($req));
     }
 
     public function test_permit_admin_or_write_secret_rejects_wrong_secret(): void
     {
-        $req = self::fake_request(['x-write-secret' => 'wrong']);
+        $req = self::fake_request(['x-write-secret' => 'wrong-' . SEO_AGENT_WRITE_SECRET]);
         $this->assertFalse(REST_Controller::permit_admin_or_write_secret($req));
     }
 
