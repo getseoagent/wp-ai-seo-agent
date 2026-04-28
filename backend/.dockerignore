@@ -1,0 +1,17 @@
+# Source-only image. Tests, evals, lockfile.cache, IDE/OS junk all stay out.
+node_modules
+.env
+.env.*
+!.env.example
+src/tests
+src/eval
+eval
+*.test.ts
+*.spec.ts
+.git
+.github
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+*.log
