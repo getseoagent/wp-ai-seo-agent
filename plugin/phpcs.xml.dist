@@ -55,7 +55,7 @@
     </rule>
 
     <!-- Domain for translation strings. -->
-    <config name="text_domain" value="seo-agent"/>
+    <config name="text_domain" value="getseoagent"/>
 
     <!-- Run against PHP 8.1 (header's Requires PHP). -->
     <config name="testVersion" value="8.1-"/>

@@ -4,7 +4,7 @@
  * that wp_set_script_translations() can hand to @wordpress/i18n at runtime.
  *
  * Filename: {textdomain}-{locale}-{md5(script-relative-path)}.json — that's
- * what `wp_set_script_translations('seo-agent-app', 'seo-agent', $dir)` looks
+ * what `wp_set_script_translations('seo-agent-app', 'getseoagent', $dir)` looks
  * for when the script handle resolves to assets/dist/assets/index-{HASH}.js.
  *
  * We compute the md5 from the manifest.json so the bundle's fingerprint and
@@ -97,7 +97,7 @@ function unescape(s: string): string {
 
 // Iterate every .po in the languages dir.
 for (const f of await readdir(LANG_DIR)) {
-  const m = /^seo-agent-([a-zA-Z_]+)\.po$/.exec(f);
+  const m = /^getseoagent-([a-zA-Z_]+)\.po$/.exec(f);
   if (!m) continue;
   const locale = m[1]!;
   const text   = await readFile(join(LANG_DIR, f), "utf8");
@@ -146,7 +146,7 @@ for (const f of await readdir(LANG_DIR)) {
     lang: locale,
   };
 
-  const outName = `seo-agent-${locale}-${scriptHash}.json`;
+  const outName = `getseoagent-${locale}-${scriptHash}.json`;
   const outPath = join(LANG_DIR, outName);
   await writeFile(outPath, JSON.stringify(jed, null, 2));
   console.error(`${locale}: ${jsOnly.length} JS entries → ${outName}`);

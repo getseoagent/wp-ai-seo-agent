@@ -8,14 +8,14 @@
  * translations and are loaded at runtime by wp_set_script_translations()
  * (registered in plugin/includes/class-admin-page.php).
  *
- * Wrapper rationale: we always pass the same text-domain ("seo-agent") so
+ * Wrapper rationale: we always pass the same text-domain ("getseoagent") so
  * components don't have to. `__` and `sprintf` keep the same signatures as
  * the @wordpress/i18n exports so familiar idioms (pluralisation, %1$s
  * positional args, etc.) work unchanged.
  */
 import { __ as wpI18n, sprintf as wpSprintf, _n as wpN } from "@wordpress/i18n";
 
-const DOMAIN = "seo-agent";
+const DOMAIN = "getseoagent";
 
 export function __(text: string): string {
   return wpI18n(text, DOMAIN);

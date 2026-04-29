@@ -1,11 +1,11 @@
 {
-  "translation-revision-date": "2026-04-28T11:48:24+00:00",
+  "translation-revision-date": "2026-04-29T08:37:08+00:00",
   "generator": "build-jed-json.ts",
   "domain": "messages",
   "locale_data": {
     "messages": {
-      "AI SEO Agent": [
-        "AI SEO Agent"
+      "GetSEOAgent — AI Bulk SEO Chat": [
+        "GetSEOAgent — AI Bulk SEO Chat"
       ],
       "SEO Agent": [
         "SEO Agent"

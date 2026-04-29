@@ -2,15 +2,15 @@
 /**
  * Generate seo-agent-{locale}.po + .json files for the bundled languages.
  *
- * Source: plugin/languages/seo-agent.pot (PHP + JS strings merged).
+ * Source: plugin/languages/getseoagent.pot (PHP + JS strings merged).
  * Output: plugin/languages/seo-agent-{locale}.po (+ .mo via msgfmt + .json
  *         for JS via wp i18n make-json).
  *
  * Translations are inline in this script so a typo + git diff is the entire
  * editorial workflow. To add a string after a code change:
- *   1. cd plugin && cp languages/seo-agent.pot /tmp/php.pot
+ *   1. cd plugin && cp languages/getseoagent.pot /tmp/php.pot
  *   2. cd ../plugin-app && bun run scripts/extract-i18n.ts > /tmp/js.pot
- *   3. cd .. && cat /tmp/php.pot /tmp/js.pot | msguniq > plugin/languages/seo-agent.pot
+ *   3. cd .. && cat /tmp/php.pot /tmp/js.pot | msguniq > plugin/languages/getseoagent.pot
  *   4. add the new msgid to the TRANSLATIONS map below for each locale
  *   5. bun run plugin-app/scripts/build-translations.ts
  *
@@ -22,7 +22,7 @@ import { writeFile, mkdir } from "node:fs/promises";
 import { join, dirname } from "node:path";
 
 const REPO        = new URL("../..", import.meta.url).pathname;
-const POT_PATH    = join(REPO, "plugin/languages/seo-agent.pot");
+const POT_PATH    = join(REPO, "plugin/languages/getseoagent.pot");
 const LANG_DIR    = join(REPO, "plugin/languages");
 
 // ─── locale plural-forms headers ───────────────────────────────────────────
@@ -41,7 +41,7 @@ type Catalog = Record<string, Trans>;
 
 const TRANSLATIONS: Record<string, Catalog> = {
   ru: {
-    "AI SEO Agent":                    "AI SEO Agent",
+    "GetSEOAgent — AI Bulk SEO Chat":  "GetSEOAgent — AI Bulk SEO Chat",
     "SEO Agent":                       "SEO Agent",
     "Insufficient permissions.":       "Недостаточно прав.",
     "••••••• (set)":                   "••••••• (задан)",
@@ -120,7 +120,7 @@ const TRANSLATIONS: Record<string, Catalog> = {
   },
 
   uk: {
-    "AI SEO Agent":                    "AI SEO Agent",
+    "GetSEOAgent — AI Bulk SEO Chat":  "GetSEOAgent — AI Bulk SEO Chat",
     "SEO Agent":                       "SEO Agent",
     "Insufficient permissions.":       "Недостатньо прав.",
     "••••••• (set)":                   "••••••• (задано)",
@@ -199,7 +199,7 @@ const TRANSLATIONS: Record<string, Catalog> = {
   },
 
   es: {
-    "AI SEO Agent":                    "AI SEO Agent",
+    "GetSEOAgent — AI Bulk SEO Chat":  "GetSEOAgent — AI Bulk SEO Chat",
     "SEO Agent":                       "SEO Agent",
     "Insufficient permissions.":       "Permisos insuficientes.",
     "••••••• (set)":                   "••••••• (establecido)",
@@ -278,7 +278,7 @@ const TRANSLATIONS: Record<string, Catalog> = {
   },
 
   fr: {
-    "AI SEO Agent":                    "AI SEO Agent",
+    "GetSEOAgent — AI Bulk SEO Chat":  "GetSEOAgent — AI Bulk SEO Chat",
     "SEO Agent":                       "SEO Agent",
     "Insufficient permissions.":       "Autorisations insuffisantes.",
     "••••••• (set)":                   "••••••• (défini)",
@@ -357,7 +357,7 @@ const TRANSLATIONS: Record<string, Catalog> = {
   },
 
   pt_BR: {
-    "AI SEO Agent":                    "AI SEO Agent",
+    "GetSEOAgent — AI Bulk SEO Chat":  "GetSEOAgent — AI Bulk SEO Chat",
     "SEO Agent":                       "SEO Agent",
     "Insufficient permissions.":       "Permissões insuficientes.",
     "••••••• (set)":                   "••••••• (definida)",
@@ -472,16 +472,16 @@ console.error(`source .pot has ${entries.length} entries`);
 
 for (const [locale, catalog] of Object.entries(TRANSLATIONS)) {
   const lines: string[] = [];
-  lines.push(`# Translation of AI SEO Agent into ${locale}.`);
+  lines.push(`# Translation of GetSEOAgent — AI Bulk SEO Chat into ${locale}.`);
   lines.push(`# This file is distributed under the GPL-2.0-or-later.`);
   lines.push(`msgid ""`);
   lines.push(`msgstr ""`);
   lines.push(`"Content-Type: text/plain; charset=UTF-8\\n"`);
   lines.push(`"Content-Transfer-Encoding: 8bit\\n"`);
-  lines.push(`"Project-Id-Version: AI SEO Agent 1.0.0\\n"`);
+  lines.push(`"Project-Id-Version: GetSEOAgent — AI Bulk SEO Chat 1.0.0\\n"`);
   lines.push(`"Language: ${locale}\\n"`);
   lines.push(`"Plural-Forms: ${PLURAL[locale]}\\n"`);
-  lines.push(`"X-Domain: seo-agent\\n"`);
+  lines.push(`"X-Domain: getseoagent\\n"`);
   lines.push("");
 
   let translated = 0, missing = 0;
@@ -505,7 +505,7 @@ for (const [locale, catalog] of Object.entries(TRANSLATIONS)) {
     lines.push("");
   }
 
-  const poPath = join(LANG_DIR, `seo-agent-${locale}.po`);
+  const poPath = join(LANG_DIR, `getseoagent-${locale}.po`);
   if (!existsSync(dirname(poPath))) await mkdir(dirname(poPath), { recursive: true });
   await writeFile(poPath, lines.join("\n"));
   console.error(`${locale}: ${translated} translated, ${missing} missing → ${poPath}`);

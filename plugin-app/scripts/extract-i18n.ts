@@ -11,7 +11,7 @@
  *   _n("singular", "plural", n)
  *
  * (Both via the wrapper at src/lib/i18n.ts, which always pins
- * the "seo-agent" text-domain — so extracted entries don't carry it.)
+ * the "getseoagent" text-domain — so extracted entries don't carry it.)
  *
  * Usage:
  *   bun run plugin-app/scripts/extract-i18n.ts > /tmp/js.pot.fragment

@@ -1,13 +1,13 @@
-# Translation of AI SEO Agent into es.
+# Translation of AI SEO Agent into fr.
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Project-Id-Version: AI SEO Agent 1.0.0\n"
-"Language: es\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Domain: seo-agent\n"
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: getseoagent\n"
 
 msgid "GetSEOAgent — AI Bulk SEO Chat"
 msgstr "GetSEOAgent — AI Bulk SEO Chat"
@@ -25,219 +25,219 @@ msgid "SEO Agent"
 msgstr "SEO Agent"
 
 msgid "Insufficient permissions."
-msgstr "Permisos insuficientes."
+msgstr "Autorisations insuffisantes."
 
 msgid "••••••• (set)"
-msgstr "••••••• (establecido)"
+msgstr "••••••• (défini)"
 
 msgid "Settings"
-msgstr "Configuración"
+msgstr "Réglages"
 
 msgid "Anthropic API key"
-msgstr "Clave API de Anthropic"
+msgstr "Clé API Anthropic"
 
 msgid "Save"
-msgstr "Guardar"
+msgstr "Enregistrer"
 
 msgid "Chat"
 msgstr "Chat"
 
 msgid "Loading…"
-msgstr "Cargando…"
+msgstr "Chargement…"
 
 msgid "Subscription"
-msgstr "Suscripción"
+msgstr "Abonnement"
 
 msgid "Buy a license"
-msgstr "Comprar licencia"
+msgstr "Acheter une licence"
 
 msgid "Already have a license key?"
-msgstr "¿Ya tienes una clave de licencia?"
+msgstr "Vous avez déjà une clé de licence ?"
 
 msgid "License key"
-msgstr "Clave de licencia"
+msgstr "Clé de licence"
 
 msgid "Could not reach the licensing server. Try again in a minute."
-msgstr "No se pudo contactar con el servidor de licencias. Inténtalo de nuevo en un minuto."
+msgstr "Impossible de joindre le serveur de licences. Réessayez dans une minute."
 
 msgid "License key on file:"
-msgstr "Clave guardada:"
+msgstr "Clé enregistrée :"
 
 msgid "Tier"
 msgstr "Plan"
 
 msgid "Status"
-msgstr "Estado"
+msgstr "Statut"
 
 msgid "Auto-renewal"
-msgstr "Renovación automática"
+msgstr "Renouvellement automatique"
 
 msgid "on"
 msgstr "act."
 
 msgid "off"
-msgstr "desact."
+msgstr "désact."
 
 msgid "Active until"
-msgstr "Activa hasta"
+msgstr "Actif jusqu'au"
 
 msgid "Next charge"
-msgstr "Próximo cargo"
+msgstr "Prochain prélèvement"
 
 msgid "Card"
-msgstr "Tarjeta"
+msgstr "Carte"
 
 msgid "Cancel subscription"
-msgstr "Cancelar suscripción"
+msgstr "Annuler l'abonnement"
 
 msgid "Cancellation stops auto-renewal. You keep access until %s."
-msgstr "La cancelación detiene la renovación automática. Conservas acceso hasta %s."
+msgstr "L'annulation arrête le renouvellement automatique. Vous gardez l'accès jusqu'au %s."
 
 msgid "This subscription is no longer auto-renewing."
-msgstr "Esta suscripción ya no se renueva automáticamente."
+msgstr "Cet abonnement ne se renouvelle plus automatiquement."
 
 msgid "Manage card on WayForPay"
-msgstr "Gestionar tarjeta en WayForPay"
+msgstr "Gérer la carte sur WayForPay"
 
 msgid "Cancel auto-renewal? You'll keep access until the current period ends."
-msgstr "¿Cancelar la renovación automática? Conservas el acceso hasta el final del período actual."
+msgstr "Annuler le renouvellement automatique ? Vous gardez l'accès jusqu'à la fin de la période en cours."
 
 msgid "Cancel failed — check the browser console."
-msgstr "Cancelación fallida — revisa la consola del navegador."
+msgstr "Échec de l'annulation — vérifiez la console du navigateur."
 
 msgid "Cancel failed:"
-msgstr "Cancelación fallida:"
+msgstr "Échec de l'annulation :"
 
 msgid ", %d failed"
-msgstr ", %d con error"
+msgstr ", %d en erreur"
 
 msgid "(no title)"
-msgstr "(sin título)"
+msgstr "(sans titre)"
 
 msgid "/ Skipped %d"
-msgstr "/ Omitidos %d"
+msgstr "/ Ignorés %d"
 
 msgid "%1$d / %2$d applied"
-msgstr "%1$d / %2$d aplicados"
+msgstr "%1$d / %2$d appliqués"
 
 msgid "%1$d/%2$d done"
-msgstr "%1$d/%2$d completadas"
+msgstr "%1$d/%2$d effectuées"
 
 msgid "%d failed"
-msgstr "%d con error"
+msgstr "%d en erreur"
 
 msgid "Agent"
-msgstr "Agente"
+msgstr "Agent"
 
 msgid "Agent is thinking…"
-msgstr "El agente está pensando…"
+msgstr "L'agent réfléchit…"
 
 msgid "Applied %1$d / Failed %2$d / Skipped %3$d"
-msgstr "Aplicados %1$d / Errores %2$d / Omitidos %3$d"
+msgstr "Appliqués %1$d / Erreurs %2$d / Ignorés %3$d"
 
 msgid "Applied %1$d / Failed %2$d / Total %3$d"
-msgstr "Aplicados %1$d / Errores %2$d / Total %3$d"
+msgstr "Appliqués %1$d / Erreurs %2$d / Total %3$d"
 
 msgid "Apply to remaining posts"
-msgstr "Aplicar al resto de las entradas"
+msgstr "Appliquer aux autres articles"
 
 msgid "Ask the agent…"
-msgstr "Pregúntale al agente…"
+msgstr "Demandez à l'agent…"
 
 msgid "Bulk job progress: %1$d of %2$d"
-msgstr "Progreso de la tarea en lote: %1$d de %2$d"
+msgstr "Progression de la tâche en lot : %1$d sur %2$d"
 
 msgid "Cancel"
-msgstr "Cancelar"
+msgstr "Annuler"
 
 msgid "Chat history"
-msgstr "Historial del chat"
+msgstr "Historique du chat"
 
 msgid "Configuration missing."
-msgstr "Falta la configuración."
+msgstr "Configuration manquante."
 
 msgid "Could not format summary."
-msgstr "No se pudo formatear el resumen."
+msgstr "Impossible de formater le résumé."
 
 msgid "current:"
-msgstr "actual:"
+msgstr "actuel :"
 
 msgid "Description"
-msgstr "Descripción"
+msgstr "Description"
 
 msgid "Dismiss"
-msgstr "Descartar"
+msgstr "Masquer"
 
 msgid "Errors (%d)"
-msgstr "Errores (%d)"
+msgstr "Erreurs (%d)"
 
 msgid "Focus keyword"
-msgstr "Palabra clave"
+msgstr "Mot-clé principal"
 
 msgid "History #%d"
-msgstr "Historial #%d"
+msgstr "Historique n°%d"
 
 msgid "job %s"
-msgstr "tarea %s"
+msgstr "tâche %s"
 
 msgid "Job %s"
-msgstr "Tarea %s"
+msgstr "Tâche %s"
 
 msgid "Message to the SEO agent"
-msgstr "Mensaje al agente SEO"
+msgstr "Message à l'agent SEO"
 
 msgid "No messages yet — say hi to test the pipe."
-msgstr "Aún no hay mensajes — saluda para comprobar la conexión."
+msgstr "Pas encore de messages — dites bonjour pour tester la connexion."
 
 msgid "No proposals returned."
-msgstr "No se recibieron propuestas."
+msgstr "Aucune proposition retournée."
 
 msgid "Post %d"
-msgstr "Entrada %d"
+msgstr "Article %d"
 
 msgid "Proposals (%d)"
-msgstr "Propuestas (%d)"
+msgstr "Propositions (%d)"
 
 msgid "reasoning"
-msgstr "razonamiento"
+msgstr "raisonnement"
 
 msgid "refine: e.g. more aggressive, no emoji"
-msgstr "refinar: p. ej. más directo, sin emojis"
+msgstr "préciser : p. ex. plus direct, sans emoji"
 
 msgid "Reload page"
-msgstr "Recargar página"
+msgstr "Recharger la page"
 
 msgid "Rollback all in job %s"
-msgstr "Revertir todo en la tarea %s"
+msgstr "Annuler tout dans la tâche %s"
 
 msgid "Rolled back %d"
-msgstr "Revertidos %d"
+msgstr "Annulés %d"
 
 msgid "Send"
-msgstr "Enviar"
+msgstr "Envoyer"
 
 msgid "SEO bulk done"
-msgstr "Tarea SEO en lote completada"
+msgstr "Tâche SEO en lot terminée"
 
 msgid "Set your Anthropic API key in the form above to start chatting."
-msgstr "Introduce tu clave API de Anthropic en el formulario de arriba para empezar a chatear."
+msgstr "Saisissez votre clé API Anthropic dans le formulaire ci-dessus pour commencer."
 
 msgid "show %d row"
 msgid_plural "show %d rows"
-msgstr[0] "mostrar %d fila"
-msgstr[1] "mostrar %d filas"
+msgstr[0] "afficher %d ligne"
+msgstr[1] "afficher %d lignes"
 
 msgid "Something went wrong in the chat panel."
-msgstr "Algo salió mal en el panel del chat."
+msgstr "Une erreur est survenue dans le panneau de chat."
 
 msgid "Stop"
-msgstr "Detener"
+msgstr "Arrêter"
 
 msgid "Title"
-msgstr "Título"
+msgstr "Titre"
 
 msgid "View summary"
-msgstr "Ver resumen"
+msgstr "Voir le résumé"
 
 msgid "You"
-msgstr "Tú"
+msgstr "Vous"

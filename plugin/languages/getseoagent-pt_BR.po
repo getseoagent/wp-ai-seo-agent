@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: AI SEO Agent 1.0.0\n"
 "Language: pt_BR\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Domain: seo-agent\n"
+"X-Domain: getseoagent\n"
 
 msgid "GetSEOAgent — AI Bulk SEO Chat"
 msgstr "GetSEOAgent — AI Bulk SEO Chat"

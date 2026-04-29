@@ -7,7 +7,7 @@
 # Exclusions: .git/, vendor/, tests/, composer.*, phpunit.*, node_modules,
 #             plugin-app/ (TS sources), backend/ (Node side), IDE/OS junk.
 #
-# After this runs you can hand dist/seo-agent.zip to the wp.org review form
+# After this runs you can hand dist/getseoagent.zip to the wp.org review form
 # (https://wordpress.org/plugins/developers/add/) or test it locally on a
 # clean WP install.
 #
@@ -18,8 +18,8 @@ set -euo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 PLUGIN="$REPO/plugin"
 DIST="$REPO/dist"
-STAGE="$DIST/.stage/seo-agent"
-ZIP_OUT="$DIST/seo-agent.zip"
+STAGE="$DIST/.stage/getseoagent"
+ZIP_OUT="$DIST/getseoagent.zip"
 
 if [[ ! -f "$PLUGIN/seo-agent.php" ]]; then
   echo "ERROR: $PLUGIN/seo-agent.php not found" >&2; exit 1
@@ -37,7 +37,7 @@ if [[ "$HEADER_VER" != "$DEFINE_VER" || "$HEADER_VER" != "$README_VER" ]]; then
   echo "ERROR: version mismatch — header=$HEADER_VER, define=$DEFINE_VER, readme=$README_VER" >&2
   exit 1
 fi
-echo "Building seo-agent.zip @ v$HEADER_VER"
+echo "Building getseoagent.zip @ v$HEADER_VER"
 
 rm -rf "$DIST"
 mkdir -p "$STAGE"
@@ -85,9 +85,9 @@ shopt -u nullglob
 # whitelisted path, but cp -r can pull editor swap files).
 find "$STAGE" \( -name '.DS_Store' -o -name 'Thumbs.db' -o -name '*.swp' -o -name '*~' -o -name '.git*' \) -delete
 
-# Final ZIP — root entry must be `seo-agent/` so unzip into wp-content/plugins/
-# lands at /seo-agent.
-( cd "$DIST/.stage" && zip -r "$ZIP_OUT" seo-agent >/dev/null )
+# Final ZIP — root entry must be `getseoagent/` so unzip into wp-content/plugins/
+# lands at /getseoagent.
+( cd "$DIST/.stage" && zip -r "$ZIP_OUT" getseoagent >/dev/null )
 rm -rf "$DIST/.stage"
 
 # Sanity-print contents.
