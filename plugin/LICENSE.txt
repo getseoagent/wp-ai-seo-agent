@@ -1,4 +1,4 @@
-AI SEO Agent — a WordPress plugin
+GetSEOAgent — AI Bulk SEO Chat — a WordPress plugin
 Copyright (C) 2026 Kyrylo Udruhov (d/b/a SEO-FRIENDLY)
 
 This program is free software; you can redistribute it and/or modify

@@ -1,4 +1,4 @@
-=== AI SEO Agent ===
+=== GetSEOAgent — AI Bulk SEO Chat ===
 Contributors: kirilludrugov
 Tags: seo, bulk, ai, chat, content
 Requires at least: 6.4
@@ -12,7 +12,7 @@ Bulk SEO rewrites through chat. Sample-and-extrapolate UX, sits on top of RankMa
 
 == Description ==
 
-AI SEO Agent rewrites SEO titles, meta descriptions, focus keywords, and OG titles for many posts at once, through a chat dialog inside your WordPress admin. The wedge: instead of a per-post AI button, you describe the style on a sample of 5 posts, approve the diff, and the agent applies the same pattern to the remaining N posts in a single bulk operation.
+GetSEOAgent rewrites SEO titles, meta descriptions, focus keywords, and OG titles for many posts at once, through a chat dialog inside your WordPress admin. The wedge: instead of a per-post AI button, you describe the style on a sample of 5 posts, approve the diff, and the agent applies the same pattern to the remaining N posts in a single bulk operation.
 
 The plugin does not replace your existing SEO plugin — it augments whichever one you have installed. SEO fields are written through that plugin's storage (RankMath, Yoast SEO, All in One SEO, SEOPress), so your existing analysis, sitemaps, and rich snippets keep working.
 
@@ -95,7 +95,7 @@ First public release.
 
 == Third Party Services ==
 
-This plugin connects to two third-party services to function. By using AI SEO Agent you agree to the terms and privacy policies of each.
+This plugin connects to two third-party services to function. By using GetSEOAgent you agree to the terms and privacy policies of each.
 
 **1. Anthropic API (anthropic.com)**
 
@@ -105,7 +105,7 @@ Why: to generate the SEO rewrite text.
 Terms: https://www.anthropic.com/legal/commercial-terms
 Privacy: https://www.anthropic.com/legal/privacy
 
-**2. AI SEO Agent backend (managed by SEO-FRIENDLY, hosted on Hetzner Cloud)**
+**2. GetSEOAgent backend (managed by SEO-FRIENDLY, hosted on Hetzner Cloud)**
 
 What is sent: chat session messages, post IDs, the SEO operations you ask for, your license key (if set), and the site URL of your WordPress install. Your Anthropic API key is forwarded once per request and not persisted on the backend.
 When: each chat turn.

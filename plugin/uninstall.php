@@ -1,6 +1,6 @@
 <?php
 /**
- * Uninstaller for AI SEO Agent.
+ * Uninstaller for GetSEOAgent — AI Bulk SEO Chat.
  *
  * Triggered when the user clicks "Delete" from the Plugins screen — NOT on
  * deactivation. WordPress sets WP_UNINSTALL_PLUGIN before loading this file.

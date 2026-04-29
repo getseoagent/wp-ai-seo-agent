@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       AI SEO Agent
+ * Plugin Name:       GetSEOAgent — AI Bulk SEO Chat
  * Plugin URI:        https://getseoagent.app
  * Description:       Bulk SEO rewrites through chat. Sample-and-extrapolate UX over RankMath/Yoast/AIOSEO/SEOPress.
  * Version:           1.0.0

@@ -9,8 +9,8 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Domain: seo-agent\n"
 
-msgid "AI SEO Agent"
-msgstr "AI SEO Agent"
+msgid "GetSEOAgent — AI Bulk SEO Chat"
+msgstr "GetSEOAgent — AI Bulk SEO Chat"
 
 msgid "https://getseoagent.app"
 msgstr ""

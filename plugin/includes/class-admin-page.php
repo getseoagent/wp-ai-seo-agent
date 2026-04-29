@@ -19,7 +19,7 @@ final class Admin_Page {
 
 	public static function register_menu(): void {
 		add_menu_page(
-			__( 'AI SEO Agent', 'seo-agent' ),
+			__( 'GetSEOAgent — AI Bulk SEO Chat', 'seo-agent' ),
 			__( 'SEO Agent', 'seo-agent' ),
 			'manage_options',
 			self::SLUG,
@@ -100,7 +100,7 @@ final class Admin_Page {
 		$placeholder = $key_set ? __( '••••••• (set)', 'seo-agent' ) : 'sk-ant-...';
 		?>
 		<div class="wrap">
-			<h1><?php echo esc_html__( 'AI SEO Agent', 'seo-agent' ); ?></h1>
+			<h1><?php echo esc_html__( 'GetSEOAgent — AI Bulk SEO Chat', 'seo-agent' ); ?></h1>
 
 			<h2><?php echo esc_html__( 'Settings', 'seo-agent' ); ?></h2>
 			<form method="post" action="<?php echo esc_url( $action ); ?>">
@@ -184,7 +184,7 @@ final class Admin_Page {
 	function formatReport(d) {
 	var ok = '✓', bad = '✗', skip = '~';
 	var lines = [];
-	lines.push('# AI SEO Agent diagnostic');
+	lines.push('# GetSEOAgent diagnostic');
 	lines.push('plugin: ' + d.plugin_version + ' · WP ' + d.wp_version + ' · PHP ' + d.php_version);
 	lines.push('site:    ' + d.site_url);
 	lines.push('backend: ' + d.backend_url);
