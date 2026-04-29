@@ -1,5 +1,5 @@
 === AI SEO Agent ===
-Contributors: artifact861
+Contributors: kirilludrugov
 Tags: seo, bulk, ai, chat, content
 Requires at least: 6.4
 Tested up to: 6.9
