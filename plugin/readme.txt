@@ -113,4 +113,4 @@ Why: the agent loop, bulk job orchestration, and license verification run server
 Privacy: https://www.seo-friendly.org/privacy
 Terms: https://www.seo-friendly.org/terms
 
-A self-hosted backend is available if you prefer to keep all traffic on your own infrastructure — see https://www.seo-friendly.org/ai-seo-agent for setup notes.
+A self-hosted backend is available if you prefer to keep all traffic on your own infrastructure — see https://github.com/getseoagent/wp-ai-seo-agent/blob/main/docs/self-hosting.md for setup notes.

@@ -12,7 +12,7 @@ msgstr ""
 msgid "AI SEO Agent"
 msgstr "AI SEO Agent"
 
-msgid "https://www.seo-friendly.org/ai-seo-agent"
+msgid "https://getseoagent.app"
 msgstr ""
 
 msgid "SEO-FRIENDLY"

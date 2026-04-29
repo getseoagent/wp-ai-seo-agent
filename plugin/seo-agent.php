@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       AI SEO Agent
- * Plugin URI:        https://www.seo-friendly.org/ai-seo-agent
+ * Plugin URI:        https://getseoagent.app
  * Description:       Bulk SEO rewrites through chat. Sample-and-extrapolate UX over RankMath/Yoast/AIOSEO/SEOPress.
  * Version:           1.0.0
  * Requires at least: 6.4

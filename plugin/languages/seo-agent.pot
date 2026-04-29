@@ -22,7 +22,7 @@ msgstr ""
 
 #. Plugin URI of the plugin
 #: seo-agent.php
-msgid "https://www.seo-friendly.org/ai-seo-agent"
+msgid "https://getseoagent.app"
 msgstr ""
 
 #. Description of the plugin
