@@ -38,7 +38,7 @@ describe("sendTransactionalEmail", () => {
     expect(body.subject).toBe("Welcome");
     expect(body.htmlContent).toBe("<p>hi</p>");
     expect(body.to[0].email).toBe("u@example.com");
-    expect(body.sender.email).toBe("no-reply@seo-friendly.org");
+    expect(body.sender.email).toBe("noreply@getseoagent.app");
   });
 
   it("no-ops when license has no email", async () => {
