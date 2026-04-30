@@ -24,6 +24,7 @@ export function mountChat(app: Hono, deps: ChatDeps): void {
   app.post("/chat", async (c) => {
     const apiKey = c.req.header("x-anthropic-key");
     if (!apiKey) return c.json({ error: "x-anthropic-key header required" }, 400);
+    const psiKey = c.req.header("x-psi-key") ?? "";
 
     let body: ChatRequest;
     try { body = await c.req.json(); }
@@ -60,6 +61,8 @@ export function mountChat(app: Hono, deps: ChatDeps): void {
           craft,
           emit,
           tier: jwt.tier,
+          psiKey,
+          licenseKey: jwt.license_key,
         })) {
           if (ev.type === "text") assistantText += ev.delta;
           await s.write(sseFormat(ev));
