@@ -977,6 +977,9 @@ final class REST_Controller {
 			wp_send_json_error( array( 'error' => 'api key not set' ), 400 );
 		}
 
+		// PSI key is optional — only required if the user invokes the speed-audit feature.
+		$psi_key = Settings::get_psi_key();
+
 		// Allow this script to run as long as the underlying SSE stream is alive.
 		// Bulk runs can exceed PHP's default max_execution_time of 60s.
 		// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
@@ -1027,10 +1030,13 @@ final class REST_Controller {
 		curl_setopt_array(
 			$ch,
 			array(
-				CURLOPT_HTTPHEADER       => array(
-					'Content-Type: application/json',
-					'Authorization: Bearer ' . $jwt,
-					'X-Anthropic-Key: ' . $api_key,
+				CURLOPT_HTTPHEADER       => array_filter(
+					array(
+						'Content-Type: application/json',
+						'Authorization: Bearer ' . $jwt,
+						'X-Anthropic-Key: ' . $api_key,
+						$psi_key ? ( 'X-PSI-Key: ' . $psi_key ) : null,
+					)
 				),
 				CURLOPT_POST             => true,
 				CURLOPT_POSTFIELDS       => $payload,
