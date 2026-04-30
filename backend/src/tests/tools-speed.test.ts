@@ -83,6 +83,17 @@ describe("audit_url_speed dispatch", () => {
       expect((r as any).error).toBeUndefined();
     }
   });
+
+  it("enterprise tier has no cap", async () => {
+    for (let i = 0; i < 600; i++) {
+      const r = await dispatchTool(
+        "audit_url_speed",
+        { url: `https://example.com/y${i}`, strategy: "mobile", _psi_api_key: "k", _fetch_impl: okFetch, _license_key: "lic-3" },
+        fakeWp, undefined, undefined, undefined, "enterprise",
+      );
+      expect((r as any).error).toBeUndefined();
+    }
+  });
 });
 
 describe("detect_template_type dispatch", () => {

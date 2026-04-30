@@ -25,6 +25,9 @@ export function mountChat(app: Hono, deps: ChatDeps): void {
     const apiKey = c.req.header("x-anthropic-key");
     if (!apiKey) return c.json({ error: "x-anthropic-key header required" }, 400);
     const psiKey = c.req.header("x-psi-key") ?? "";
+    if (psiKey && !/^AIzaSy[A-Za-z0-9_-]{33}$/.test(psiKey)) {
+      return c.json({ error: "x-psi-key format invalid (expected Google API key starting with AIzaSy)" }, 400);
+    }
 
     let body: ChatRequest;
     try { body = await c.req.json(); }

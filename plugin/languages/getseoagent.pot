@@ -2,20 +2,21 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: AI SEO Agent 1.0.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/seo-agent\n"
+"Project-Id-Version: GetSEOAgent — AI Bulk SEO Chat 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/getseoagent\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-28T13:47:09+02:00\n"
+"POT-Creation-Date: 2026-04-30T11:52:47+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: getseoagent\n"
 
 #. Plugin Name of the plugin
-#: seo-agent.php includes/class-admin-page.php:22
+#: seo-agent.php
+#: includes/class-admin-page.php:22
 #: includes/class-admin-page.php:103
 msgid "GetSEOAgent — AI Bulk SEO Chat"
 msgstr ""
@@ -27,9 +28,7 @@ msgstr ""
 
 #. Description of the plugin
 #: seo-agent.php
-msgid ""
-"Bulk SEO rewrites through chat. Sample-and-extrapolate UX over RankMath/"
-"Yoast/AIOSEO/SEOPress."
+msgid "Bulk SEO rewrites through chat. Sample-and-extrapolate UX over RankMath/Yoast/AIOSEO/SEOPress."
 msgstr ""
 
 #. Author of the plugin
@@ -46,7 +45,8 @@ msgstr ""
 msgid "SEO Agent"
 msgstr ""
 
-#: includes/class-admin-page.php:95 includes/class-admin-page.php:126
+#: includes/class-admin-page.php:95
+#: includes/class-admin-page.php:228
 #: includes/class-subscription-page.php:43
 #: includes/class-subscription-page.php:179
 msgid "Insufficient permissions."
@@ -64,15 +64,45 @@ msgstr ""
 msgid "Anthropic API key"
 msgstr ""
 
-#: includes/class-admin-page.php:115 includes/class-subscription-page.php:72
+#: includes/class-admin-page.php:115
+#: includes/class-subscription-page.php:72
 msgid "Save"
 msgstr ""
 
 #: includes/class-admin-page.php:118
+msgid "Diagnose"
+msgstr ""
+
+#: includes/class-admin-page.php:120
+msgid "Run a one-click connectivity check before opening a support ticket. Output is safe to share — no secrets included."
+msgstr ""
+
+#: includes/class-admin-page.php:124
+msgid "Run diagnose"
+msgstr ""
+
+#: includes/class-admin-page.php:127
+#: includes/class-admin-page.php:173
+msgid "Copy report for support"
+msgstr ""
+
+#: includes/class-admin-page.php:146
+msgid "Running diagnose…"
+msgstr ""
+
+#: includes/class-admin-page.php:162
+msgid "Diagnose failed:"
+msgstr ""
+
+#: includes/class-admin-page.php:171
+msgid "Copied!"
+msgstr ""
+
+#: includes/class-admin-page.php:220
 msgid "Chat"
 msgstr ""
 
-#: includes/class-admin-page.php:119
+#: includes/class-admin-page.php:221
 msgid "Loading…"
 msgstr ""
 
@@ -84,9 +114,7 @@ msgid "Subscription"
 msgstr ""
 
 #: includes/class-subscription-page.php:60
-msgid ""
-"You're on the free tier. Upgrade to Pro or Agency to unlock write tools and "
-"bulk operations."
+msgid "You're on the free tier. Upgrade to Pro or Agency to unlock write tools and bulk operations."
 msgstr ""
 
 #: includes/class-subscription-page.php:61
@@ -170,193 +198,4 @@ msgstr ""
 
 #: includes/class-subscription-page.php:132
 msgid "Cancel failed:"
-msgstr ""
-
-#: src/components/RecentJobsBanner.tsx:42 src/lib/notifications.ts:34
-msgid ", %d failed"
-msgstr ""
-
-#: src/components/format-bulk-summary.ts:84
-msgid "(no title)"
-msgstr ""
-
-#: src/components/format-bulk-summary.ts:98
-msgid "/ Skipped %d"
-msgstr ""
-
-#: src/components/BulkProgressBar.tsx:45
-msgid "%1$d / %2$d applied"
-msgstr ""
-
-#: src/lib/notifications.ts:32
-msgid "%1$d/%2$d done"
-msgstr ""
-
-#: src/components/BulkProgressBar.tsx:49
-msgid "%d failed"
-msgstr ""
-
-#: src/components/MessageList.tsx:96
-msgid "Agent"
-msgstr ""
-
-#: src/components/Chat.tsx:142
-msgid "Agent is thinking…"
-msgstr ""
-
-#: src/components/format-bulk-summary.ts:77
-msgid "Applied %1$d / Failed %2$d / Skipped %3$d"
-msgstr ""
-
-#: src/components/format-bulk-summary.ts:31
-msgid "Applied %1$d / Failed %2$d / Total %3$d"
-msgstr ""
-
-#: src/components/RewriteCard.tsx:241
-msgid "Apply to remaining posts"
-msgstr ""
-
-#: src/components/MessageInput.tsx:38
-msgid "Ask the agent…"
-msgstr ""
-
-#: src/components/BulkProgressBar.tsx:41
-msgid "Bulk job progress: %1$d of %2$d"
-msgstr ""
-
-#: src/components/BulkProgressBar.tsx:34
-msgid "Cancel"
-msgstr ""
-
-#: src/components/MessageList.tsx:86
-msgid "Chat history"
-msgstr ""
-
-#: src/App.tsx:13
-msgid "Configuration missing."
-msgstr ""
-
-#: src/components/BulkSummaryCard.tsx:50
-msgid "Could not format summary."
-msgstr ""
-
-#: src/components/BulkProgressBar.tsx:52
-msgid "current:"
-msgstr ""
-
-#: src/components/RewriteCard.tsx:166
-msgid "Description"
-msgstr ""
-
-#: src/components/RecentJobsBanner.tsx:47
-msgid "Dismiss"
-msgstr ""
-
-#: src/components/RewriteCard.tsx:261
-msgid "Errors (%d)"
-msgstr ""
-
-#: src/components/RewriteCard.tsx:167
-msgid "Focus keyword"
-msgstr ""
-
-#: src/components/format-bulk-summary.ts:106
-msgid "History #%d"
-msgstr ""
-
-#: src/components/BulkSummaryCard.tsx:59
-msgid "job %s"
-msgstr ""
-
-#: src/components/BulkProgressBar.tsx:32
-msgid "Job %s"
-msgstr ""
-
-#: src/components/RecentJobsBanner.tsx:38
-msgid ""
-"Last bulk job (%1$d pages) finished while you were away — %2$d/%3$d done"
-msgstr ""
-
-#: src/components/MessageInput.tsx:31
-msgid "Message to the SEO agent"
-msgstr ""
-
-#: src/components/MessageList.tsx:89
-msgid "No messages yet — say hi to test the pipe."
-msgstr ""
-
-#: src/components/RewriteCard.tsx:220 src/components/RewriteCard.tsx:224
-msgid "No proposals returned."
-msgstr ""
-
-#: src/components/format-bulk-summary.ts:81
-msgid "Post %d"
-msgstr ""
-
-#: src/components/RewriteCard.tsx:231
-msgid "Proposals (%d)"
-msgstr ""
-
-#: src/components/RewriteCard.tsx:194
-msgid "reasoning"
-msgstr ""
-
-#: src/components/RewriteCard.tsx:245
-msgid "refine: e.g. more aggressive, no emoji"
-msgstr ""
-
-#: src/components/ErrorBoundary.tsx:46
-msgid "Reload page"
-msgstr ""
-
-#: src/components/ErrorBoundary.tsx:39
-msgid ""
-"Reload the page to recover. If the problem repeats, copy the error below "
-"into a support thread."
-msgstr ""
-
-#: src/components/BulkSummaryCard.tsx:82
-msgid "Rollback all in job %s"
-msgstr ""
-
-#: src/components/format-bulk-summary.ts:96
-msgid "Rolled back %d"
-msgstr ""
-
-#: src/components/MessageInput.tsx:44
-msgid "Send"
-msgstr ""
-
-#: src/lib/notifications.ts:30
-msgid "SEO bulk done"
-msgstr ""
-
-#: src/App.tsx:16
-msgid "Set your Anthropic API key in the form above to start chatting."
-msgstr ""
-
-#: src/components/BulkSummaryCard.tsx:64
-msgid "show %d row"
-msgid_plural "show %d rows"
-msgstr[0] ""
-msgstr[1] ""
-
-#: src/components/ErrorBoundary.tsx:38
-msgid "Something went wrong in the chat panel."
-msgstr ""
-
-#: src/components/Chat.tsx:143
-msgid "Stop"
-msgstr ""
-
-#: src/components/RewriteCard.tsx:165
-msgid "Title"
-msgstr ""
-
-#: src/components/RecentJobsBanner.tsx:46
-msgid "View summary"
-msgstr ""
-
-#: src/components/MessageList.tsx:96
-msgid "You"
 msgstr ""

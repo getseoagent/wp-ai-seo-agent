@@ -2,8 +2,15 @@
 const PRO_DAILY_CAP = 500;
 
 type Bucket = { count: number; windowStartMs: number };
+// In-process Map. At v1 scale (≤Pro 500/day), bounded by ~30 entries per
+// active license per month. If the backend ever scales horizontally or
+// processes start running for many days, add a periodic sweep that drops
+// entries older than the current day index.
 const buckets = new Map<string, Bucket>();
 
+// UTC-based day key — resets daily at 00:00 UTC. A Pro user in PST sees the
+// reset at 16:00 local. Plan 5+ may localize per user timezone if it becomes
+// an actual UX issue.
 function dayKey(licenseKey: string): string {
   const dayIdx = Math.floor(Date.now() / (24 * 60 * 60 * 1000));
   return `${licenseKey}|${dayIdx}`;

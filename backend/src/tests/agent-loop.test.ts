@@ -279,6 +279,63 @@ describe("runAgent split-dispatch", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Task-5 concurrent fanout: both audit_url_speed calls in one turn get psiKey
+// ---------------------------------------------------------------------------
+describe("runAgent psiKey concurrent fan-out enrichment", () => {
+  it("enriches every audit_url_speed in a concurrent fan-out turn", async () => {
+    _resetPsiCacheForTests();
+    _resetPsiRateLimitForTests();
+
+    const seenKeys: string[] = [];
+    const recordingFetch = async (url: string) => {
+      const match = url.match(/[?&]key=([^&]+)/);
+      if (match) seenKeys.push(match[1]);
+      return new Response(JSON.stringify(FAKE_PSI_BODY), { status: 200 });
+    };
+
+    // The model returns TWO concurrent audit_url_speed tool uses in one turn.
+    // audit_url_speed has concurrent:true, so both are dispatched via Promise.allSettled.
+    // enrichSpeedArgs must inject _psi_api_key into each before dispatch.
+    const client = scriptedClient([
+      {
+        deltas: [],
+        toolCalls: [
+          { id: "tu_s1", name: "audit_url_speed", input: { url: "https://example.com/a0", strategy: "mobile" as const, _fetch_impl: recordingFetch } },
+          { id: "tu_s2", name: "audit_url_speed", input: { url: "https://example.com/a1", strategy: "mobile" as const, _fetch_impl: recordingFetch } },
+        ],
+        stop: "tool_use",
+      },
+      { deltas: ["Done"], stop: "end_turn" },
+    ]);
+
+    const events: any[] = [];
+    for await (const ev of runAgent({
+      messages: [{ role: "user", content: "audit two pages" }],
+      wp: fakeWp,
+      signal: new AbortController().signal,
+      client,
+      tools,
+      tier: "pro",
+      psiKey: "K-test",
+      licenseKey: "AISEO-FAN-001",
+    })) {
+      events.push(ev);
+    }
+
+    // Both PSI fetches happened and both carried the same key
+    expect(seenKeys.length).toBe(2);
+    expect(seenKeys.every(k => k === "K-test")).toBe(true);
+
+    // Both tool results succeeded (no error field)
+    const speedResults = events.filter((e: any) => e.type === "tool_result" && (e.id === "tu_s1" || e.id === "tu_s2"));
+    expect(speedResults.length).toBe(2);
+    for (const r of speedResults) {
+      expect((r as any).result?.error).toBeUndefined();
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Task-5 contract: psiKey + licenseKey enrichment for audit_url_speed
 // ---------------------------------------------------------------------------
 const FAKE_PSI_BODY = {
