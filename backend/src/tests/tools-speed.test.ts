@@ -84,3 +84,29 @@ describe("audit_url_speed dispatch", () => {
     }
   });
 });
+
+describe("detect_template_type dispatch", () => {
+  it("returns the WP REST payload as-is", async () => {
+    const wp = {
+      getTemplateInfo: async (url: string) => ({ type: "single", post_type: "post", post_id: 7, count_of_same_type: 200 }),
+    } as any;
+    const r = await dispatchTool("detect_template_type", { url: "https://example.com/x" }, wp, undefined, undefined, undefined, "free");
+    expect((r as any).type).toBe("single");
+    expect((r as any).count_of_same_type).toBe(200);
+  });
+});
+
+describe("detect_speed_optimizers dispatch", () => {
+  it("returns the WP REST payload as-is on pro+", async () => {
+    const wp = {
+      getSpeedOptimizers: async () => ({ cache: [], image: [{ slug:"shortpixel", name:"ShortPixel", version:"5", active:true, has_webp_files:false }], css_js: [] }),
+    } as any;
+    const r = await dispatchTool("detect_speed_optimizers", {}, wp, undefined, undefined, undefined, "pro");
+    expect((r as any).image[0].slug).toBe("shortpixel");
+  });
+
+  it("denies on free", async () => {
+    const r = await dispatchTool("detect_speed_optimizers", {}, {} as any, undefined, undefined, undefined, "free");
+    expect((r as any).error).toMatch(/Pro/);
+  });
+});

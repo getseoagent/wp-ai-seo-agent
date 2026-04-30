@@ -395,6 +395,14 @@ export async function dispatchTool(
       };
     }
 
+    case "detect_template_type": {
+      const url = String((args as any).url ?? "");
+      if (!url) return { error: "url is required" };
+      return wp.getTemplateInfo(url, signal);
+    }
+    case "detect_speed_optimizers":
+      return wp.getSpeedOptimizers(signal);
+
     case "audit_url_speed": {
       // Inputs that the chat-route layer injects, NOT exposed in input_schema:
       //   _psi_api_key  — user's BYO key, decrypted by the chat route from the encrypted WP option
