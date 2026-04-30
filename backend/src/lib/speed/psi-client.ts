@@ -125,7 +125,7 @@ function collectOpportunities(audits: Record<string, any>): PsiOpportunity[] {
   const out: PsiOpportunity[] = [];
   for (const [id, raw] of Object.entries(audits)) {
     if (!SPEED_AUDIT_IDS.has(id)) continue;
-    const savings_ms = typeof raw?.numericValue === "number" ? raw.numericValue : undefined;
+    const savings_ms = typeof raw?.details?.overallSavingsMs === "number" ? raw.details.overallSavingsMs : undefined;
     const savings_kb = typeof raw?.details?.overallSavingsBytes === "number"
       ? Math.round(raw.details.overallSavingsBytes / 1024)
       : undefined;
