@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use SeoAgent\Adapters;
 use SeoAgent\History_Store;
 use SeoAgent\Jobs_Store;
+use SeoAgent\Optimizer_Detector;
 use SeoAgent\Template_Detector;
 
 final class REST_Controller {
@@ -114,6 +115,17 @@ final class REST_Controller {
 					$status  = isset( $payload['error'] ) ? 400 : 200;
 					return new \WP_REST_Response( $payload, $status );
 				},
+				'permission_callback' => array( self::class, 'permit_admin_or_jwt' ),
+			)
+		);
+
+		register_rest_route(
+			'seoagent/v1',
+			'/speed-optimizers',
+			array(
+				'methods'             => 'GET',
+				'callback'            => static fn(): \WP_REST_Response =>
+					new \WP_REST_Response( Optimizer_Detector::detect() ),
 				'permission_callback' => array( self::class, 'permit_admin_or_jwt' ),
 			)
 		);

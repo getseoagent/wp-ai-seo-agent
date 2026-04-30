@@ -23,6 +23,7 @@ require_once dirname(__DIR__) . '/includes/class-rest-controller.php';
 require_once dirname(__DIR__) . '/includes/class-history-store.php';
 require_once dirname(__DIR__) . '/includes/class-jobs-store.php';
 require_once dirname(__DIR__) . '/includes/class-template-detector.php';
+require_once dirname(__DIR__) . '/includes/class-optimizer-detector.php';
 
 foreach (glob(dirname(__DIR__) . '/includes/adapters/interface-*.php') as $adapter_file) {
     require_once $adapter_file;
@@ -290,6 +291,28 @@ if (!function_exists('sanitize_title')) {
 }
 if (!function_exists('sanitize_key')) {
     function sanitize_key(string $s): string { return strtolower(preg_replace('/[^a-z0-9_\-]/', '', $s) ?? ''); }
+}
+
+// --- Optimizer_Detector stubs (Plan 5a) ---
+
+if (!function_exists('get_plugins')) {
+    function get_plugins(): array {
+        return $GLOBALS['_seoagent_test_plugins'] ?? array();
+    }
+}
+if (!class_exists('WP_Query')) {
+    class WP_Query {
+        public array $posts = array();
+        public function __construct(array $args = array()) {
+            $this->posts = $GLOBALS['_seoagent_test_attachment_ids'] ?? array();
+        }
+    }
+}
+if (!function_exists('get_attached_file')) {
+    function get_attached_file(int $id): string|false {
+        $map = $GLOBALS['_seoagent_test_attached_files'] ?? array();
+        return $map[$id] ?? false;
+    }
 }
 
 if (!class_exists('WP_REST_Request')) {

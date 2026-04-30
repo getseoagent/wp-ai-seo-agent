@@ -25,4 +25,11 @@ final class RestControllerSpeedTest extends TestCase {
 		$res = \SeoAgent\REST_Controller::handle_template_info( $req );
 		$this->assertArrayHasKey( 'error', $res );
 	}
+
+	public function test_speed_optimizers_returns_three_categories(): void {
+		$payload = \SeoAgent\Optimizer_Detector::detect();
+		$this->assertArrayHasKey( 'cache', $payload );
+		$this->assertArrayHasKey( 'image', $payload );
+		$this->assertArrayHasKey( 'css_js', $payload );
+	}
 }
