@@ -37,6 +37,7 @@ require_once SEO_AGENT_DIR . 'includes/class-rest-controller.php';
 require_once SEO_AGENT_DIR . 'includes/class-history-store.php';
 require_once SEO_AGENT_DIR . 'includes/class-jobs-store.php';
 require_once SEO_AGENT_DIR . 'includes/class-backend-client.php';
+require_once SEO_AGENT_DIR . 'includes/class-template-detector.php';
 
 foreach ( glob( SEO_AGENT_DIR . 'includes/adapters/interface-*.php' ) as $seoagent_file ) {
 	require_once $seoagent_file;

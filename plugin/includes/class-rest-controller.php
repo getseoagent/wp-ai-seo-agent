@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use SeoAgent\Adapters;
 use SeoAgent\History_Store;
 use SeoAgent\Jobs_Store;
+use SeoAgent\Template_Detector;
 
 final class REST_Controller {
 
@@ -99,6 +100,20 @@ final class REST_Controller {
 				'methods'             => 'GET',
 				'callback'            => static fn(): \WP_REST_Response =>
 					new \WP_REST_Response( self::handle_get_taxonomy_terms( 'post_tag' ) ),
+				'permission_callback' => array( self::class, 'permit_admin_or_jwt' ),
+			)
+		);
+
+		register_rest_route(
+			'seoagent/v1',
+			'/template-info',
+			array(
+				'methods'             => 'GET',
+				'callback'            => static function ( \WP_REST_Request $req ): \WP_REST_Response {
+					$payload = self::handle_template_info( $req );
+					$status  = isset( $payload['error'] ) ? 400 : 200;
+					return new \WP_REST_Response( $payload, $status );
+				},
 				'permission_callback' => array( self::class, 'permit_admin_or_jwt' ),
 			)
 		);
@@ -280,6 +295,17 @@ final class REST_Controller {
 	/** @return array{name: string} */
 	public static function handle_detect_seo_plugin(): array {
 		return array( 'name' => Adapters\Adapter_Factory::detect() );
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	public static function handle_template_info( \WP_REST_Request $req ): array {
+		$url = (string) $req->get_param( 'url' );
+		if ( $url === '' ) {
+			return array( 'error' => 'url required' );
+		}
+		return Template_Detector::detect( $url );
 	}
 
 	/**

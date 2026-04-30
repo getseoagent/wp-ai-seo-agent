@@ -22,6 +22,7 @@ require_once dirname(__DIR__) . '/includes/class-subscription-page.php';
 require_once dirname(__DIR__) . '/includes/class-rest-controller.php';
 require_once dirname(__DIR__) . '/includes/class-history-store.php';
 require_once dirname(__DIR__) . '/includes/class-jobs-store.php';
+require_once dirname(__DIR__) . '/includes/class-template-detector.php';
 
 foreach (glob(dirname(__DIR__) . '/includes/adapters/interface-*.php') as $adapter_file) {
     require_once $adapter_file;
@@ -92,6 +93,40 @@ if (!class_exists('WP_Error')) {
 if (!function_exists('home_url')) {
     function home_url(string $path = ''): string {
         return ($GLOBALS['_seoagent_test_home_url'] ?? 'https://test.example') . $path;
+    }
+}
+
+// --- Template_Detector stubs (Plan 5a) ---
+
+if (!function_exists('trailingslashit')) {
+    function trailingslashit(string $s): string { return rtrim($s, '/') . '/'; }
+}
+if (!function_exists('wp_parse_url')) {
+    function wp_parse_url(string $url) { return parse_url($url); }
+}
+if (!function_exists('url_to_postid')) {
+    function url_to_postid(string $url): int {
+        // Test mode: $GLOBALS['_seoagent_test_url_map'] = [ 'https://example.com/sample-post/' => 11, '/about/' => 12 ]
+        $map = $GLOBALS['_seoagent_test_url_map'] ?? [];
+        return (int) ($map[$url] ?? 0);
+    }
+}
+if (!function_exists('get_post')) {
+    function get_post(int $id) {
+        $rows = $GLOBALS['_seoagent_test_posts'] ?? [];
+        return $rows[$id] ?? null;
+    }
+}
+if (!function_exists('wp_count_posts')) {
+    function wp_count_posts(string $type) {
+        $counts = $GLOBALS['_seoagent_test_post_counts'] ?? [];
+        return (object) ['publish' => (int) ($counts[$type] ?? 0)];
+    }
+}
+if (!function_exists('wp_count_terms')) {
+    function wp_count_terms(array $args = []) {
+        $tax = $args['taxonomy'] ?? 'category';
+        return (int) ($GLOBALS['_seoagent_test_term_counts'][$tax] ?? 0);
     }
 }
 if (!function_exists('get_transient')) {
