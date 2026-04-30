@@ -53,6 +53,7 @@ final class Template_Detector {
 		}
 
 		// 3. Taxonomy archives — try category, tag.
+		// V1 heuristic: detects presence of these slugs anywhere in path (may over-match edge cases).
 		$cat_base = get_option( 'category_base' ) ?: 'category';
 		if ( strpos( $path, '/' . trim( $cat_base, '/' ) . '/' ) !== false ) {
 			return array( 'type' => 'category', 'count_of_same_type' => self::count_category_archives() );
@@ -63,7 +64,8 @@ final class Template_Detector {
 		}
 
 		// 4. /author/<slug>/, /YYYY/MM/, /?s=, /search/...
-		if ( strpos( $path, '/author/' ) === 0 || strpos( $path, '/author/' ) !== false ) {
+		// V1 heuristic: author archives; simplified from redundant === 0 || !== false check.
+		if ( strpos( $path, '/author/' ) !== false ) {
 			return array( 'type' => 'author', 'count_of_same_type' => 0 );
 		}
 		if ( preg_match( '#/\d{4}/(\d{1,2}/)?#', $path ) ) {
