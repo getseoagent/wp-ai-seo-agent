@@ -19,7 +19,7 @@ const fakeWp = {
 describe("tools", () => {
   it("exposes the new write tool names", () => {
     const names = tools.map(t => t.name).sort();
-    expect(names).toEqual(["apply_style_to_batch", "cancel_job", "detect_seo_plugin", "get_categories", "get_history", "get_job_status", "get_post_summary", "get_tags", "list_posts", "propose_seo_rewrites", "rollback", "update_seo_fields"]);
+    expect(names).toEqual(["apply_style_to_batch", "audit_url_speed", "cancel_job", "detect_seo_plugin", "detect_speed_optimizers", "detect_template_type", "get_categories", "get_history", "get_job_status", "get_post_summary", "get_tags", "list_posts", "propose_seo_rewrites", "propose_speed_fixes", "rollback", "update_seo_fields"]);
   });
 
   it("each tool has an input_schema", () => {
