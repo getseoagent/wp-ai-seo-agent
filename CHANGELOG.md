@@ -8,6 +8,23 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/en/
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-04-30
+
+### Added
+- Backend: `audit_url_speed` tool wraps Google PageSpeed Insights v5; cached for 60 minutes per (url, strategy).
+- Backend: `propose_speed_fixes` pure function maps Lighthouse opportunities → structured `SpeedFix[]` and `SpeedRec[]`.
+- Backend: `detect_template_type` and `detect_speed_optimizers` tools, both backed by new WP REST endpoints.
+- Backend: per-license daily PSI cap on Pro tier (500/day); Agency unlimited.
+- Plugin: `Template_Detector` and `Optimizer_Detector` classes; `/template-info` and `/speed-optimizers` REST routes.
+- Plugin: encrypted PSI API key option (`seo_agent_psi_api_key`); admin form alongside the Anthropic key.
+- Plugin-app: `SpeedAuditCard` component (CWV badges, reachable/unreachable lists, free-tier upgrade prompt).
+- Chat prompt: speed-flow conventions added.
+
+### Tests
+- Backend: 244 bun (was 212).
+- Plugin: 137 phpunit (was 122).
+- Plugin-app: 44 vitest (was 38).
+
 ### Polish
 - Bootstrap validation: backend refuses to start if `JWT_SECRET`, `LICENSE_HMAC_SECRET`, or `WAYFORPAY_MERCHANT_SECRET_KEY` are shorter than 32 characters.
 - `class-options.php` centralises every wp_options key the plugin writes; `Settings` / `License` / `uninstall.php` reference the constants instead of duplicating string literals.
@@ -173,7 +190,8 @@ Plan 1 — walking skeleton.
 ### Tests
 - backend 11/11 bun, plugin 4/4 phpunit, plugin-app 4/4 vitest.
 
-[Unreleased]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.8.0-recurring-billing...HEAD
+[Unreleased]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.8.0-recurring-billing...v1.1.0
 [0.8.0-recurring-billing]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.7.0-jwt-auth...v0.8.0-recurring-billing
 [0.7.0-jwt-auth]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.6.0-bulk-decouple...v0.7.0-jwt-auth
 [0.6.0-bulk-decouple]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.5.1-3c-polish...v0.6.0-bulk-decouple
