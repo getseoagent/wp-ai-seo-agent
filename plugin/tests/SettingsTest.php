@@ -39,4 +39,16 @@ final class SettingsTest extends TestCase
         $this->assertNull(Settings::get_api_key());
     }
 
+    public function test_psi_key_round_trip(): void {
+        \SeoAgent\Settings::set_psi_key( 'AIzaSy_TEST_KEY_1234567890abcdef' );
+        $this->assertSame( 'AIzaSy_TEST_KEY_1234567890abcdef', \SeoAgent\Settings::get_psi_key() );
+        \SeoAgent\Settings::clear_psi_key();
+        $this->assertNull( \SeoAgent\Settings::get_psi_key() );
+    }
+
+    public function test_psi_key_returns_null_when_unset(): void {
+        \SeoAgent\Settings::clear_psi_key();
+        $this->assertNull( \SeoAgent\Settings::get_psi_key() );
+    }
+
 }
