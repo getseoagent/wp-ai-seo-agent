@@ -50,17 +50,24 @@ export function Chat({ restUrl, nonce }: { restUrl: string; nonce: string }) {
   // Detect active SEO plugins so we can warn about multi-plugin conflicts.
   const [multiActive, setMultiActive] = useState<string[]>([]);
   useEffect(() => {
+    const ac = new AbortController();
     fetch(`${restUrl}/detect-seo-plugin`, {
       headers: { "X-WP-Nonce": nonce },
+      credentials: "same-origin",
+      signal: ac.signal,
     })
       .then<SiteInfo>(r => r.json())
       .then(data => {
         // Defensive: older plugin code returns {name} without multi_active.
         setMultiActive(data.multi_active ?? []);
       })
-      .catch(() => {
+      .catch(err => {
         // Non-fatal: banner stays hidden if the fetch fails.
+        if ((err as Error).name !== "AbortError") {
+          // (no-op)
+        }
       });
+    return () => ac.abort();
   }, [restUrl, nonce]);
 
   const pollState = useJobPolling(activeJobId, restUrl);

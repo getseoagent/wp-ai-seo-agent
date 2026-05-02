@@ -1,4 +1,15 @@
+import { BULK_COLORS } from "./bulk-styles";
 import { __, sprintf } from "../lib/i18n";
+
+const wrapStyle: React.CSSProperties = {
+  display: "flex", alignItems: "flex-start",
+  padding: "8px 12px", marginBottom: 8,
+  borderRadius: 6,
+  background: "#fff8e1",
+  border: `1px solid ${BULK_COLORS.warnYellow}`,
+  color: "#92400e",
+  fontSize: 13,
+};
 
 const LABELS: Record<string, string> = {
   "rank-math": "Rank Math",
@@ -22,7 +33,7 @@ export function MultiActiveBanner({ detected }: Props): JSX.Element | null {
 
   if (othersLabels.length === 1) {
     return (
-      <div role="alert" className="seo-agent-multi-active-banner">
+      <div role="alert" className="seo-agent-multi-active-banner" style={wrapStyle}>
         {sprintf(
           /* translators: 1=primary plugin, 2=secondary plugin */
           __(
@@ -36,7 +47,7 @@ export function MultiActiveBanner({ detected }: Props): JSX.Element | null {
   }
 
   return (
-    <div role="alert" className="seo-agent-multi-active-banner">
+    <div role="alert" className="seo-agent-multi-active-banner" style={wrapStyle}>
       {sprintf(
         /* translators: 1=primary plugin, 2=comma-joined other plugins */
         __(
