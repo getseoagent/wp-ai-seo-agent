@@ -8,9 +8,15 @@ import { useRecentJobsBanner } from "../hooks/useRecentJobsBanner";
 import { BulkProgressBar } from "./BulkProgressBar";
 import { BulkSummaryCard } from "./BulkSummaryCard";
 import { RecentJobsBanner } from "./RecentJobsBanner";
+import { MultiActiveBanner } from "./MultiActiveBanner";
 import { __ } from "../lib/i18n";
 import { requestNotificationPermissionOnce, notifyJobComplete } from "../lib/notifications";
 import { BULK_COLORS } from "./bulk-styles";
+
+type SiteInfo = {
+  name: string;
+  multi_active: string[];
+};
 
 const typingIndicatorStyle: React.CSSProperties = {
   display: "flex", alignItems: "center", gap: 8,
@@ -40,6 +46,22 @@ export function Chat({ restUrl, nonce }: { restUrl: string; nonce: string }) {
   // The active bulk job currently driving the on-screen progress bar / summary.
   // Set when apply_style_to_batch tool result arrives with status:"running".
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
+
+  // Detect active SEO plugins so we can warn about multi-plugin conflicts.
+  const [multiActive, setMultiActive] = useState<string[]>([]);
+  useEffect(() => {
+    fetch(`${restUrl}/detect-seo-plugin`, {
+      headers: { "X-WP-Nonce": nonce },
+    })
+      .then<SiteInfo>(r => r.json())
+      .then(data => {
+        // Defensive: older plugin code returns {name} without multi_active.
+        setMultiActive(data.multi_active ?? []);
+      })
+      .catch(() => {
+        // Non-fatal: banner stays hidden if the fetch fails.
+      });
+  }, [restUrl, nonce]);
 
   const pollState = useJobPolling(activeJobId, restUrl);
   useDocumentTitleForJob(pollState);
@@ -119,6 +141,7 @@ export function Chat({ restUrl, nonce }: { restUrl: string; nonce: string }) {
 
   return (
     <div>
+      <MultiActiveBanner detected={multiActive} />
       {recent.banner && (
         <RecentJobsBanner
           job={recent.banner}
