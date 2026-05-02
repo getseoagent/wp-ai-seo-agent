@@ -4,7 +4,7 @@ Tags: seo, bulk, ai, chat, content
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -35,6 +35,19 @@ The plugin does not replace your existing SEO plugin — it augments whichever o
 = Bring your own Anthropic API key =
 
 You provide your own Anthropic API key in plugin settings. It is stored encrypted in `wp_options` using your site's `AUTH_KEY`. Each chat request sends the key once to our backend over HTTPS; we forward the key to Anthropic's API for that request and do not persist it.
+
+== Compatibility ==
+
+GetSEOAgent works with all four major WordPress SEO plugins. It reads and writes to whichever one is active, without replacing or duplicating their behavior:
+
+* **Rank Math** — full read+write parity (titles, descriptions, focus keywords, OG titles).
+* **Yoast SEO** — full read+write parity.
+* **All in One SEO (AIOSEO 4.x+)** — full read+write parity. Requires AIOSEO's data table (`{prefix}aioseo_posts`) to be present.
+* **SEOPress** — full read+write parity for titles, descriptions, focus keywords. OG title editing requires SEOPress's Social Networks module to be active.
+
+If two or more SEO plugins are simultaneously active, GetSEOAgent writes through the first detected (priority order: Rank Math > Yoast > AIOSEO > SEOPress) and shows an admin notice naming the secondaries. To avoid metadata drift, disable the unused plugin.
+
+If no SEO plugin is detected, GetSEOAgent falls back to read-only mode (post titles only).
 
 == Installation ==
 
@@ -78,6 +91,11 @@ Yes. To rewrite your SEO fields, the relevant post title, content, and existing 
 4. Subscription tab — license status, next renewal, masked card, cancel button.
 
 == Changelog ==
+
+= 1.2.0 =
+* New: Yoast, AIOSEO, and SEOPress adapters with full read+write parity.
+* New: Multi-active SEO plugin detection — admin notice and chat banner when two or more SEO plugins are simultaneously active.
+* Internal: `Adapter_Factory::detect()` now returns a list of all detected plugins in priority order.
 
 = 1.1.0 — 2026-04-30 =
 * New: speed audit (Pro+) — agent runs Google PageSpeed Insights for any URL on mobile/desktop, diagnoses Core Web Vitals issues, and proposes fixes. Read-only in this release; the apply path lands in 1.2.0.

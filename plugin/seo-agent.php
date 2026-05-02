@@ -3,7 +3,7 @@
  * Plugin Name:       GetSEOAgent — AI Bulk SEO Chat
  * Plugin URI:        https://getseoagent.app
  * Description:       Bulk SEO rewrites through chat. Sample-and-extrapolate UX over RankMath/Yoast/AIOSEO/SEOPress.
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            SEO-FRIENDLY
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Bump on any schema change; plugins_loaded compares against the stored
 // `seoagent_db_version` option and re-runs dbDelta when they differ.
-define( 'SEO_AGENT_VERSION', '1.1.0' );
+define( 'SEO_AGENT_VERSION', '1.2.0' );
 define( 'SEO_AGENT_FILE', __FILE__ );
 define( 'SEO_AGENT_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SEO_AGENT_URL', plugin_dir_url( __FILE__ ) );
