@@ -40,30 +40,46 @@ final class AIOSEO_Adapter implements Seo_Fields_Adapter {
 			if ( ! $wpdb || count( $columns ) === 0 ) {
 				return;
 			}
+			// Defense-in-depth allowlist — only the 4 columns this adapter writes are allowed.
+			$allowed = array( 'title', 'description', 'og_title', 'keyphrases' );
+			foreach ( array_keys( $columns ) as $col ) {
+				if ( ! in_array( $col, $allowed, true ) ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+					throw new \InvalidArgumentException( sprintf( 'AIOSEO writer: column not allowlisted: %s', $col ) );
+				}
+			}
+
 			$table = $wpdb->prefix . 'aioseo_posts';
-			$set_clauses  = array();
-			$values       = array( $post_id );
-			$cols_sql     = array( '`post_id`' );
-			$placeholders = array( '%d' );
-			foreach ( $columns as $col => $val ) {
-				$cols_sql[]    = '`' . $col . '`';
-				$placeholders[] = '%s';
-				$values[]      = (string) $val;
-				$set_clauses[] = '`' . $col . '` = VALUES(`' . $col . '`)';
-			}
-			$sql = sprintf(
-				'INSERT INTO %s (%s) VALUES (%s) ON DUPLICATE KEY UPDATE %s',
-				$table,
-				implode( ', ', $cols_sql ),
-				implode( ', ', $placeholders ),
-				implode( ', ', $set_clauses )
-			);
+			$now   = function_exists( 'current_time' ) ? current_time( 'mysql', true ) : gmdate( 'Y-m-d H:i:s' );
+
+			// Look up the existing row id by post_id.
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
-			$ok = $wpdb->query( $wpdb->prepare( $sql, ...$values ) );
-			if ( $ok === false ) {
-				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
-				throw new \RuntimeException( sprintf( 'aioseo_posts upsert failed for post %d', $post_id ) );
+			$existing_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$table} WHERE post_id = %d", $post_id ) );
+
+			if ( $existing_id !== null ) {
+				// UPDATE branch — always bump `updated`.
+				$set_data            = $columns;
+				$set_data['updated'] = $now;
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$ok = $wpdb->update( $table, $set_data, array( 'id' => (int) $existing_id ) );
+				if ( $ok === false ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+					throw new \RuntimeException( sprintf( 'aioseo_posts update failed for post %d', $post_id ) );
+				}
+			} else {
+				// INSERT branch — set both `created` and `updated`, plus post_id.
+				$insert_data            = $columns;
+				$insert_data['post_id'] = $post_id;
+				$insert_data['created'] = $now;
+				$insert_data['updated'] = $now;
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$ok = $wpdb->insert( $table, $insert_data );
+				if ( $ok === false ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+					throw new \RuntimeException( sprintf( 'aioseo_posts insert failed for post %d', $post_id ) );
+				}
 			}
+
 			if ( has_action( 'aioseo_clear_cache' ) ) {
 				do_action( 'aioseo_clear_cache', $post_id );
 			}

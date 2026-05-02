@@ -117,4 +117,73 @@ final class AIOSEOAdapterTest extends TestCase
         $this->assertSame('fresh kw', $decoded['focus']['keyphrase']);
         $this->assertSame([], $decoded['additional']);
     }
+
+    public function test_default_writer_inserts_with_created_and_updated_when_row_missing(): void
+    {
+        $captured = [];
+        $fake_wpdb = new class ($captured) {
+            public string $prefix = 'wp_';
+            public ?array $captured;
+            public function __construct(array &$captured) { $this->captured = &$captured; }
+            public function get_var($_q) { return null; } // no existing row
+            public function prepare($q, ...$args): string { return $q; }
+            public function insert(string $table, array $data) {
+                $this->captured[] = ['op' => 'insert', 'table' => $table, 'data' => $data];
+                return 1;
+            }
+            public function update(string $table, array $data, array $where) {
+                $this->captured[] = ['op' => 'update', 'table' => $table, 'data' => $data, 'where' => $where];
+                return 1;
+            }
+        };
+        $GLOBALS['wpdb'] = $fake_wpdb;
+
+        $adapter = new AIOSEO_Adapter(); // no closures — defaults run
+        $adapter->set_seo_title(42, 'New Title');
+
+        unset($GLOBALS['wpdb']);
+
+        $this->assertCount(1, $captured);
+        $this->assertSame('insert', $captured[0]['op']);
+        $this->assertSame('wp_aioseo_posts', $captured[0]['table']);
+        $this->assertSame('New Title', $captured[0]['data']['title']);
+        $this->assertSame(42, $captured[0]['data']['post_id']);
+        $this->assertArrayHasKey('created', $captured[0]['data'], 'INSERT must include created (NOT NULL no DEFAULT)');
+        $this->assertArrayHasKey('updated', $captured[0]['data'], 'INSERT must include updated (NOT NULL no DEFAULT)');
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $captured[0]['data']['created']);
+    }
+
+    public function test_default_writer_updates_existing_row_by_id_with_updated_bumped(): void
+    {
+        $captured = [];
+        $fake_wpdb = new class ($captured) {
+            public string $prefix = 'wp_';
+            public ?array $captured;
+            public function __construct(array &$captured) { $this->captured = &$captured; }
+            public function get_var($_q) { return '7'; } // existing row id
+            public function prepare($q, ...$args): string { return $q; }
+            public function insert(string $table, array $data) {
+                $this->captured[] = ['op' => 'insert', 'table' => $table, 'data' => $data];
+                return 1;
+            }
+            public function update(string $table, array $data, array $where) {
+                $this->captured[] = ['op' => 'update', 'table' => $table, 'data' => $data, 'where' => $where];
+                return 1;
+            }
+        };
+        $GLOBALS['wpdb'] = $fake_wpdb;
+
+        $adapter = new AIOSEO_Adapter();
+        $adapter->set_seo_description(42, 'Updated Desc');
+
+        unset($GLOBALS['wpdb']);
+
+        $this->assertCount(1, $captured);
+        $this->assertSame('update', $captured[0]['op']);
+        $this->assertSame(['id' => 7], $captured[0]['where']);
+        $this->assertSame('Updated Desc', $captured[0]['data']['description']);
+        $this->assertArrayHasKey('updated', $captured[0]['data'], 'UPDATE must bump updated timestamp');
+        $this->assertArrayNotHasKey('created', $captured[0]['data'], 'UPDATE must NOT touch created');
+        $this->assertArrayNotHasKey('post_id', $captured[0]['data'], 'UPDATE must not redundantly set post_id');
+    }
 }

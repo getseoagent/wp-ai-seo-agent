@@ -55,7 +55,7 @@ if (!function_exists('delete_option')) {
 
 if (!function_exists('wp_json_encode')) {
     function wp_json_encode($data, int $options = 0, int $depth = 512): string|false {
-        return json_encode($data, $options, $depth);
+        return json_encode($data, $options | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES, $depth);
     }
 }
 
@@ -203,6 +203,12 @@ if (!function_exists('wp_die')) {
 }
 if (!function_exists('add_action')) {
     function add_action(string $hook, $cb, int $priority = 10, int $accepted_args = 1): bool { return true; }
+}
+if (!function_exists('has_action')) {
+    function has_action(string $hook, $cb = false): bool { return false; }
+}
+if (!function_exists('do_action')) {
+    function do_action(string $hook, ...$args): void {}
 }
 if (!function_exists('add_submenu_page')) {
     function add_submenu_page(string $parent, string $page_title, string $menu_title, string $cap, string $slug, $cb = null): string { return $slug; }
