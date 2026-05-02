@@ -60,4 +60,37 @@ final class AdapterFactoryTest extends TestCase
         $adapter = Adapter_Factory::make_primary([]);
         $this->assertInstanceOf(Fallback_Adapter::class, $adapter);
     }
+
+    public function test_detect_finds_yoast_when_class_exists(): void
+    {
+        $names = Adapter_Factory::detect(
+            class_exists_fn: static fn(string $cls): bool => $cls === 'WPSEO_Options',
+            option_exists_fn: static fn(string $opt): bool => false,
+        );
+        $this->assertSame(['yoast'], $names);
+    }
+
+    public function test_detect_finds_yoast_when_option_present(): void
+    {
+        $names = Adapter_Factory::detect(
+            class_exists_fn: static fn(string $cls): bool => false,
+            option_exists_fn: static fn(string $opt): bool => $opt === 'wpseo',
+        );
+        $this->assertSame(['yoast'], $names);
+    }
+
+    public function test_detect_priority_rank_math_first_yoast_second(): void
+    {
+        $names = Adapter_Factory::detect(
+            class_exists_fn: static fn(string $cls): bool => in_array($cls, ['RankMath\\Helper', 'WPSEO_Options'], true),
+            option_exists_fn: static fn(string $opt): bool => false,
+        );
+        $this->assertSame(['rank-math', 'yoast'], $names);
+    }
+
+    public function test_make_returns_yoast_adapter(): void
+    {
+        $adapter = Adapter_Factory::make('yoast');
+        $this->assertInstanceOf(\SeoAgent\Adapters\Yoast_Adapter::class, $adapter);
+    }
 }

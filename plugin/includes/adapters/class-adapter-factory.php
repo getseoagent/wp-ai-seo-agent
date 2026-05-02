@@ -68,14 +68,15 @@ final class Adapter_Factory {
 	}
 
 	/**
-	 * NOTE: 'yoast', 'aioseo', 'seopress' arms fall through to Fallback_Adapter because
+	 * NOTE: 'aioseo', 'seopress' arms fall through to Fallback_Adapter because
 	 * the plugin uses an eager glob-based loader (no spl_autoload_register). The concrete
-	 * adapter classes for those plugins don't exist yet and will be restored in Tasks 3/4/5
+	 * adapter classes for those plugins don't exist yet and will be restored in Tasks 4/5
 	 * as the corresponding class files land in includes/adapters/.
 	 */
 	public static function make( string $name ): Seo_Fields_Adapter {
 		return match ( $name ) {
 			'rank-math' => new Rank_Math_Adapter(),
+			'yoast'     => new Yoast_Adapter(),
 			default     => new Fallback_Adapter(),
 		};
 	}
