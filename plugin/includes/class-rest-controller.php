@@ -304,9 +304,13 @@ final class REST_Controller {
 		return ! empty( $verified['ok'] );
 	}
 
-	/** @return array{name: string} */
+	/** @return array{name: string, multi_active: list<string>} */
 	public static function handle_detect_seo_plugin(): array {
-		return array( 'name' => Adapters\Adapter_Factory::detect() );
+		$detected = Adapters\Adapter_Factory::detect();
+		return array(
+			'name'         => $detected[0] ?? 'none',
+			'multi_active' => $detected,
+		);
 	}
 
 	/**
@@ -411,7 +415,7 @@ final class REST_Controller {
 	 */
 	public static function handle_get_post_summary( int $id, ?\Closure $loader = null, ?Adapters\Seo_Fields_Adapter $adapter = null ): ?array {
 		$loader  ??= static fn( int $id ): ?object => get_post( $id ) ?: null;
-		$adapter ??= Adapters\Adapter_Factory::make( Adapters\Adapter_Factory::detect() );
+		$adapter ??= Adapters\Adapter_Factory::make_primary( Adapters\Adapter_Factory::detect() );
 		$post      = $loader( $id );
 		if ( $post === null ) {
 			return null;
@@ -507,7 +511,7 @@ final class REST_Controller {
 		?History_Store $store = null,
 		?\Closure $uuid = null
 	): array {
-		$adapter ??= Adapters\Adapter_Factory::make( Adapters\Adapter_Factory::detect() );
+		$adapter ??= Adapters\Adapter_Factory::make_primary( Adapters\Adapter_Factory::detect() );
 		$store   ??= new History_Store( $GLOBALS['wpdb'] );
 		$uuid    ??= static fn(): string => wp_generate_uuid4();
 
@@ -686,7 +690,7 @@ final class REST_Controller {
 		?\Closure $uuid = null,
 		?\Closure $now = null
 	): array {
-		$adapter ??= Adapters\Adapter_Factory::make( Adapters\Adapter_Factory::detect() );
+		$adapter ??= Adapters\Adapter_Factory::make_primary( Adapters\Adapter_Factory::detect() );
 		$store   ??= new History_Store( $GLOBALS['wpdb'] );
 		$uuid    ??= static fn(): string => wp_generate_uuid4();
 		$now     ??= static fn(): string => current_time( 'mysql' );
