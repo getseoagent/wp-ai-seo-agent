@@ -121,4 +121,45 @@ final class AdapterFactoryTest extends TestCase
         $adapter = Adapter_Factory::make('aioseo');
         $this->assertInstanceOf(\SeoAgent\Adapters\AIOSEO_Adapter::class, $adapter);
     }
+
+    public function test_detect_finds_seopress_when_constant_defined(): void
+    {
+        $names = Adapter_Factory::detect(
+            class_exists_fn: static fn(string $cls): bool => false,
+            option_exists_fn: static fn(string $opt): bool => false,
+            constant_defined_fn: static fn(string $name): bool => $name === 'SEOPRESS_VERSION',
+        );
+        $this->assertSame(['seopress'], $names);
+    }
+
+    public function test_detect_finds_seopress_when_option_present(): void
+    {
+        $names = Adapter_Factory::detect(
+            class_exists_fn: static fn(string $cls): bool => false,
+            option_exists_fn: static fn(string $opt): bool => $opt === 'seopress_titles_option_name',
+            constant_defined_fn: static fn(string $name): bool => false,
+        );
+        $this->assertSame(['seopress'], $names);
+    }
+
+    public function test_detect_priority_all_four_present(): void
+    {
+        $names = Adapter_Factory::detect(
+            class_exists_fn: static fn(string $cls): bool => in_array($cls, [
+                'RankMath\\Helper',
+                'WPSEO_Options',
+                'AIOSEO\\Plugin\\AIOSEO',
+            ], true),
+            option_exists_fn: static fn(string $opt): bool => false,
+            constant_defined_fn: static fn(string $name): bool => $name === 'SEOPRESS_VERSION',
+            table_exists_fn: static fn(string $tbl): bool => $tbl === 'aioseo_posts',
+        );
+        $this->assertSame(['rank-math', 'yoast', 'aioseo', 'seopress'], $names);
+    }
+
+    public function test_make_returns_seopress_adapter(): void
+    {
+        $adapter = Adapter_Factory::make('seopress');
+        $this->assertInstanceOf(\SeoAgent\Adapters\SEOPress_Adapter::class, $adapter);
+    }
 }
