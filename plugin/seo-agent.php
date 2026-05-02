@@ -39,6 +39,7 @@ require_once SEO_AGENT_DIR . 'includes/class-jobs-store.php';
 require_once SEO_AGENT_DIR . 'includes/class-backend-client.php';
 require_once SEO_AGENT_DIR . 'includes/class-template-detector.php';
 require_once SEO_AGENT_DIR . 'includes/class-optimizer-detector.php';
+require_once SEO_AGENT_DIR . 'includes/class-multi-seo-notice.php';
 
 foreach ( glob( SEO_AGENT_DIR . 'includes/adapters/interface-*.php' ) as $seoagent_file ) {
 	require_once $seoagent_file;
@@ -125,5 +126,9 @@ add_action(
 		\SeoAgent\Admin_Page::init();
 		\SeoAgent\Subscription_Page::init();
 		\SeoAgent\REST_Controller::init();
+
+		if ( is_admin() ) {
+			add_action( 'admin_notices', array( \SeoAgent\Multi_Seo_Notice::class, 'maybe_print' ) );
+		}
 	}
 );
