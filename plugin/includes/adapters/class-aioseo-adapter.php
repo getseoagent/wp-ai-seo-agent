@@ -31,7 +31,8 @@ final class AIOSEO_Adapter implements Seo_Fields_Adapter {
 				return null;
 			}
 			$table = $wpdb->prefix . 'aioseo_posts';
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
+			// Column name comes from a hardcoded class constant set (allowlisted in writer too); identifiers cannot be parameterized via prepare().
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$value = $wpdb->get_var( $wpdb->prepare( "SELECT `{$column}` FROM {$table} WHERE post_id = %d", $post_id ) );
 			return is_string( $value ) ? $value : null;
 		};
@@ -52,8 +53,8 @@ final class AIOSEO_Adapter implements Seo_Fields_Adapter {
 			$table = $wpdb->prefix . 'aioseo_posts';
 			$now   = function_exists( 'current_time' ) ? current_time( 'mysql', true ) : gmdate( 'Y-m-d H:i:s' );
 
-			// Look up the existing row id by post_id.
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
+			// Look up the existing row id by post_id. Table name interpolated; identifiers cannot be parameterized.
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$existing_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$table} WHERE post_id = %d", $post_id ) );
 
 			if ( $existing_id !== null ) {
@@ -139,7 +140,10 @@ final class AIOSEO_Adapter implements Seo_Fields_Adapter {
 		$existing = ( $this->reader )( $post_id, self::COL_KEYPHRASES );
 		$decoded  = is_string( $existing ) && $existing !== '' ? json_decode( $existing, true ) : null;
 		if ( ! is_array( $decoded ) ) {
-			$decoded = array( 'focus' => array(), 'additional' => array() );
+			$decoded = array(
+				'focus'      => array(),
+				'additional' => array(),
+			);
 		}
 		if ( ! isset( $decoded['focus'] ) || ! is_array( $decoded['focus'] ) ) {
 			$decoded['focus'] = array();
@@ -148,7 +152,7 @@ final class AIOSEO_Adapter implements Seo_Fields_Adapter {
 			$decoded['additional'] = array();
 		}
 		$decoded['focus']['keyphrase'] = $value;
-		$encoded = wp_json_encode( $decoded );
+		$encoded                       = wp_json_encode( $decoded );
 		if ( ! is_string( $encoded ) ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			throw new \RuntimeException( 'failed to encode keyphrases JSON' );

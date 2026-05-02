@@ -32,7 +32,7 @@ final class Adapter_Factory {
 			if ( ! $wpdb ) {
 				return false;
 			}
-			$full = $wpdb->prefix . $unprefixed_table;
+			$full  = $wpdb->prefix . $unprefixed_table;
 			$found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $full ) );
 			return $found === $full;
 		};

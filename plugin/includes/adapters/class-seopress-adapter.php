@@ -33,11 +33,11 @@ final class SEOPress_Adapter implements Seo_Fields_Adapter {
 		?\Closure $writer = null,
 		?\Closure $social_active = null
 	) {
-		$this->reader = $reader ?? static function ( int $post_id, string $key ): ?string {
+		$this->reader        = $reader ?? static function ( int $post_id, string $key ): ?string {
 			$value = get_post_meta( $post_id, $key, true );
 			return is_string( $value ) ? $value : null;
 		};
-		$this->writer = $writer ?? static function ( int $post_id, string $key, string $value ): void {
+		$this->writer        = $writer ?? static function ( int $post_id, string $key, string $value ): void {
 			$ok = update_post_meta( $post_id, $key, $value );
 			if ( $ok === false ) {
 				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped

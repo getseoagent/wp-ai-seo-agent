@@ -27,9 +27,9 @@ final class Multi_Seo_Notice {
 		if ( count( $detected ) < 2 ) {
 			return '';
 		}
-		$primary    = array_shift( $detected );
-		$primary_l  = self::label( $primary );
-		$labels     = array_map( array( self::class, 'label' ), $detected );
+		$primary   = array_shift( $detected );
+		$primary_l = self::label( $primary );
+		$labels    = array_map( array( self::class, 'label' ), $detected );
 
 		if ( count( $labels ) === 1 ) {
 			$message = sprintf(
@@ -39,7 +39,7 @@ final class Multi_Seo_Notice {
 				esc_html( $labels[0] )
 			);
 		} else {
-			$others = implode(
+			$others  = implode(
 				', ',
 				array_map(
 					static fn( string $l ): string => '<strong>' . esc_html( $l ) . '</strong>',
