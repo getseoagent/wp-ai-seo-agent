@@ -93,4 +93,32 @@ final class AdapterFactoryTest extends TestCase
         $adapter = Adapter_Factory::make('yoast');
         $this->assertInstanceOf(\SeoAgent\Adapters\Yoast_Adapter::class, $adapter);
     }
+
+    public function test_detect_finds_aioseo_when_class_and_table_present(): void
+    {
+        $names = Adapter_Factory::detect(
+            class_exists_fn: static fn(string $cls): bool => $cls === 'AIOSEO\\Plugin\\AIOSEO',
+            option_exists_fn: static fn(string $opt): bool => false,
+            constant_defined_fn: static fn(string $name): bool => false,
+            table_exists_fn: static fn(string $tbl): bool => $tbl === 'aioseo_posts',
+        );
+        $this->assertSame(['aioseo'], $names);
+    }
+
+    public function test_detect_skips_aioseo_when_table_missing(): void
+    {
+        $names = Adapter_Factory::detect(
+            class_exists_fn: static fn(string $cls): bool => $cls === 'AIOSEO\\Plugin\\AIOSEO',
+            option_exists_fn: static fn(string $opt): bool => false,
+            constant_defined_fn: static fn(string $name): bool => false,
+            table_exists_fn: static fn(string $tbl): bool => false,
+        );
+        $this->assertSame([], $names);
+    }
+
+    public function test_make_returns_aioseo_adapter(): void
+    {
+        $adapter = Adapter_Factory::make('aioseo');
+        $this->assertInstanceOf(\SeoAgent\Adapters\AIOSEO_Adapter::class, $adapter);
+    }
 }
