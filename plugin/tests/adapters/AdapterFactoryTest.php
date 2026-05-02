@@ -10,31 +10,31 @@ use SeoAgent\Adapters\Fallback_Adapter;
 
 final class AdapterFactoryTest extends TestCase
 {
-    public function test_detect_returns_rank_math_when_class_exists(): void
+    public function test_detect_returns_array_with_rank_math_when_class_exists(): void
     {
-        $name = Adapter_Factory::detect(
+        $names = Adapter_Factory::detect(
             class_exists_fn: static fn(string $cls): bool => $cls === 'RankMath\\Helper',
             option_exists_fn: static fn(string $opt): bool => false,
         );
-        $this->assertSame('rank-math', $name);
+        $this->assertSame(['rank-math'], $names);
     }
 
-    public function test_detect_returns_rank_math_when_option_present(): void
+    public function test_detect_returns_array_with_rank_math_when_option_present(): void
     {
-        $name = Adapter_Factory::detect(
+        $names = Adapter_Factory::detect(
             class_exists_fn: static fn(string $cls): bool => false,
             option_exists_fn: static fn(string $opt): bool => $opt === 'rank_math_modules',
         );
-        $this->assertSame('rank-math', $name);
+        $this->assertSame(['rank-math'], $names);
     }
 
-    public function test_detect_returns_none_when_nothing_matches(): void
+    public function test_detect_returns_empty_array_when_nothing_matches(): void
     {
-        $name = Adapter_Factory::detect(
+        $names = Adapter_Factory::detect(
             class_exists_fn: static fn(string $cls): bool => false,
             option_exists_fn: static fn(string $opt): bool => false,
         );
-        $this->assertSame('none', $name);
+        $this->assertSame([], $names);
     }
 
     public function test_make_returns_rank_math_for_rank_math(): void
@@ -43,15 +43,21 @@ final class AdapterFactoryTest extends TestCase
         $this->assertInstanceOf(Rank_Math_Adapter::class, $adapter);
     }
 
-    public function test_make_returns_fallback_for_none(): void
+    public function test_make_returns_fallback_for_unknown(): void
     {
-        $adapter = Adapter_Factory::make('none');
+        $adapter = Adapter_Factory::make('totally-unknown-plugin');
         $this->assertInstanceOf(Fallback_Adapter::class, $adapter);
     }
 
-    public function test_make_returns_fallback_for_unknown(): void
+    public function test_make_primary_returns_first_known_adapter_from_array(): void
     {
-        $adapter = Adapter_Factory::make('yoast');
+        $adapter = Adapter_Factory::make_primary(['rank-math']);
+        $this->assertInstanceOf(Rank_Math_Adapter::class, $adapter);
+    }
+
+    public function test_make_primary_returns_fallback_for_empty_array(): void
+    {
+        $adapter = Adapter_Factory::make_primary([]);
         $this->assertInstanceOf(Fallback_Adapter::class, $adapter);
     }
 }
