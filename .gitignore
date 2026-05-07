@@ -26,6 +26,9 @@ composer.lock
 # wp.org build output
 dist/
 
+# Local sandbox WP testbed (Plugin Check / smoke)
+.testbed-tmp/
+
 # Backups (e.g. .env.bak from sed -i.bak)
 *.bak
 
