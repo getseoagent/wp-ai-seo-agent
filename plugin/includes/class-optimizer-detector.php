@@ -10,23 +10,63 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class Optimizer_Detector {
 
 	private const CACHE_PLUGINS = array(
-		array( 'slug' => 'wp-rocket',       'name' => 'WP Rocket',       'class' => 'WP_Rocket\\Engine\\Plugin\\Plugin' ),
-		array( 'slug' => 'w3-total-cache',  'name' => 'W3 Total Cache',  'class' => 'W3TC\\Root_Loader' ),
-		array( 'slug' => 'litespeed-cache', 'name' => 'LiteSpeed Cache', 'class' => 'LiteSpeed\\Core' ),
-		array( 'slug' => 'wp-super-cache',  'name' => 'WP Super Cache',  'function' => 'wp_super_cache_init' ),
+		array(
+			'slug'  => 'wp-rocket',
+			'name'  => 'WP Rocket',
+			'class' => 'WP_Rocket\\Engine\\Plugin\\Plugin',
+		),
+		array(
+			'slug'  => 'w3-total-cache',
+			'name'  => 'W3 Total Cache',
+			'class' => 'W3TC\\Root_Loader',
+		),
+		array(
+			'slug'  => 'litespeed-cache',
+			'name'  => 'LiteSpeed Cache',
+			'class' => 'LiteSpeed\\Core',
+		),
+		array(
+			'slug'     => 'wp-super-cache',
+			'name'     => 'WP Super Cache',
+			'function' => 'wp_super_cache_init',
+		),
 	);
 
 	private const IMAGE_PLUGINS = array(
-		array( 'slug' => 'shortpixel', 'name' => 'ShortPixel Image Optimizer', 'class' => 'ShortPixel\\Plugin' ),
-		array( 'slug' => 'ewww',       'name' => 'EWWW Image Optimizer',       'class' => 'EWWW' ),
-		array( 'slug' => 'imagify',    'name' => 'Imagify',                    'class' => 'Imagify' ),
-		array( 'slug' => 'smush',      'name' => 'WP Smush',                   'class' => 'WP_Smush' ),
+		array(
+			'slug'  => 'shortpixel',
+			'name'  => 'ShortPixel Image Optimizer',
+			'class' => 'ShortPixel\\Plugin',
+		),
+		array(
+			'slug'  => 'ewww',
+			'name'  => 'EWWW Image Optimizer',
+			'class' => 'EWWW',
+		),
+		array(
+			'slug'  => 'imagify',
+			'name'  => 'Imagify',
+			'class' => 'Imagify',
+		),
+		array(
+			'slug'  => 'smush',
+			'name'  => 'WP Smush',
+			'class' => 'WP_Smush',
+		),
 	);
 
 	private const CSS_JS_PLUGINS = array(
-		array( 'slug' => 'autoptimize', 'name' => 'Autoptimize', 'class' => 'autoptimizeMain' ),
+		array(
+			'slug'  => 'autoptimize',
+			'name'  => 'Autoptimize',
+			'class' => 'autoptimizeMain',
+		),
 		// WP Rocket also handles CSS/JS — surfaced under both cache and css_js.
-		array( 'slug' => 'wp-rocket',   'name' => 'WP Rocket',   'class' => 'WP_Rocket\\Engine\\Plugin\\Plugin' ),
+		array(
+			'slug'  => 'wp-rocket',
+			'name'  => 'WP Rocket',
+			'class' => 'WP_Rocket\\Engine\\Plugin\\Plugin',
+		),
 	);
 
 	/**
@@ -45,7 +85,11 @@ final class Optimizer_Detector {
 		}
 		unset( $entry );
 
-		return array( 'cache' => $cache, 'image' => $image, 'css_js' => $css_js );
+		return array(
+			'cache'  => $cache,
+			'image'  => $image,
+			'css_js' => $css_js,
+		);
 	}
 
 	/**
@@ -86,17 +130,19 @@ final class Optimizer_Detector {
 	}
 
 	private static function sample_has_webp(): bool {
-		$q = new \WP_Query( array(
-			'post_type'              => 'attachment',
-			'post_mime_type'         => array( 'image/jpeg', 'image/png' ),
-			'post_status'            => 'inherit',
-			'posts_per_page'         => 5,
-			'orderby'                => 'rand',
-			'no_found_rows'          => true,
-			'fields'                 => 'ids',
-			'update_post_meta_cache' => false,
-			'update_post_term_cache' => false,
-		) );
+		$q = new \WP_Query(
+			array(
+				'post_type'              => 'attachment',
+				'post_mime_type'         => array( 'image/jpeg', 'image/png' ),
+				'post_status'            => 'inherit',
+				'posts_per_page'         => 5,
+				'orderby'                => 'rand',
+				'no_found_rows'          => true,
+				'fields'                 => 'ids',
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+			)
+		);
 		if ( empty( $q->posts ) ) {
 			return false;
 		}
@@ -108,7 +154,7 @@ final class Optimizer_Detector {
 			}
 			$webp = preg_replace( '/\.(jpe?g|png)$/i', '.webp', $path );
 			if ( $webp && file_exists( $webp ) ) {
-				$hits++;
+				++$hits;
 			}
 		}
 		return $hits >= 3;
