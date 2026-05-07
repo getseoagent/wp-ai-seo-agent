@@ -4,7 +4,7 @@ Tags: seo, bulk, ai, chat, content
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,7 +30,7 @@ The plugin does not replace your existing SEO plugin — it augments whichever o
 * Audit log for every change with before/after values and per-job rollback.
 * Adapter layer auto-detects RankMath, Yoast SEO, AIOSEO, or SEOPress.
 * Cancel a bulk job mid-flight — partial work is preserved and rollback-able.
-* Free tier (chat + read-only tools) and Pro / Agency tiers (write tools, bulk).
+* Connects to the GetSEOAgent service for AI processing — free tier available, Pro / Agency plans offer higher monthly quotas. See https://getseoagent.app/pricing.
 
 = Bring your own Anthropic API key =
 
@@ -47,15 +47,15 @@ GetSEOAgent works with all four major WordPress SEO plugins. It reads and writes
 
 If two or more SEO plugins are simultaneously active, GetSEOAgent writes through the first detected (priority order: Rank Math > Yoast > AIOSEO > SEOPress) and shows an admin notice naming the secondaries. To avoid metadata drift, disable the unused plugin.
 
-If no SEO plugin is detected, GetSEOAgent falls back to read-only mode (post titles only).
+If no SEO plugin is active, GetSEOAgent can still read and write WordPress post titles — install Rank Math, Yoast, AIOSEO, or SEOPress to manage full SEO metadata (meta descriptions, focus keywords, OG titles).
 
 == Installation ==
 
 1. Upload the plugin files to `/wp-content/plugins/seo-agent/`, or install through the WordPress plugin directory.
 2. Activate the plugin through the **Plugins** screen.
 3. Go to **SEO Agent → Settings**, paste your Anthropic API key.
-4. Go to **SEO Agent** to start a chat. Free-tier features work immediately.
-5. (Optional) Go to **SEO Agent → Subscription** to add a Pro or Agency license key.
+4. Go to **SEO Agent → Subscription**, paste a GetSEOAgent license key (the free tier at https://getseoagent.app/pricing requires no card).
+5. Go to **SEO Agent** to start a chat.
 
 == Frequently Asked Questions ==
 
@@ -71,13 +71,13 @@ No. It writes through your existing plugin's storage, so all your analysis, site
 
 Yes. Every change is recorded in an audit log keyed by job ID. Click **Rollback all** on any completed bulk job and the original values are restored.
 
-= What happens on the free tier? =
+= Does the plugin work without a paid plan? =
 
-Free tier allows chat + read-only tools (list posts, read SEO fields, audit history). Write tools and bulk operations require a Pro or Agency license.
+The plugin code is fully functional GPL — nothing inside it is locked. AI processing runs on the GetSEOAgent service, which has a free tier (limited monthly quota) and Pro / Agency plans with larger quotas. See https://getseoagent.app/pricing for the current limits.
 
 = Does the plugin work on shared hosting? =
 
-Yes for chat and read-only operations. Write tools and bulk operations call out to a Node backend over HTTPS — we run a managed instance, or you can self-host it (the backend is open source and ships separately).
+Yes. AI processing and bulk job orchestration run on the GetSEOAgent backend (Node.js service hosted on Hetzner Cloud); your WordPress server only makes HTTPS requests to that backend. The backend is also open-source and self-hostable if you'd rather keep all traffic on your own infrastructure — see https://github.com/getseoagent/wp-ai-seo-agent/blob/main/docs/self-hosting.md.
 
 = Is my post content sent to a third party? =
 
@@ -90,7 +90,26 @@ Yes. To rewrite your SEO fields, the relevant post title, content, and existing 
 3. Bulk summary card with rollback affordance — every job is reversible.
 4. Subscription tab — license status, next renewal, masked card, cancel button.
 
+== Source Code ==
+
+The minified JavaScript and CSS bundled in `assets/dist/` are built from React/TypeScript sources hosted publicly at:
+
+https://github.com/getseoagent/wp-ai-seo-agent
+
+* Source location in the repo: `plugin-app/src/`
+* Build tool: Vite + Bun (or npm)
+* Build command: `cd plugin-app && bun install && bun run build` (or `npm install && npm run build`)
+* Output: Vite writes the bundle directly into `plugin/assets/dist/` (configured output directory)
+
+A standalone build of the production bundle reproduces the exact files shipped in `assets/dist/`.
+
 == Changelog ==
+
+= 1.2.2 =
+* Compliance: reworded readme and Subscription page so service-tier copy is no longer phrased as plugin-locked features (wp.org Guideline 5 / Serviceware framing). No code-level feature gates exist or are introduced.
+* Compliance: late-escape the Multi-SEO admin notice via `wp_kses_post` (`includes/class-multi-seo-notice.php`).
+* Docs: added a "Source Code" section pointing to the public GitHub repo and build instructions for the React bundle.
+* Docs: expanded the inline rationale for the SSE proxy's direct cURL usage (WP HTTP API has no per-chunk write callback, so streaming responses cannot use it).
 
 = 1.2.1 =
 * Internal: moved subscription cancel and diagnose inline scripts to enqueued JS files (wp_enqueue_script + wp_localize_script).
@@ -102,7 +121,7 @@ Yes. To rewrite your SEO fields, the relevant post title, content, and existing 
 * Internal: `Adapter_Factory::detect()` now returns a list of all detected plugins in priority order.
 
 = 1.1.0 — 2026-04-30 =
-* New: speed audit (Pro+) — agent runs Google PageSpeed Insights for any URL on mobile/desktop, diagnoses Core Web Vitals issues, and proposes fixes. Read-only in this release; the apply path lands in 1.2.0.
+* New: speed audit — agent runs Google PageSpeed Insights for any URL on mobile/desktop, diagnoses Core Web Vitals issues, and proposes fixes. Read-only in this release; the apply path lands in 1.2.0.
 * New: detect_template_type and detect_speed_optimizers tools for grounding the audit in your site's structure.
 * New: PageSpeed Insights API key field under Settings (BYO; Google Cloud free tier sufficient).
 
@@ -113,7 +132,7 @@ Yes. To rewrite your SEO fields, the relevant post title, content, and existing 
 * Audit log + per-job rollback.
 * Adapter layer for RankMath, Yoast SEO, AIOSEO, SEOPress (read + write).
 * Subscription admin tab with cancel-anytime.
-* Free / Pro / Agency tiers gated by license key.
+* Subscription support for the GetSEOAgent service plans (free / Pro / Agency).
 
 == Upgrade Notice ==
 

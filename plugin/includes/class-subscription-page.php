@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class Subscription_Page {
 
 	public const SLUG         = 'seo-agent-subscription';
-	public const CHECKOUT_URL = 'https://www.seo-friendly.org/pricing';
+	public const CHECKOUT_URL = 'https://getseoagent.app/pricing';
 
 	/**
 	 * Hook suffix returned by add_submenu_page() — the canonical value to
@@ -95,8 +95,8 @@ final class Subscription_Page {
 		?>
 		<div class="wrap">
 			<h1><?php echo esc_html__( 'Subscription', 'getseoagent' ); ?></h1>
-			<p><?php echo esc_html__( 'You\'re on the free tier. Upgrade to Pro or Agency to unlock write tools and bulk operations.', 'getseoagent' ); ?></p>
-			<p><a href="<?php echo esc_url( self::CHECKOUT_URL ); ?>" class="button button-primary" target="_blank" rel="noopener"><?php echo esc_html__( 'Buy a license', 'getseoagent' ); ?></a></p>
+			<p><?php echo esc_html__( 'GetSEOAgent connects to an external service for AI processing. Add a license key below — the GetSEOAgent service has a free tier (no card required) and paid plans with higher quotas.', 'getseoagent' ); ?></p>
+			<p><a href="<?php echo esc_url( self::CHECKOUT_URL ); ?>" class="button button-primary" target="_blank" rel="noopener"><?php echo esc_html__( 'See plans & get a key', 'getseoagent' ); ?></a></p>
 
 			<h2><?php echo esc_html__( 'Already have a license key?', 'getseoagent' ); ?></h2>
 			<form method="post" action="<?php echo esc_url( $action ); ?>">

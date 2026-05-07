@@ -62,7 +62,6 @@ final class Multi_Seo_Notice {
 
 	public static function maybe_print(): void {
 		$detected = Adapters\Adapter_Factory::detect();
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo self::render( $detected );
+		echo wp_kses_post( self::render( $detected ) );
 	}
 }

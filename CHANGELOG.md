@@ -8,6 +8,14 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/en/
 
 ## [Unreleased]
 
+## [1.2.2] — 2026-05-07
+
+### Changed
+- Compliance: reworded readme and Subscription page (no plugin-locked feature language; service-tier framing).
+- Compliance: late-escape `Multi_Seo_Notice` output via `wp_kses_post`.
+- Docs: added "Source Code" section in readme.txt with public GitHub repo + build steps.
+- Docs: expanded SSE proxy comment explaining why `curl_exec` is required (no chunk-write callback in WP HTTP API).
+
 ## [1.2.1] — 2026-05-05
 
 ### Changed
@@ -200,7 +208,9 @@ Plan 1 — walking skeleton.
 ### Tests
 - backend 11/11 bun, plugin 4/4 phpunit, plugin-app 4/4 vitest.
 
-[Unreleased]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v1.2.1...v1.2.2
+[1.2.1]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v1.1.0...v1.2.1
 [1.1.0]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.8.0-recurring-billing...v1.1.0
 [0.8.0-recurring-billing]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.7.0-jwt-auth...v0.8.0-recurring-billing
 [0.7.0-jwt-auth]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.6.0-bulk-decouple...v0.7.0-jwt-auth

@@ -1027,7 +1027,15 @@ final class REST_Controller {
 
 		ignore_user_abort( false );
 
-		// SSE streaming requires raw chunk piping; wp_remote_get() buffers the full body.
+		// Raw cURL is required here, not WordPress's HTTP API (wp_remote_* /
+		// WP_Http_Curl), because the API offers no per-chunk write callback:
+		// WP_Http_Curl::request() always buffers the full response body before
+		// returning, which would defeat the entire purpose of SSE (token-by-
+		// token delivery to the browser as the upstream model generates them).
+		// CURLOPT_WRITEFUNCTION is the only mechanism that lets us flush each
+		// event-stream chunk straight through to the client. Same reason
+		// curl_exec / curl_close are used directly below — there is no
+		// streaming equivalent in the WP HTTP API surface.
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_init
 		$ch = curl_init( $url );
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_setopt_array
