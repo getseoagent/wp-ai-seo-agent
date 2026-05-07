@@ -1048,11 +1048,7 @@ final class REST_Controller {
 					if ( connection_aborted() ) {
 						return 0; // returning != strlen aborts the cURL transfer
 					}
-					// SSE event-stream bytes from Anthropic — already framed text/event-stream, not HTML.
-					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-					echo $chunk;
-					@ob_flush();
-					@flush();
+					self::emit_sse_chunk( $chunk );
 					return strlen( $chunk );
 				},
 				CURLOPT_RETURNTRANSFER   => false,
@@ -1082,6 +1078,24 @@ final class REST_Controller {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_close
 		curl_close( $ch );
 		exit;
+	}
+
+	/**
+	 * Emit a raw SSE event-stream chunk straight to the client.
+	 *
+	 * The bytes come from an authenticated upstream (Anthropic via our Node
+	 * backend) and are already framed as `text/event-stream` — escaping or
+	 * filtering them would corrupt the SSE framing (`event:` / `data:` /
+	 * blank-line separators) and break the chat UI. This helper exists so
+	 * the intent is explicit: this is NOT HTML output, no escaping applies.
+	 */
+	private static function emit_sse_chunk( string $chunk ): void {
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo $chunk;
+		// phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged
+		@ob_flush();
+		// phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged
+		@flush();
 	}
 
 	/**

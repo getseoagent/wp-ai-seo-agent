@@ -8,6 +8,16 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/en/
 
 ## [Unreleased]
 
+## [1.2.1] — 2026-05-05
+
+### Changed
+- Plugin: `Subscription_Page` cancel-button JS moved to `assets/admin/subscription.js`, enqueued via `wp_enqueue_script` + `wp_localize_script` instead of an interpolated inline `<script>` block.
+- Plugin: `Admin_Page` diagnose-button JS moved to `assets/admin/diagnose.js` with the same enqueue pattern.
+- Plugin: SSE chunk write in `REST_Controller::proxy_chat` extracted into `emit_sse_chunk()` helper with explicit "raw event-stream, no HTML escaping" docblock; intent is no longer hidden behind a `phpcs:ignore` on a bare `echo`.
+
+### Why
+- wp.org plugin review (Apr 2026 round) flagged inline `<script>` tags and the bare `echo $chunk` for output-escaping. None were a security bug — values were already `wp_json_encode`'d and SSE bytes can't be HTML-escaped — but the directory's automated checks key on the patterns themselves.
+
 ## [1.1.0] — 2026-04-30
 
 ### Added

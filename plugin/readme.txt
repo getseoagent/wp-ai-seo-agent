@@ -4,7 +4,7 @@ Tags: seo, bulk, ai, chat, content
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -91,6 +91,10 @@ Yes. To rewrite your SEO fields, the relevant post title, content, and existing 
 4. Subscription tab — license status, next renewal, masked card, cancel button.
 
 == Changelog ==
+
+= 1.2.1 =
+* Internal: moved subscription cancel and diagnose inline scripts to enqueued JS files (wp_enqueue_script + wp_localize_script).
+* Internal: factored the SSE chat-stream chunk write into a documented helper to make the "no HTML escaping on event-stream bytes" intent explicit.
 
 = 1.2.0 =
 * New: Yoast, AIOSEO, and SEOPress adapters with full read+write parity.

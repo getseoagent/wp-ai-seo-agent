@@ -51,8 +51,12 @@ cp -r "$PLUGIN/includes"    "$STAGE/"
 
 # assets/dist holds the Vite bundle that admin-page.php enqueues. Source
 # TS/TSX is in ../plugin-app/src and DOES NOT ship.
+# assets/admin holds small hand-written JS for plain WP admin pages
+# (subscription cancel button, diagnose button) — enqueued via
+# wp_enqueue_script, not through the Vite bundle.
 mkdir -p "$STAGE/assets"
-cp -r "$PLUGIN/assets/dist" "$STAGE/assets/"
+cp -r "$PLUGIN/assets/dist"  "$STAGE/assets/"
+cp -r "$PLUGIN/assets/admin" "$STAGE/assets/"
 
 # Vite emits a placeholder index.html and a hidden `.vite/manifest.json`.
 # - index.html is dev-server scaffolding the plugin doesn't load — drop it.
