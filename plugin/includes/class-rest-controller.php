@@ -1103,11 +1103,19 @@ final class REST_Controller {
 	 * transfer; we use it to break out of an in-flight stream when the
 	 * browser disconnects partway through a long-running bulk job.
 	 *
+	 * The five-arg signature is fixed by cURL — it always passes
+	 * (handle, dl_total, dl_now, ul_total, ul_now). We only need
+	 * connection_aborted() state, but the parameters must stay declared so
+	 * the callback matches what libcurl invokes.
+	 *
 	 * @param \CurlHandle|resource|null $ch
+	 *
+	 * phpcs:disable Generic.CodeAnalysis.UnusedFunctionParameter
 	 */
 	public static function sse_progress_callback( $ch = null, int $dl_total = 0, int $dl_now = 0, int $ul_total = 0, int $ul_now = 0 ): int {
 		return self::is_connection_aborted() ? 1 : 0;
 	}
+	// phpcs:enable Generic.CodeAnalysis.UnusedFunctionParameter
 
 	/**
 	 * Indirection over PHP's native connection_aborted() so the SSE callbacks
