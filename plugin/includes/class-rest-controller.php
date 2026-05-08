@@ -982,48 +982,55 @@ final class REST_Controller {
 
 		ignore_user_abort( false );
 
-		// SSE streaming requires raw chunk piping; wp_remote_get() buffers the full body.
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_init
-		$ch = curl_init( $url );
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_setopt_array
-		curl_setopt_array(
-			$ch,
+		// SSE streaming requires the cURL transport — only it exposes
+		// CURLOPT_WRITEFUNCTION via the http_api_curl filter. The Streams
+		// transport buffers the full response body before returning, which
+		// would defeat token-by-token delivery.
+		if ( ! function_exists( 'curl_init' ) ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( '[seo-agent] proxy_chat: cURL extension is not loaded; SSE streaming requires it.' );
+			echo "event: error\ndata: " . wp_json_encode(
+				array(
+					'type'    => 'error',
+					'message' => 'Server is missing the PHP cURL extension required for SSE streaming.',
+				)
+			) . "\n\n";
+			exit;
+		}
+
+		// Stream upstream SSE bytes to the browser through the WordPress HTTP
+		// API. wp_remote_post() drives the request via WP_Http_Curl; the
+		// http_api_curl filter (the path explicitly endorsed by the wp.org
+		// reviewer team — https://developer.wordpress.org/reference/hooks/http_api_curl/)
+		// lets us attach CURLOPT_WRITEFUNCTION to the same handle WP is
+		// already managing, restoring chunk-by-chunk delivery without writing
+		// our own curl_* calls.
+		add_filter( 'http_api_curl', array( self::class, 'configure_sse_handle' ), 10, 3 );
+
+		$response = wp_remote_post(
+			$url,
 			array(
-				CURLOPT_HTTPHEADER       => array(
-					'Content-Type: application/json',
-					'Authorization: Bearer ' . $jwt,
-					'X-Anthropic-Key: ' . $api_key,
+				'method'  => 'POST',
+				'timeout' => 0, // no PHP-side timeout; the filter also forces CURLOPT_TIMEOUT=0.
+				'headers' => array(
+					'Content-Type'    => 'application/json',
+					'Authorization'   => 'Bearer ' . $jwt,
+					'X-Anthropic-Key' => $api_key,
 				),
-				CURLOPT_POST             => true,
-				CURLOPT_POSTFIELDS       => $payload,
-				CURLOPT_WRITEFUNCTION    => static function ( $ch, string $chunk ): int {
-					if ( connection_aborted() ) {
-						return 0; // returning != strlen aborts the cURL transfer
-					}
-					// SSE event-stream bytes from Anthropic — already framed text/event-stream, not HTML.
-					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-					echo $chunk;
-					@ob_flush();
-					@flush();
-					return strlen( $chunk );
-				},
-				CURLOPT_RETURNTRANSFER   => false,
-				CURLOPT_TIMEOUT          => 0,
-				CURLOPT_NOPROGRESS       => false,
-				CURLOPT_PROGRESSFUNCTION => static function (): int {
-					return connection_aborted() ? 1 : 0; // non-zero aborts
-				},
+				'body'    => $payload,
 			)
 		);
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_exec
-		$ok = curl_exec( $ch );
-		if ( $ok === false ) {
-			// curl_error() can leak internal hostnames / ports
-			// ("Could not resolve host: backend.internal:7117"); log the full
-			// detail and surface a generic message instead.
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log,WordPress.WP.AlternativeFunctions.curl_curl_error
-			error_log( '[seo-agent] proxy_chat: curl_exec failed: ' . curl_error( $ch ) );
+		remove_filter( 'http_api_curl', array( self::class, 'configure_sse_handle' ), 10 );
+
+		if ( is_wp_error( $response ) ) {
+			// WP_Error covers DNS / TLS / CURLE_ABORTED_BY_CALLBACK (raised by
+			// our progress callback when the browser disconnects). The
+			// message can leak internal hostnames ("Could not resolve host:
+			// backend.internal:7117"); log the full detail and surface a
+			// generic SSE error event instead.
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( '[seo-agent] proxy_chat: wp_remote_post failed: ' . $response->get_error_message() );
 			echo "event: error\ndata: " . wp_json_encode(
 				array(
 					'type'    => 'error',
@@ -1031,9 +1038,113 @@ final class REST_Controller {
 				)
 			) . "\n\n";
 		}
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_close
-		curl_close( $ch );
 		exit;
+	}
+
+	/**
+	 * Equality test against the chat-proxy endpoint URL. Used by the
+	 * http_api_curl filter callback to gate which WP HTTP requests get
+	 * SSE-streaming setopts attached: only our /chat round-trip, never an
+	 * unrelated wp_remote_get/post elsewhere in the request lifecycle.
+	 */
+	public static function is_chat_proxy_url( string $url ): bool {
+		return $url === Backend_Client::backend_url() . '/chat';
+	}
+
+	/**
+	 * http_api_curl filter callback — installs SSE-streaming options on the
+	 * cURL handle WP_Http_Curl::request() created, but only for our chat
+	 * proxy URL. For every other wp_remote_* call (license check, JWT mint,
+	 * health probe, third-party plugin's HTTP) we leave the handle untouched.
+	 *
+	 * The wp.org plugin review team's response to "we need raw curl for
+	 * streaming" was: "you can use setopt with the http_api_curl hook"
+	 * (https://developer.wordpress.org/reference/hooks/http_api_curl/). This
+	 * method is exactly that path. The curl_setopt() calls below operate on
+	 * the WP-managed handle through the documented hook surface; they are
+	 * not stand-alone cURL traffic, so the curl_curl_setopt phpcs sniff is
+	 * suppressed here on purpose.
+	 *
+	 * @param \CurlHandle|resource $handle The cURL handle wp_remote_* is about to exec.
+	 * @param array<string, mixed> $r      The parsed wp_remote_* args (unused).
+	 * @param string               $url    The request URL.
+	 */
+	public static function configure_sse_handle( $handle, $r, $url ): void {
+		if ( ! self::is_chat_proxy_url( (string) $url ) ) {
+			return;
+		}
+		// phpcs:disable WordPress.WP.AlternativeFunctions.curl_curl_setopt
+		curl_setopt( $handle, CURLOPT_WRITEFUNCTION, array( self::class, 'sse_write_callback' ) );
+		curl_setopt( $handle, CURLOPT_PROGRESSFUNCTION, array( self::class, 'sse_progress_callback' ) );
+		curl_setopt( $handle, CURLOPT_NOPROGRESS, false );
+		curl_setopt( $handle, CURLOPT_TIMEOUT, 0 );
+		curl_setopt( $handle, CURLOPT_RETURNTRANSFER, false );
+		// phpcs:enable WordPress.WP.AlternativeFunctions.curl_curl_setopt
+	}
+
+	/**
+	 * CURLOPT_WRITEFUNCTION callback. cURL aborts the transfer when the
+	 * return value differs from strlen($chunk), which is the contract we
+	 * use to bail out cleanly when the browser has disconnected.
+	 *
+	 * @param \CurlHandle|resource|null $ch    The cURL handle (unused).
+	 * @param string                    $chunk The bytes cURL just received.
+	 */
+	public static function sse_write_callback( $ch, string $chunk ): int {
+		if ( self::is_connection_aborted() ) {
+			return 0;
+		}
+		self::emit_sse_chunk( $chunk );
+		return strlen( $chunk );
+	}
+
+	/**
+	 * CURLOPT_PROGRESSFUNCTION callback. Returning non-zero aborts the
+	 * transfer; we use it to break out of an in-flight stream when the
+	 * browser disconnects partway through a long-running bulk job.
+	 *
+	 * @param \CurlHandle|resource|null $ch
+	 */
+	public static function sse_progress_callback( $ch = null, int $dl_total = 0, int $dl_now = 0, int $ul_total = 0, int $ul_now = 0 ): int {
+		return self::is_connection_aborted() ? 1 : 0;
+	}
+
+	/**
+	 * Indirection over PHP's native connection_aborted() so the SSE callbacks
+	 * are unit-testable. The native function reads the SAPI connection state,
+	 * which a test process can't fake; assigning a callable to
+	 * $connection_aborted_override lets a test simulate a disconnected
+	 * browser without touching production behaviour (override stays null in
+	 * the live request path).
+	 *
+	 * @var (callable():bool)|null
+	 * @internal
+	 */
+	public static $connection_aborted_override = null;
+
+	private static function is_connection_aborted(): bool {
+		if ( is_callable( self::$connection_aborted_override ) ) {
+			return (bool) call_user_func( self::$connection_aborted_override );
+		}
+		return connection_aborted() !== 0;
+	}
+
+	/**
+	 * Emit a raw SSE event-stream chunk straight to the client.
+	 *
+	 * The bytes come from an authenticated upstream (Anthropic via our Node
+	 * backend) and are already framed as `text/event-stream` — escaping or
+	 * filtering them would corrupt the SSE framing (`event:` / `data:` /
+	 * blank-line separators) and break the chat UI. This helper exists so
+	 * the intent is explicit: this is NOT HTML output, no escaping applies.
+	 */
+	public static function emit_sse_chunk( string $chunk ): void {
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo $chunk;
+		// phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged
+		@ob_flush();
+		// phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged
+		@flush();
 	}
 
 	/**

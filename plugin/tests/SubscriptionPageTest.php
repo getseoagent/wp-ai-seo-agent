@@ -19,14 +19,14 @@ final class SubscriptionPageTest extends TestCase
         if (!defined('SEO_AGENT_BACKEND_URL')) define('SEO_AGENT_BACKEND_URL', 'http://backend.test');
     }
 
-    public function test_render_no_license_shows_buy_cta_and_paste_form(): void
+    public function test_render_no_license_shows_plans_cta_and_paste_form(): void
     {
         // No license_key set.
         ob_start();
         Subscription_Page::render();
         $out = (string) ob_get_clean();
         $this->assertStringContainsString('free tier', $out);
-        $this->assertStringContainsString('Buy a license', $out);
+        $this->assertStringContainsString('See plans &amp; get a key', $out);
         $this->assertStringContainsString('seoagent_save_license_key', $out);
         $this->assertStringContainsString(Subscription_Page::CHECKOUT_URL, $out);
     }

@@ -8,6 +8,24 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/en/
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-05-08
+
+wp.org Plugin Directory submission, fix-ups round 3 (carries forward the round-1/2 fixes that previously landed on the v1.2.x feature line; v1.0.x is the slim shipping line — no speed-audit, no multi-adapter — until the directory listing is approved).
+
+### Compliance
+- SSE chat-stream proxy (`REST_Controller::proxy_chat`) rewritten on top of `wp_remote_post()` plus the `http_api_curl` filter (the WP-documented setopt path: https://developer.wordpress.org/reference/hooks/http_api_curl/). All `curl_init` / `curl_setopt_array` / `curl_exec` / `curl_close` / `curl_error` calls have been removed from the plugin's own code. Chunk-by-chunk streaming is preserved by attaching `CURLOPT_WRITEFUNCTION` to the WP-managed handle inside the filter; the gate `is_chat_proxy_url()` keeps the filter scoped to the `/chat` endpoint so unrelated `wp_remote_*` calls (license check, JWT mint, third-party plugin HTTP) are untouched.
+- Subscription-page cancel-button JS moved to `assets/admin/subscription.js`, enqueued via `wp_enqueue_script` + `wp_localize_script` instead of an interpolated inline `<script>` block.
+- Admin-page diagnose-button JS moved to `assets/admin/diagnose.js` with the same enqueue pattern.
+- Tier copy in `readme.txt` and `Subscription_Page::render_no_license` rewritten as **service** tiers (Akismet / Jetpack model). The plugin code is fully functional GPL — no PHP feature gates exist or are introduced; AI processing genuinely runs on the external GetSEOAgent backend (Guideline 6 / Serviceware).
+
+### Docs
+- New "Source Code" section in `readme.txt` linking to https://github.com/getseoagent/wp-ai-seo-agent — `plugin-app/src/` for React/TypeScript sources, Vite + Bun (or npm) for the build, output written directly into `plugin/assets/dist/`.
+
+### Tests
+- New `RestControllerProxyChatTest`: covers `emit_sse_chunk` (verbatim passthrough, no HTML escaping), `sse_write_callback` (returns chunk length on success, returns 0 on browser disconnect to abort the cURL transfer), and `is_chat_proxy_url` (exact-equality gate, rejects substring matches like `/chat-export` or `/chat/foo`).
+- `connection_aborted` made test-injectable via a public-static override callable on `REST_Controller`; production path falls through to PHP's native function unchanged.
+- `tests/bootstrap.php`: added a no-op `connection_aborted()` polyfill (only registers when PHP doesn't define the native function — i.e. never on a real SAPI; defensive belt for unusual CLI environments).
+
 ### Polish
 - Bootstrap validation: backend refuses to start if `JWT_SECRET`, `LICENSE_HMAC_SECRET`, or `WAYFORPAY_MERCHANT_SECRET_KEY` are shorter than 32 characters.
 - `class-options.php` centralises every wp_options key the plugin writes; `Settings` / `License` / `uninstall.php` reference the constants instead of duplicating string literals.

@@ -19,22 +19,60 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class Subscription_Page {
 
 	public const SLUG         = 'seo-agent-subscription';
-	public const CHECKOUT_URL = 'https://www.seo-friendly.org/pricing';
+	public const CHECKOUT_URL = 'https://getseoagent.app/pricing';
+
+	/**
+	 * Hook suffix returned by add_submenu_page() — the canonical value to
+	 * compare against the $hook arg admin_enqueue_scripts hands us. Building
+	 * the suffix manually is brittle: WP sets the prefix to
+	 * sanitize_title( $menu_title ) of the parent menu, NOT the parent slug,
+	 * so a translated or punctuated parent title (we have an em-dash) would
+	 * silently break a hand-built check.
+	 */
+	private static ?string $page_hook = null;
 
 	public static function init(): void {
 		add_action( 'admin_menu', array( self::class, 'register_menu' ) );
+		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue_assets' ) );
 		add_action( 'wp_ajax_seoagent_cancel_subscription', array( self::class, 'handle_cancel_ajax' ) );
 		add_action( 'admin_post_seoagent_save_license_key', array( self::class, 'handle_save_license_key' ) );
 	}
 
 	public static function register_menu(): void {
-		add_submenu_page(
+		$hook = add_submenu_page(
 			Admin_Page::SLUG,
 			__( 'Subscription', 'getseoagent' ),
 			__( 'Subscription', 'getseoagent' ),
 			'manage_options',
 			self::SLUG,
 			array( self::class, 'render' )
+		);
+		if ( is_string( $hook ) ) {
+			self::$page_hook = $hook;
+		}
+	}
+
+	public static function enqueue_assets( string $hook ): void {
+		if ( self::$page_hook === null || $hook !== self::$page_hook ) {
+			return;
+		}
+		wp_enqueue_script(
+			'seoagent-subscription',
+			SEO_AGENT_URL . 'assets/admin/subscription.js',
+			array(),
+			SEO_AGENT_VERSION,
+			true
+		);
+		wp_localize_script(
+			'seoagent-subscription',
+			'seoAgentSub',
+			array(
+				'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
+				'nonce'          => wp_create_nonce( 'seoagent_cancel_sub' ),
+				'confirmMsg'     => __( 'Cancel auto-renewal? You\'ll keep access until the current period ends.', 'getseoagent' ),
+				'failGenericMsg' => __( 'Cancel failed — check the browser console.', 'getseoagent' ),
+				'failPrefixMsg'  => __( 'Cancel failed:', 'getseoagent' ),
+			)
 		);
 	}
 
@@ -57,8 +95,8 @@ final class Subscription_Page {
 		?>
 		<div class="wrap">
 			<h1><?php echo esc_html__( 'Subscription', 'getseoagent' ); ?></h1>
-			<p><?php echo esc_html__( 'You\'re on the free tier. Upgrade to Pro or Agency to unlock write tools and bulk operations.', 'getseoagent' ); ?></p>
-			<p><a href="<?php echo esc_url( self::CHECKOUT_URL ); ?>" class="button button-primary" target="_blank" rel="noopener"><?php echo esc_html__( 'Buy a license', 'getseoagent' ); ?></a></p>
+			<p><?php echo esc_html__( 'GetSEOAgent connects to an external service for AI processing. Add a license key below — the GetSEOAgent service has a free tier (no card required) and paid plans with higher quotas.', 'getseoagent' ); ?></p>
+			<p><a href="<?php echo esc_url( self::CHECKOUT_URL ); ?>" class="button button-primary" target="_blank" rel="noopener"><?php echo esc_html__( 'See plans & get a key', 'getseoagent' ); ?></a></p>
 
 			<h2><?php echo esc_html__( 'Already have a license key?', 'getseoagent' ); ?></h2>
 			<form method="post" action="<?php echo esc_url( $action ); ?>">
@@ -77,7 +115,6 @@ final class Subscription_Page {
 
 	/** @param array<string, mixed>|null $status */
 	public static function render_status( ?array $status, string $key ): void {
-		$nonce = wp_create_nonce( 'seoagent_cancel_sub' );
 		echo '<div class="wrap"><h1>' . esc_html__( 'Subscription', 'getseoagent' ) . '</h1>';
 
 		if ( $status === null ) {
@@ -121,39 +158,6 @@ final class Subscription_Page {
 			echo '<p><em>' . esc_html__( 'This subscription is no longer auto-renewing.', 'getseoagent' ) . '</em></p>';
 		}
 		echo '<p><a href="https://secure.wayforpay.com/account" target="_blank" rel="noopener">' . esc_html__( 'Manage card on WayForPay', 'getseoagent' ) . '</a></p>';
-
-		// Inline JS for the cancel-button → AJAX hop. Small enough to keep
-		// colocated with the markup; not worth a separate enqueue. User-facing
-		// strings get JS-escaped via wp_json_encode so quotes/backslashes can't
-		// break the script tag and so future translators get the same hooks.
-		$ajax_url         = esc_url( admin_url( 'admin-ajax.php' ) );
-		$confirm_msg      = wp_json_encode( __( 'Cancel auto-renewal? You\'ll keep access until the current period ends.', 'getseoagent' ) );
-		$fail_generic_msg = wp_json_encode( __( 'Cancel failed — check the browser console.', 'getseoagent' ) );
-		$fail_prefix_msg  = wp_json_encode( __( 'Cancel failed:', 'getseoagent' ) );
-		// $confirm_msg / $fail_generic_msg / $fail_prefix_msg are wp_json_encode'd so
-		// they're safe-as-JS-string-literals (no need for esc_html). $ajax_url /
-		// $nonce are esc_url / nonce-format safe by construction.
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo "<script>
-(function(){
-  var btn = document.getElementById('seoagent-cancel-sub');
-  if (!btn) return;
-  btn.addEventListener('click', async function() {
-    if (!confirm({$confirm_msg})) return;
-    btn.disabled = true;
-    try {
-      var res = await fetch('{$ajax_url}', {
-        method:  'POST',
-        headers: {'content-type': 'application/x-www-form-urlencoded'},
-        body:    new URLSearchParams({ action: 'seoagent_cancel_subscription', _wpnonce: '{$nonce}' }).toString(),
-        credentials: 'same-origin',
-      });
-      if (res.ok) { location.reload(); }
-      else { alert({$fail_generic_msg}); btn.disabled = false; }
-    } catch (e) { alert({$fail_prefix_msg} + ' ' + e.message); btn.disabled = false; }
-  });
-})();
-</script>";
 		echo '</div>';
 	}
 

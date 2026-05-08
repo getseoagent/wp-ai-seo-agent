@@ -289,3 +289,9 @@ if (!function_exists('get_current_user_id')) {
 if (!function_exists('current_time')) {
     function current_time(string $type, bool $gmt = false): string { return $type === 'mysql' ? '2026-04-26 12:00:00' : (string) time(); }
 }
+
+if (!function_exists('connection_aborted')) {
+    function connection_aborted(): int {
+        return (int) ($GLOBALS['_seoagent_test_connection_aborted'] ?? false);
+    }
+}

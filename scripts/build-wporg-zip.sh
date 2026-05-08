@@ -3,7 +3,8 @@
 # Build a wp.org-ready plugin ZIP at dist/seo-agent.zip.
 #
 # Inclusions: seo-agent.php, readme.txt, uninstall.php, LICENSE.txt,
-#             includes/ (PHP), assets/dist/ (built JS+CSS bundle).
+#             includes/ (PHP), assets/dist/ (built JS+CSS bundle),
+#             assets/admin/ (hand-written admin JS).
 # Exclusions: .git/, vendor/, tests/, composer.*, phpunit.*, node_modules,
 #             plugin-app/ (TS sources), backend/ (Node side), IDE/OS junk.
 #
@@ -51,8 +52,12 @@ cp -r "$PLUGIN/includes"    "$STAGE/"
 
 # assets/dist holds the Vite bundle that admin-page.php enqueues. Source
 # TS/TSX is in ../plugin-app/src and DOES NOT ship.
+# assets/admin holds small hand-written JS for plain WP admin pages
+# (subscription cancel button, diagnose button) — enqueued via
+# wp_enqueue_script, not through the Vite bundle.
 mkdir -p "$STAGE/assets"
-cp -r "$PLUGIN/assets/dist" "$STAGE/assets/"
+cp -r "$PLUGIN/assets/dist"  "$STAGE/assets/"
+cp -r "$PLUGIN/assets/admin" "$STAGE/assets/"
 
 # Vite emits a placeholder index.html and a hidden `.vite/manifest.json`.
 # - index.html is dev-server scaffolding the plugin doesn't load — drop it.
