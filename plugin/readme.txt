@@ -4,7 +4,7 @@ Tags: seo, bulk, ai, chat, content
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,6 +36,10 @@ The plugin does not replace your existing SEO plugin — it augments whichever o
 
 You provide your own Anthropic API key in plugin settings. It is stored encrypted in `wp_options` using your site's `AUTH_KEY`. Each chat request sends the key once to our backend over HTTPS; we forward the key to Anthropic's API for that request and do not persist it.
 
+= Source code =
+
+Built from public sources at https://github.com/getseoagent/wp-ai-seo-agent — the bundled JavaScript in `assets/dist/` is generated from React/TypeScript in `plugin-app/src/` using Vite + Bun (or npm). Full build instructions are in the "Source Code & Build Instructions" section below.
+
 == Installation ==
 
 1. Upload the plugin files to `/wp-content/plugins/getseoagent/`, or install through the WordPress plugin directory.
@@ -43,6 +47,19 @@ You provide your own Anthropic API key in plugin settings. It is stored encrypte
 3. Go to **SEO Agent → Settings**, paste your Anthropic API key.
 4. Go to **SEO Agent → Subscription**, paste a GetSEOAgent license key (the free tier at https://getseoagent.app/pricing requires no card).
 5. Go to **SEO Agent** to start a chat.
+
+== Source Code & Build Instructions ==
+
+The minified JavaScript and CSS bundled in `assets/dist/` are built from React/TypeScript sources hosted publicly at:
+
+https://github.com/getseoagent/wp-ai-seo-agent
+
+* Source location in the repo: `plugin-app/src/`
+* Build tool: Vite + Bun (or npm)
+* Build command: `cd plugin-app && bun install && bun run build` (or `npm install && npm run build`)
+* Output: Vite writes the bundle directly into `plugin/assets/dist/` (configured output directory in `plugin-app/vite.config.ts`)
+
+A standalone build of the production bundle reproduces the exact files shipped in `assets/dist/`. Each emitted JavaScript chunk also begins with a `/*! Source: https://github.com/getseoagent/wp-ai-seo-agent — see plugin-app/src/ */` banner, so the minified bundle is never opaque.
 
 == Frequently Asked Questions ==
 
@@ -77,20 +94,11 @@ Yes. To rewrite your SEO fields, the relevant post title, content, and existing 
 3. Bulk summary card with rollback affordance — every job is reversible.
 4. Subscription tab — license status, next renewal, masked card, cancel button.
 
-== Source Code ==
-
-The minified JavaScript and CSS bundled in `assets/dist/` are built from React/TypeScript sources hosted publicly at:
-
-https://github.com/getseoagent/wp-ai-seo-agent
-
-* Source location in the repo: `plugin-app/src/`
-* Build tool: Vite + Bun (or npm)
-* Build command: `cd plugin-app && bun install && bun run build` (or `npm install && npm run build`)
-* Output: Vite writes the bundle directly into `plugin/assets/dist/` (configured output directory)
-
-A standalone build of the production bundle reproduces the exact files shipped in `assets/dist/`.
-
 == Changelog ==
+
+= 1.0.2 =
+* Compliance (wp.org review): source-code visibility — added a "Source code" subsection to the Description and moved the full "Source Code & Build Instructions" section to immediately after Installation (was previously between Screenshots and Changelog) so the public GitHub link and Vite/Bun build steps appear higher on the rendered plugin page.
+* Compliance (wp.org review): added a `/*! Source: https://github.com/getseoagent/wp-ai-seo-agent — see plugin-app/src/ */` banner to every JavaScript chunk emitted by Vite via `rollupOptions.output.banner`, so even the raw minified bundle points reviewers and developers to the public source.
 
 = 1.0.1 =
 * Compliance: rewrote the SSE chat-stream proxy to use `wp_remote_post()` together with the `http_api_curl` filter (per the WordPress HTTP API guideline). All `curl_*` calls have been removed from the plugin's own code; chunk-by-chunk SSE streaming is preserved by attaching `CURLOPT_WRITEFUNCTION` to the WP-managed cURL handle inside the filter.
@@ -108,6 +116,9 @@ A standalone build of the production bundle reproduces the exact files shipped i
 * Subscription support for the GetSEOAgent service plans (free / Pro / Agency).
 
 == Upgrade Notice ==
+
+= 1.0.2 =
+Documentation-only — re-locates the source-code link and Vite/Bun build instructions to a more prominent position in `readme.txt` and adds a source-link banner to bundled JS. No functional changes.
 
 = 1.0.1 =
 Compliance fixes for the wp.org Plugin Directory review (HTTP API, source-code link, service-tier copy, enqueued admin scripts). No functional changes.
