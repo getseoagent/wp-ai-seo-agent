@@ -57,13 +57,14 @@ final class URL_Status_Checker {
 		$cache_key = self::CACHE_PREFIX . md5( $url );
 
 		$cached = ( $this->cache['get'] )( $cache_key );
-		if ( is_array( $cached ) && isset( $cached['http_code'] ) ) {
+		if ( is_array( $cached ) && array_key_exists( 'http_code', $cached ) ) {
+			// Cache shape is owned by this class — see write below.
 			return new URL_Status(
 				url:        $url,
-				http_code:  is_int( $cached['http_code'] ) ? $cached['http_code'] : null,
-				error:      is_string( $cached['error'] ?? null ) ? $cached['error'] : null,
+				http_code:  $cached['http_code'],
+				error:      $cached['error'] ?? null,
 				from_cache: true,
-				checked_at: (int) ( $cached['checked_at'] ?? 0 )
+				checked_at: $cached['checked_at']
 			);
 		}
 

@@ -109,6 +109,35 @@ final class UrlStatusCheckerTest extends TestCase
         $this->assertFalse( $status->ok() );
     }
 
+    public function test_check_single_treats_array_without_response_key_as_unexpected_shape(): void
+    {
+        // Some plugins filter wp_remote_request to return a stripped/non-standard
+        // shape — e.g. just ['body' => '...']. We surface http_code=null with a
+        // descriptive error rather than silently treating it as a 0-status.
+        $http = static fn (): array => [ 'body' => '' ];
+
+        $checker = new URL_Status_Checker( $http, self::null_cache() );
+        $status  = $checker->check_single( 'https://example.com/page' );
+
+        $this->assertNull( $status->http_code );
+        $this->assertSame( 'unexpected http return shape', $status->error );
+        $this->assertFalse( $status->ok() );
+    }
+
+    public function test_check_single_treats_non_int_response_code_as_malformed(): void
+    {
+        // Defensive: a stringy '200' from a non-conformant transport filter
+        // would otherwise leak through and break URL_Status::ok()'s numeric
+        // comparison. Surface as http_code=null + explicit error.
+        $http = static fn (): array => [ 'response' => [ 'code' => '200' ], 'body' => '' ];
+
+        $checker = new URL_Status_Checker( $http, self::null_cache() );
+        $status  = $checker->check_single( 'https://example.com/page' );
+
+        $this->assertNull( $status->http_code );
+        $this->assertSame( 'malformed response', $status->error );
+    }
+
     /**
      * Cache fake that never has a hit and silently accepts writes. Used by
      * tests that want to bypass caching entirely and just exercise the HTTP
