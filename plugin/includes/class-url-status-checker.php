@@ -31,7 +31,7 @@ final class URL_Status_Checker {
 	/**
 	 * @param callable(string, array<string, mixed>): array<string, mixed>|\WP_Error $http
 	 * @param array{get: callable(string): mixed, set: callable(string, mixed, int): bool} $cache
-	 * @param callable(int): void|null $sleeper  Receives milliseconds. Production uses usleep; tests pass a no-op or capturing closure.
+	 * @param (callable(int): void)|null $sleeper  Receives milliseconds. Production uses usleep; tests pass a no-op or capturing closure.
 	 */
 	public function __construct(
 		private $http,
@@ -73,7 +73,7 @@ final class URL_Status_Checker {
 			);
 		}
 
-		[ $http_code, $error ] = $this->probe( $url );
+		[ $http_code, $error ] = $this->probe_with_retry( $url );
 
 		$now    = time();
 		$status = new URL_Status(
@@ -99,15 +99,14 @@ final class URL_Status_Checker {
 	}
 
 	/**
-	 * HEAD first; on 405/501 try a one-byte GET; on 5xx wait 500ms and retry
-	 * once (HEAD again, same fallback rules). 4xx and 2xx/3xx are returned
-	 * verbatim with no retry. WP_Error transports are returned verbatim — a
-	 * 500ms wait won't fix a DNS or TLS failure.
+	 * Run a probe; on 5xx wait 500ms and run one more probe. 4xx and 2xx/3xx
+	 * are returned verbatim with no retry. WP_Error transports are returned
+	 * verbatim — a 500ms wait won't fix a DNS or TLS failure.
 	 *
 	 * @return array{0: ?int, 1: ?string}  [http_code, error]
 	 */
-	private function probe( string $url ): array {
-		$result = $this->probe_once( $url );
+	private function probe_with_retry( string $url ): array {
+		$result = $this->probe( $url );
 		[ $code, $error ] = $result;
 
 		$is_transport_error = $code === null;
@@ -121,16 +120,17 @@ final class URL_Status_Checker {
 			( $this->sleeper )( self::RETRY_DELAY_MS );
 		}
 
-		return $this->probe_once( $url );
+		return $this->probe( $url );
 	}
 
 	/**
-	 * One HEAD attempt + optional GET-Range fallback. Returned shape matches
-	 * parse_response().
+	 * One probe: HEAD first; on 405/501 fall back to a one-byte GET. Any
+	 * other HEAD response (2xx/3xx, 4xx other than 405, 5xx) is returned
+	 * verbatim. Returned shape matches parse_response().
 	 *
 	 * @return array{0: ?int, 1: ?string}
 	 */
-	private function probe_once( string $url ): array {
+	private function probe( string $url ): array {
 		$head_response = ( $this->http )(
 			$url,
 			array(
