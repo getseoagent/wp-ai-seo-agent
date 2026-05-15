@@ -107,19 +107,6 @@ Yes. To rewrite your SEO fields, the relevant post title, content, and existing 
 3. Bulk summary card with rollback affordance — every job is reversible.
 4. Subscription tab — license status, next renewal, masked card, cancel button.
 
-== Source Code ==
-
-The minified JavaScript and CSS bundled in `assets/dist/` are built from React/TypeScript sources hosted publicly at:
-
-https://github.com/getseoagent/wp-ai-seo-agent
-
-* Source location in the repo: `plugin-app/src/`
-* Build tool: Vite + Bun (or npm)
-* Build command: `cd plugin-app && bun install && bun run build` (or `npm install && npm run build`)
-* Output: Vite writes the bundle directly into `plugin/assets/dist/` (configured output directory)
-
-A standalone build of the production bundle reproduces the exact files shipped in `assets/dist/`.
-
 == Changelog ==
 
 = 1.1.0 =
