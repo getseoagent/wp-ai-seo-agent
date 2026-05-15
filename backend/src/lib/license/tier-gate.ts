@@ -52,6 +52,16 @@ export function tierAllows(toolName: string, tier: Tier, input: any): TierGateRe
       return { ok: true };
     }
 
+    case "detect_template_type":
+      return { ok: true };
+
+    case "audit_url_speed":
+    case "detect_speed_optimizers":
+    case "propose_speed_fixes": {
+      if (TIER_RANK[tier] >= TIER_RANK.pro) return { ok: true };
+      return deny(`${toolName} requires Pro tier or higher.`);
+    }
+
     default:
       return deny(`Tool '${toolName}' is not enabled for any tier.`);
   }

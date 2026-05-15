@@ -165,6 +165,56 @@ export const tools: Tool[] = [
       additionalProperties: false,
     },
   },
+  {
+    name: "audit_url_speed",
+    description: "Run Google PageSpeed Insights for a URL on mobile (default) or desktop. Returns Lighthouse score, Core Web Vitals (LCP, CLS, INP, FCP, TTFB), top opportunities, and the LCP element if any. Read-only, cached for 60 minutes by (url, strategy). Pass nocache=true to bypass for re-audit after applying fixes.",
+    concurrent: true,
+    input_schema: {
+      type: "object",
+      properties: {
+        url:      { type: "string",  description: "Public URL to audit (must be reachable from Google's PSI runners)" },
+        strategy: { type: "string",  description: "'mobile' (default) or 'desktop'", enum: ["mobile", "desktop"] },
+        nocache:  { type: "boolean", description: "Skip the 60-minute cache (use after applying fixes)" },
+      },
+      required: ["url"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "propose_speed_fixes",
+    description: "Given a PSI audit, the URL's WordPress template info, and detected optimizer plugins, produce a structured list of fixes the agent can apply (reachable[]) plus advisory recommendations (unreachable[]). Pure function — no I/O. Use after audit_url_speed + detect_template_type + detect_speed_optimizers.",
+    input_schema: {
+      type: "object",
+      properties: {
+        audit:       { type: "object", description: "PsiAudit returned by audit_url_speed" },
+        template:    { type: "object", description: "TemplateInfo returned by detect_template_type" },
+        optimizers:  { type: "object", description: "OptimizerDetection returned by detect_speed_optimizers" },
+      },
+      required: ["audit", "template", "optimizers"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "detect_template_type",
+    description: "Detect the WordPress template hierarchy type for a URL (front_page, single, page, category, tag, product, shop, ...). Returns count_of_same_type so the agent can prompt 'fix this one or all of this type'.",
+    concurrent: true,
+    input_schema: {
+      type: "object",
+      properties: { url: { type: "string", description: "URL belonging to this WP site" } },
+      required: ["url"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "detect_speed_optimizers",
+    description: "Detect installed WordPress speed/optimization plugins (cache, image, css/js). Returns slug, name, version, active. For image plugins, also returns has_webp_files (sampled from media library).",
+    concurrent: true,
+    input_schema: {
+      type: "object",
+      properties: {},
+      additionalProperties: false,
+    },
+  },
 ];
 
 export type SseEventEmitter = (ev: SseEvent) => void;
@@ -344,6 +394,57 @@ export async function dispatchTool(
         cancel_requested_at: job.cancel_requested_at,
       };
     }
+
+    case "detect_template_type": {
+      const url = String((args as any).url ?? "");
+      if (!url) return { error: "url is required" };
+      return wp.getTemplateInfo(url, signal);
+    }
+    case "detect_speed_optimizers":
+      return wp.getSpeedOptimizers(signal);
+
+    case "audit_url_speed": {
+      // Inputs that the chat-route layer injects, NOT exposed in input_schema:
+      //   _psi_api_key  — user's BYO key, decrypted by the chat route from the encrypted WP option
+      //   _license_key  — for per-license rate limit
+      //   _fetch_impl   — test-only override (typed but stripped at the API boundary; see anthropic-client.ts pattern)
+      const a = args as Record<string, unknown>;
+      const url = String(a.url ?? "");
+      const strategy = (a.strategy === "desktop" ? "desktop" : "mobile") as "mobile" | "desktop";
+      const nocache = a.nocache === true;
+      const apiKey = typeof a._psi_api_key === "string" ? a._psi_api_key : "";
+      const licenseKey = typeof a._license_key === "string" ? a._license_key : undefined;
+      const fetchImpl = typeof a._fetch_impl === "function" ? (a._fetch_impl as typeof fetch) : undefined;
+
+      if (!apiKey) return { error: "PSI key not configured. Set it under SEO Agent → Settings → PageSpeed key." };
+      if (!url) return { error: "url is required" };
+
+      const { checkPsiRateLimit } = await import("./speed/rate-limit");
+      const rl = checkPsiRateLimit(licenseKey, tier);
+      if (!rl.ok) return { error: rl.reason, upgrade_url: "https://www.seo-friendly.org/pricing" };
+
+      const { fetchPsi, PsiError } = await import("./speed/psi-client");
+      try {
+        const audit = await fetchPsi(url, strategy, apiKey, signal, { nocache, fetchImpl });
+        return audit;
+      } catch (e) {
+        if (e instanceof PsiError) return { error: e.message, kind: e.kind };
+        throw e;
+      }
+    }
+
+    case "propose_speed_fixes": {
+      const a = args as Record<string, unknown>;
+      const audit = a.audit;
+      const template = a.template;
+      const optimizers = a.optimizers;
+      if (!audit || !template || !optimizers) {
+        return { error: "audit, template, and optimizers are required" };
+      }
+      const { proposeSpeedFixes } = await import("./speed/propose");
+      return proposeSpeedFixes(audit as any, template as any, optimizers as any);
+    }
+
     default: throw new Error(`unknown tool: ${name}`);
   }
 }

@@ -24,6 +24,10 @@ export function mountChat(app: Hono, deps: ChatDeps): void {
   app.post("/chat", async (c) => {
     const apiKey = c.req.header("x-anthropic-key");
     if (!apiKey) return c.json({ error: "x-anthropic-key header required" }, 400);
+    const psiKey = c.req.header("x-psi-key") ?? "";
+    if (psiKey && !/^AIzaSy[A-Za-z0-9_-]{33}$/.test(psiKey)) {
+      return c.json({ error: "x-psi-key format invalid (expected Google API key starting with AIzaSy)" }, 400);
+    }
 
     let body: ChatRequest;
     try { body = await c.req.json(); }
@@ -60,6 +64,8 @@ export function mountChat(app: Hono, deps: ChatDeps): void {
           craft,
           emit,
           tier: jwt.tier,
+          psiKey,
+          licenseKey: jwt.license_key,
         })) {
           if (ev.type === "text") assistantText += ev.delta;
           await s.write(sseFormat(ev));

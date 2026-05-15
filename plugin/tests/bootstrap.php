@@ -22,6 +22,9 @@ require_once dirname(__DIR__) . '/includes/class-subscription-page.php';
 require_once dirname(__DIR__) . '/includes/class-rest-controller.php';
 require_once dirname(__DIR__) . '/includes/class-history-store.php';
 require_once dirname(__DIR__) . '/includes/class-jobs-store.php';
+require_once dirname(__DIR__) . '/includes/class-template-detector.php';
+require_once dirname(__DIR__) . '/includes/class-optimizer-detector.php';
+require_once dirname(__DIR__) . '/includes/class-multi-seo-notice.php';
 
 foreach (glob(dirname(__DIR__) . '/includes/adapters/interface-*.php') as $adapter_file) {
     require_once $adapter_file;
@@ -53,7 +56,7 @@ if (!function_exists('delete_option')) {
 
 if (!function_exists('wp_json_encode')) {
     function wp_json_encode($data, int $options = 0, int $depth = 512): string|false {
-        return json_encode($data, $options, $depth);
+        return json_encode($data, $options | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES, $depth);
     }
 }
 
@@ -92,6 +95,40 @@ if (!class_exists('WP_Error')) {
 if (!function_exists('home_url')) {
     function home_url(string $path = ''): string {
         return ($GLOBALS['_seoagent_test_home_url'] ?? 'https://test.example') . $path;
+    }
+}
+
+// --- Template_Detector stubs (Plan 5a) ---
+
+if (!function_exists('trailingslashit')) {
+    function trailingslashit(string $s): string { return rtrim($s, '/') . '/'; }
+}
+if (!function_exists('wp_parse_url')) {
+    function wp_parse_url(string $url) { return parse_url($url); }
+}
+if (!function_exists('url_to_postid')) {
+    function url_to_postid(string $url): int {
+        // Test mode: $GLOBALS['_seoagent_test_url_map'] = [ 'https://example.com/sample-post/' => 11, '/about/' => 12 ]
+        $map = $GLOBALS['_seoagent_test_url_map'] ?? [];
+        return (int) ($map[$url] ?? 0);
+    }
+}
+if (!function_exists('get_post')) {
+    function get_post(int $id) {
+        $rows = $GLOBALS['_seoagent_test_posts'] ?? [];
+        return $rows[$id] ?? null;
+    }
+}
+if (!function_exists('wp_count_posts')) {
+    function wp_count_posts(string $type) {
+        $counts = $GLOBALS['_seoagent_test_post_counts'] ?? [];
+        return (object) ['publish' => (int) ($counts[$type] ?? 0)];
+    }
+}
+if (!function_exists('wp_count_terms')) {
+    function wp_count_terms(array $args = []) {
+        $tax = $args['taxonomy'] ?? 'category';
+        return (int) ($GLOBALS['_seoagent_test_term_counts'][$tax] ?? 0);
     }
 }
 if (!function_exists('get_transient')) {
@@ -167,6 +204,12 @@ if (!function_exists('wp_die')) {
 }
 if (!function_exists('add_action')) {
     function add_action(string $hook, $cb, int $priority = 10, int $accepted_args = 1): bool { return true; }
+}
+if (!function_exists('has_action')) {
+    function has_action(string $hook, $cb = false): bool { return false; }
+}
+if (!function_exists('do_action')) {
+    function do_action(string $hook, ...$args): void {}
 }
 if (!function_exists('add_submenu_page')) {
     function add_submenu_page(string $parent, string $page_title, string $menu_title, string $cap, string $slug, $cb = null): string { return $slug; }
@@ -255,6 +298,28 @@ if (!function_exists('sanitize_title')) {
 }
 if (!function_exists('sanitize_key')) {
     function sanitize_key(string $s): string { return strtolower(preg_replace('/[^a-z0-9_\-]/', '', $s) ?? ''); }
+}
+
+// --- Optimizer_Detector stubs (Plan 5a) ---
+
+if (!function_exists('get_plugins')) {
+    function get_plugins(): array {
+        return $GLOBALS['_seoagent_test_plugins'] ?? array();
+    }
+}
+if (!class_exists('WP_Query')) {
+    class WP_Query {
+        public array $posts = array();
+        public function __construct(array $args = array()) {
+            $this->posts = $GLOBALS['_seoagent_test_attachment_ids'] ?? array();
+        }
+    }
+}
+if (!function_exists('get_attached_file')) {
+    function get_attached_file(int $id): string|false {
+        $map = $GLOBALS['_seoagent_test_attached_files'] ?? array();
+        return $map[$id] ?? false;
+    }
 }
 
 if (!class_exists('WP_REST_Request')) {

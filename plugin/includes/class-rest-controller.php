@@ -10,6 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 use SeoAgent\Adapters;
 use SeoAgent\History_Store;
 use SeoAgent\Jobs_Store;
+use SeoAgent\Optimizer_Detector;
+use SeoAgent\Template_Detector;
 
 final class REST_Controller {
 
@@ -99,6 +101,31 @@ final class REST_Controller {
 				'methods'             => 'GET',
 				'callback'            => static fn(): \WP_REST_Response =>
 					new \WP_REST_Response( self::handle_get_taxonomy_terms( 'post_tag' ) ),
+				'permission_callback' => array( self::class, 'permit_admin_or_jwt' ),
+			)
+		);
+
+		register_rest_route(
+			'seoagent/v1',
+			'/template-info',
+			array(
+				'methods'             => 'GET',
+				'callback'            => static function ( \WP_REST_Request $req ): \WP_REST_Response {
+					$payload = self::handle_template_info( $req );
+					$status  = isset( $payload['error'] ) ? 400 : 200;
+					return new \WP_REST_Response( $payload, $status );
+				},
+				'permission_callback' => array( self::class, 'permit_admin_or_jwt' ),
+			)
+		);
+
+		register_rest_route(
+			'seoagent/v1',
+			'/speed-optimizers',
+			array(
+				'methods'             => 'GET',
+				'callback'            => static fn(): \WP_REST_Response =>
+					new \WP_REST_Response( Optimizer_Detector::detect() ),
 				'permission_callback' => array( self::class, 'permit_admin_or_jwt' ),
 			)
 		);
@@ -277,9 +304,24 @@ final class REST_Controller {
 		return ! empty( $verified['ok'] );
 	}
 
-	/** @return array{name: string} */
+	/** @return array{name: string, multi_active: list<string>} */
 	public static function handle_detect_seo_plugin(): array {
-		return array( 'name' => Adapters\Adapter_Factory::detect() );
+		$detected = Adapters\Adapter_Factory::detect();
+		return array(
+			'name'         => $detected[0] ?? 'none',
+			'multi_active' => $detected,
+		);
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	public static function handle_template_info( \WP_REST_Request $req ): array {
+		$url = (string) $req->get_param( 'url' );
+		if ( $url === '' ) {
+			return array( 'error' => 'url required' );
+		}
+		return Template_Detector::detect( $url );
 	}
 
 	/**
@@ -373,7 +415,7 @@ final class REST_Controller {
 	 */
 	public static function handle_get_post_summary( int $id, ?\Closure $loader = null, ?Adapters\Seo_Fields_Adapter $adapter = null ): ?array {
 		$loader  ??= static fn( int $id ): ?object => get_post( $id ) ?: null;
-		$adapter ??= Adapters\Adapter_Factory::make( Adapters\Adapter_Factory::detect() );
+		$adapter ??= Adapters\Adapter_Factory::make_primary( Adapters\Adapter_Factory::detect() );
 		$post      = $loader( $id );
 		if ( $post === null ) {
 			return null;
@@ -469,7 +511,7 @@ final class REST_Controller {
 		?History_Store $store = null,
 		?\Closure $uuid = null
 	): array {
-		$adapter ??= Adapters\Adapter_Factory::make( Adapters\Adapter_Factory::detect() );
+		$adapter ??= Adapters\Adapter_Factory::make_primary( Adapters\Adapter_Factory::detect() );
 		$store   ??= new History_Store( $GLOBALS['wpdb'] );
 		$uuid    ??= static fn(): string => wp_generate_uuid4();
 
@@ -648,7 +690,7 @@ final class REST_Controller {
 		?\Closure $uuid = null,
 		?\Closure $now = null
 	): array {
-		$adapter ??= Adapters\Adapter_Factory::make( Adapters\Adapter_Factory::detect() );
+		$adapter ??= Adapters\Adapter_Factory::make_primary( Adapters\Adapter_Factory::detect() );
 		$store   ??= new History_Store( $GLOBALS['wpdb'] );
 		$uuid    ??= static fn(): string => wp_generate_uuid4();
 		$now     ??= static fn(): string => current_time( 'mysql' );
@@ -939,6 +981,9 @@ final class REST_Controller {
 			wp_send_json_error( array( 'error' => 'api key not set' ), 400 );
 		}
 
+		// PSI key is optional — only required if the user invokes the speed-audit feature.
+		$psi_key = Settings::get_psi_key();
+
 		// Allow this script to run as long as the underlying SSE stream is alive.
 		// Bulk runs can exceed PHP's default max_execution_time of 60s.
 		// phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
@@ -1007,16 +1052,25 @@ final class REST_Controller {
 		// our own curl_* calls.
 		add_filter( 'http_api_curl', array( self::class, 'configure_sse_handle' ), 10, 3 );
 
+		// X-PSI-Key is forwarded only when the user has configured a PageSpeed
+		// Insights key in Settings; the backend's speed-audit tool needs it.
+		// Without it, the chat path works unchanged — Speed Audit just stays
+		// unavailable to that user.
+		$headers = array(
+			'Content-Type'    => 'application/json',
+			'Authorization'   => 'Bearer ' . $jwt,
+			'X-Anthropic-Key' => $api_key,
+		);
+		if ( $psi_key !== null && $psi_key !== '' ) {
+			$headers['X-PSI-Key'] = $psi_key;
+		}
+
 		$response = wp_remote_post(
 			$url,
 			array(
 				'method'  => 'POST',
 				'timeout' => 0, // no PHP-side timeout; the filter also forces CURLOPT_TIMEOUT=0.
-				'headers' => array(
-					'Content-Type'    => 'application/json',
-					'Authorization'   => 'Bearer ' . $jwt,
-					'X-Anthropic-Key' => $api_key,
-				),
+				'headers' => $headers,
 				'body'    => $payload,
 			)
 		);

@@ -39,7 +39,23 @@ export type RunAgentArgs = {
   craft?: CraftDeps;
   emit?: (ev: SseEvent) => void;
   tier?: Tier;
+  psiKey?: string;
+  licenseKey?: string | null;
 };
+
+function enrichSpeedArgs(
+  name: string,
+  input: unknown,
+  secrets: { psiKey?: string; licenseKey?: string | null },
+): unknown {
+  if (name !== "audit_url_speed") return input;
+  const obj = (input ?? {}) as Record<string, unknown>;
+  return {
+    ...obj,
+    ...(secrets.psiKey ? { _psi_api_key: secrets.psiKey } : {}),
+    ...(secrets.licenseKey ? { _license_key: secrets.licenseKey } : {}),
+  };
+}
 
 export async function* runAgent(args: RunAgentArgs): AsyncGenerator<SseEvent> {
   const model = args.model ?? "claude-sonnet-4-6";
@@ -93,7 +109,7 @@ export async function* runAgent(args: RunAgentArgs): AsyncGenerator<SseEvent> {
     // rejected dispatch can't sink the whole turn — every tool_use must produce a
     // tool_result (tool_use_id pairing requirement of the Anthropic API).
     const concurrentSettled = await Promise.allSettled(
-      concurrentUses.map(tu => dispatchTool(tu.name, tu.input, args.wp, args.signal, args.craft, args.emit, args.tier ?? "enterprise"))
+      concurrentUses.map(tu => dispatchTool(tu.name, enrichSpeedArgs(tu.name, tu.input, { psiKey: args.psiKey, licenseKey: args.licenseKey }), args.wp, args.signal, args.craft, args.emit, args.tier ?? "enterprise"))
     );
     for (let i = 0; i < concurrentUses.length; i++) {
       const tu = concurrentUses[i];
@@ -116,7 +132,7 @@ export async function* runAgent(args: RunAgentArgs): AsyncGenerator<SseEvent> {
     for (const tu of sequentialUses) {
       let resultJson: string;
       try {
-        const result = await dispatchTool(tu.name, tu.input, args.wp, args.signal, args.craft, args.emit, args.tier ?? "enterprise");
+        const result = await dispatchTool(tu.name, enrichSpeedArgs(tu.name, tu.input, { psiKey: args.psiKey, licenseKey: args.licenseKey }), args.wp, args.signal, args.craft, args.emit, args.tier ?? "enterprise");
         resultJson = JSON.stringify(result);
         yield { type: "tool_result", id: tu.id, result };
       } catch (err) {

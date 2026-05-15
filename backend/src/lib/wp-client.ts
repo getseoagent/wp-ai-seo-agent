@@ -65,6 +65,24 @@ export type HistoryRow = {
 
 export type GetHistoryArgs = { post_id?: number; job_id?: string; limit?: number; cursor?: number };
 
+export type TemplateInfoApi = {
+  type: string;
+  post_id?: number;
+  post_type?: string;
+  count_of_same_type: number;
+};
+
+export type OptimizerEntryApi = {
+  slug: string; name: string; version: string; active: boolean;
+  has_webp_files?: boolean;
+};
+
+export type OptimizerDetectionApi = {
+  cache:  OptimizerEntryApi[];
+  image:  OptimizerEntryApi[];
+  css_js: OptimizerEntryApi[];
+};
+
 export type Job = {
   id: string;
   user_id: number;
@@ -131,6 +149,12 @@ export function createWpClient(cfg: Cfg) {
     getCategories: (signal?: AbortSignal) => call<Term[]>("/categories", { signal }),
     getTags:       (signal?: AbortSignal) => call<Term[]>("/tags", { signal }),
     detectSeoPlugin: (signal?: AbortSignal) => call<{ name: string }>("/detect-seo-plugin", { signal }),
+
+    getTemplateInfo: (url: string, signal?: AbortSignal) =>
+      call<TemplateInfoApi>("/template-info", { query: { url }, signal }),
+
+    getSpeedOptimizers: (signal?: AbortSignal) =>
+      call<OptimizerDetectionApi>("/speed-optimizers", { signal }),
 
     updateSeoFields: (post_id: number, fields: SeoFields, job_id?: string, signal?: AbortSignal) =>
       call<{ job_id: string; results: Array<Record<string, unknown>> }>(`/post/${post_id}/seo-fields`, {

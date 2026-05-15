@@ -37,6 +37,28 @@ final class Settings {
 		delete_option( self::OPTION_KEY );
 	}
 
+	public static function get_psi_key(): ?string {
+		$stored = get_option( Options::PSI_API_KEY, null );
+		if ( ! is_string( $stored ) || $stored === '' ) {
+			return null;
+		}
+		$decrypted = self::decrypt( $stored );
+		return $decrypted === '' ? null : $decrypted;
+	}
+
+	public static function set_psi_key( string $key ): void {
+		$key = trim( $key );
+		if ( $key === '' ) {
+			self::clear_psi_key();
+			return;
+		}
+		update_option( Options::PSI_API_KEY, self::encrypt( $key ) );
+	}
+
+	public static function clear_psi_key(): void {
+		delete_option( Options::PSI_API_KEY );
+	}
+
 	private static function encrypt( string $plain ): string {
 		$secret = self::secret_bytes();
 		$iv     = random_bytes( 16 );

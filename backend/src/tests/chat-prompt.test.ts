@@ -13,8 +13,8 @@ describe("CHAT_SYSTEM_PROMPT", () => {
     expect(CHAT_SYSTEM_PROMPT).toMatch(/apply_style_to_batch/);
   });
 
-  it("is short — under 1500 chars", () => {
-    expect(CHAT_SYSTEM_PROMPT.length).toBeLessThan(1500);
+  it("is short — under 2000 chars", () => {
+    expect(CHAT_SYSTEM_PROMPT.length).toBeLessThan(2000);
   });
 
   it("forbids update_seo_fields per-post for multi-post requests", () => {
@@ -23,5 +23,11 @@ describe("CHAT_SYSTEM_PROMPT", () => {
 
   it("requires bulk pipeline for any multi-post request", () => {
     expect(CHAT_SYSTEM_PROMPT).toMatch(/Multi-post requests ALWAYS use the bulk pipeline/);
+  });
+
+  it("includes speed audit conventions", () => {
+    expect(CHAT_SYSTEM_PROMPT).toMatch(/audit_url_speed/);
+    expect(CHAT_SYSTEM_PROMPT).toMatch(/Core Web Vitals/);
+    expect(CHAT_SYSTEM_PROMPT).toMatch(/SpeedAuditCard/);
   });
 });

@@ -1,0 +1,17 @@
+{
+  "url": "https://example.com/blog/post",
+  "strategy": "mobile",
+  "fetched_at": "2026-04-30T10:00:00.000Z",
+  "lighthouse_score": 38,
+  "cwv": { "lcp": 4200, "cls": 0.34, "inp": 320, "fcp": 1900, "ttfb": 600 },
+  "opportunities": [
+    { "id": "unsized-images", "title": "Image elements do not have explicit width/height", "savings_ms": 0 },
+    { "id": "offscreen-images", "title": "Defer offscreen images", "savings_ms": 1200, "savings_kb": 1200 },
+    { "id": "modern-image-formats", "title": "Serve images in next-gen formats", "savings_ms": 800, "savings_kb": 600 },
+    { "id": "uses-rel-preconnect", "title": "Preconnect to required origins", "savings_ms": 300,
+      "details": { "items": [{ "url": "https://fonts.gstatic.com" }, { "url": "https://cdn.jsdelivr.net" }] } },
+    { "id": "render-blocking-resources", "title": "Eliminate render-blocking resources", "savings_ms": 800,
+      "details": { "items": [{ "url": "https://example.com/wp-includes/js/wp-embed.min.js" }] } }
+  ],
+  "lcp_element": { "url": "https://example.com/hero.jpg", "selector": "img.hero" }
+}

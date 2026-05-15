@@ -4,7 +4,7 @@ Tags: seo, bulk, ai, chat, content
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.0.2
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,19 @@ You provide your own Anthropic API key in plugin settings. It is stored encrypte
 = Source code =
 
 Built from public sources at https://github.com/getseoagent/wp-ai-seo-agent — the bundled JavaScript in `assets/dist/` is generated from React/TypeScript in `plugin-app/src/` using Vite + Bun (or npm). Full build instructions are in the "Source Code & Build Instructions" section below.
+
+== Compatibility ==
+
+GetSEOAgent works with all four major WordPress SEO plugins. It reads and writes to whichever one is active, without replacing or duplicating their behavior:
+
+* **Rank Math** — full read+write parity (titles, descriptions, focus keywords, OG titles).
+* **Yoast SEO** — full read+write parity.
+* **All in One SEO (AIOSEO 4.x+)** — full read+write parity. Requires AIOSEO's data table (`{prefix}aioseo_posts`) to be present.
+* **SEOPress** — full read+write parity for titles, descriptions, focus keywords. OG title editing requires SEOPress's Social Networks module to be active.
+
+If two or more SEO plugins are simultaneously active, GetSEOAgent writes through the first detected (priority order: Rank Math > Yoast > AIOSEO > SEOPress) and shows an admin notice naming the secondaries. To avoid metadata drift, disable the unused plugin.
+
+If no SEO plugin is active, GetSEOAgent can still read and write WordPress post titles — install Rank Math, Yoast, AIOSEO, or SEOPress to manage full SEO metadata (meta descriptions, focus keywords, OG titles).
 
 == Installation ==
 
@@ -94,7 +107,30 @@ Yes. To rewrite your SEO fields, the relevant post title, content, and existing 
 3. Bulk summary card with rollback affordance — every job is reversible.
 4. Subscription tab — license status, next renewal, masked card, cancel button.
 
+== Source Code ==
+
+The minified JavaScript and CSS bundled in `assets/dist/` are built from React/TypeScript sources hosted publicly at:
+
+https://github.com/getseoagent/wp-ai-seo-agent
+
+* Source location in the repo: `plugin-app/src/`
+* Build tool: Vite + Bun (or npm)
+* Build command: `cd plugin-app && bun install && bun run build` (or `npm install && npm run build`)
+* Output: Vite writes the bundle directly into `plugin/assets/dist/` (configured output directory)
+
+A standalone build of the production bundle reproduces the exact files shipped in `assets/dist/`.
+
 == Changelog ==
+
+= 1.1.0 =
+* New: **Speed Audit** — agent runs Google PageSpeed Insights for any URL on mobile/desktop, diagnoses Core Web Vitals issues, and proposes fixes. Read-only diagnosis in this release; the apply path follows in a later version.
+* New: `detect_template_type` and `detect_speed_optimizers` tools, plus `/template-info` and `/speed-optimizers` REST endpoints to ground the audit in your site's structure.
+* New: PageSpeed Insights API key field under **SEO Agent → Settings** (BYO; Google Cloud free tier sufficient — encrypted at rest using your site's `AUTH_KEY`).
+* New: **Yoast SEO**, **AIOSEO 4.x+**, and **SEOPress** adapters with full read+write parity (titles, descriptions, focus keywords, OG titles). Joins the existing Rank Math adapter.
+* New: Multi-active SEO plugin detection — admin notice + in-chat banner when two or more SEO plugins are simultaneously active, naming the active secondaries.
+* Internal: `Adapter_Factory::detect()` returns the prioritized list of all detected SEO plugins; `make_primary()` selects the write target.
+* Internal: SpeedAuditCard component (Core Web Vitals badges, reachable/unreachable lists, free-tier upgrade prompt).
+* Pricing: per-license daily PSI cap on Pro (500/day); Agency unlimited.
 
 = 1.0.2 =
 * Compliance (wp.org review): source-code visibility — added a "Source code" subsection to the Description and moved the full "Source Code & Build Instructions" section to immediately after Installation (was previously between Screenshots and Changelog) so the public GitHub link and Vite/Bun build steps appear higher on the rendered plugin page.
@@ -116,6 +152,9 @@ Yes. To rewrite your SEO fields, the relevant post title, content, and existing 
 * Subscription support for the GetSEOAgent service plans (free / Pro / Agency).
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Adds Speed Audit (Google PageSpeed Insights diagnosis with proposed fixes) and full read+write adapters for Yoast SEO, AIOSEO, and SEOPress alongside the existing Rank Math support. Optional BYO PageSpeed Insights API key in Settings unlocks Speed Audit; the rest is free.
 
 = 1.0.2 =
 Documentation-only — re-locates the source-code link and Vite/Bun build instructions to a more prominent position in `readme.txt` and adds a source-link banner to bundled JS. No functional changes.

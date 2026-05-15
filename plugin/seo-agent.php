@@ -3,7 +3,7 @@
  * Plugin Name:       GetSEOAgent — AI Bulk SEO Chat
  * Plugin URI:        https://getseoagent.app
  * Description:       Bulk SEO rewrites through chat. Sample-and-extrapolate UX over RankMath/Yoast/AIOSEO/SEOPress.
- * Version:           1.0.2
+ * Version:           1.1.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            SEO-FRIENDLY
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Bump on any schema change; plugins_loaded compares against the stored
 // `seoagent_db_version` option and re-runs dbDelta when they differ.
-define( 'SEO_AGENT_VERSION', '1.0.2' );
+define( 'SEO_AGENT_VERSION', '1.1.0' );
 define( 'SEO_AGENT_FILE', __FILE__ );
 define( 'SEO_AGENT_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SEO_AGENT_URL', plugin_dir_url( __FILE__ ) );
@@ -37,6 +37,9 @@ require_once SEO_AGENT_DIR . 'includes/class-rest-controller.php';
 require_once SEO_AGENT_DIR . 'includes/class-history-store.php';
 require_once SEO_AGENT_DIR . 'includes/class-jobs-store.php';
 require_once SEO_AGENT_DIR . 'includes/class-backend-client.php';
+require_once SEO_AGENT_DIR . 'includes/class-template-detector.php';
+require_once SEO_AGENT_DIR . 'includes/class-optimizer-detector.php';
+require_once SEO_AGENT_DIR . 'includes/class-multi-seo-notice.php';
 
 foreach ( glob( SEO_AGENT_DIR . 'includes/adapters/interface-*.php' ) as $seoagent_file ) {
 	require_once $seoagent_file;
@@ -123,5 +126,9 @@ add_action(
 		\SeoAgent\Admin_Page::init();
 		\SeoAgent\Subscription_Page::init();
 		\SeoAgent\REST_Controller::init();
+
+		if ( is_admin() ) {
+			add_action( 'admin_notices', array( \SeoAgent\Multi_Seo_Notice::class, 'maybe_print' ) );
+		}
 	}
 );

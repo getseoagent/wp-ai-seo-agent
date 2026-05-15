@@ -2,6 +2,8 @@ import { describe, expect, it } from "bun:test";
 import { runAgent, type AgentClient } from "../lib/agent-loop";
 import { tools } from "../lib/tools";
 import type { WpClient } from "../lib/wp-client";
+import { _resetPsiCacheForTests } from "../lib/speed/psi-client";
+import { _resetPsiRateLimitForTests } from "../lib/speed/rate-limit";
 
 const fakeWp = {
   listPosts:       async () => ({ posts: [{ id: 1, post_title: "t", slug: "s", status: "publish", modified: "x" }], next_cursor: null, total: 1 }),
@@ -273,5 +275,153 @@ describe("runAgent split-dispatch", () => {
       if (ev.type === "tool_call") callIds.push(ev.id);
     }
     expect(callIds).toEqual(["first", "second"]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Task-5 concurrent fanout: both audit_url_speed calls in one turn get psiKey
+// ---------------------------------------------------------------------------
+describe("runAgent psiKey concurrent fan-out enrichment", () => {
+  it("enriches every audit_url_speed in a concurrent fan-out turn", async () => {
+    _resetPsiCacheForTests();
+    _resetPsiRateLimitForTests();
+
+    const seenKeys: string[] = [];
+    const recordingFetch = async (url: string) => {
+      const match = url.match(/[?&]key=([^&]+)/);
+      if (match) seenKeys.push(match[1]);
+      return new Response(JSON.stringify(FAKE_PSI_BODY), { status: 200 });
+    };
+
+    // The model returns TWO concurrent audit_url_speed tool uses in one turn.
+    // audit_url_speed has concurrent:true, so both are dispatched via Promise.allSettled.
+    // enrichSpeedArgs must inject _psi_api_key into each before dispatch.
+    const client = scriptedClient([
+      {
+        deltas: [],
+        toolCalls: [
+          { id: "tu_s1", name: "audit_url_speed", input: { url: "https://example.com/a0", strategy: "mobile" as const, _fetch_impl: recordingFetch } },
+          { id: "tu_s2", name: "audit_url_speed", input: { url: "https://example.com/a1", strategy: "mobile" as const, _fetch_impl: recordingFetch } },
+        ],
+        stop: "tool_use",
+      },
+      { deltas: ["Done"], stop: "end_turn" },
+    ]);
+
+    const events: any[] = [];
+    for await (const ev of runAgent({
+      messages: [{ role: "user", content: "audit two pages" }],
+      wp: fakeWp,
+      signal: new AbortController().signal,
+      client,
+      tools,
+      tier: "pro",
+      psiKey: "K-test",
+      licenseKey: "AISEO-FAN-001",
+    })) {
+      events.push(ev);
+    }
+
+    // Both PSI fetches happened and both carried the same key
+    expect(seenKeys.length).toBe(2);
+    expect(seenKeys.every(k => k === "K-test")).toBe(true);
+
+    // Both tool results succeeded (no error field)
+    const speedResults = events.filter((e: any) => e.type === "tool_result" && (e.id === "tu_s1" || e.id === "tu_s2"));
+    expect(speedResults.length).toBe(2);
+    for (const r of speedResults) {
+      expect((r as any).result?.error).toBeUndefined();
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Task-5 contract: psiKey + licenseKey enrichment for audit_url_speed
+// ---------------------------------------------------------------------------
+const FAKE_PSI_BODY = {
+  lighthouseResult: {
+    finalUrl: "https://example.com/",
+    categories: { performance: { score: 0.72 } },
+    audits: {
+      "largest-contentful-paint": { numericValue: 2100 },
+      "cumulative-layout-shift":  { numericValue: 0.05 },
+      "interaction-to-next-paint":{ numericValue: 180 },
+      "first-contentful-paint":   { numericValue: 900 },
+      "server-response-time":     { numericValue: 200 },
+      "unsized-images": { id: "unsized-images", title: "x" },
+      "largest-contentful-paint-element": { details: { items: [{ items: [{ url: "https://example.com/hero.jpg" }] }] } },
+    },
+  },
+};
+const okFetch = (async () => new Response(JSON.stringify(FAKE_PSI_BODY), { status: 200 })) as unknown as typeof fetch;
+
+describe("runAgent psiKey / licenseKey enrichment", () => {
+  it("injects _psi_api_key from psiKey arg into audit_url_speed dispatch (pro tier)", async () => {
+    _resetPsiCacheForTests();
+    _resetPsiRateLimitForTests();
+
+    // The model requests audit_url_speed WITHOUT _psi_api_key in the input.
+    // runAgent must enrich it from args.psiKey before calling dispatchTool.
+    // We pass _fetch_impl so the real PSI HTTP call is skipped.
+    const client = scriptedClient([
+      {
+        deltas: [],
+        toolCalls: [{ id: "tu_speed", name: "audit_url_speed", input: { url: "https://example.com/", strategy: "mobile" as const, _fetch_impl: okFetch } }],
+        stop: "tool_use",
+      },
+      { deltas: ["Done"], stop: "end_turn" },
+    ]);
+
+    const events: any[] = [];
+    for await (const ev of runAgent({
+      messages: [{ role: "user", content: "audit my site speed" }],
+      wp: fakeWp,
+      signal: new AbortController().signal,
+      client,
+      tools,
+      tier: "pro",
+      psiKey: "test-psi-key-abc",
+      licenseKey: "AISEO-LIC-001",
+    })) {
+      events.push(ev);
+    }
+
+    const toolResult = events.find((e: any) => e.type === "tool_result" && e.id === "tu_speed");
+    expect(toolResult).toBeDefined();
+    // If _psi_api_key was NOT injected, dispatchTool returns { error: /PSI key/i }.
+    // A successful enrichment yields a result with lighthouse_score.
+    expect((toolResult as any).result?.error).toBeUndefined();
+    expect((toolResult as any).result?.lighthouse_score).toBe(72);
+  });
+
+  it("returns PSI-key-missing error when psiKey is absent (pro tier)", async () => {
+    _resetPsiCacheForTests();
+    _resetPsiRateLimitForTests();
+
+    const client = scriptedClient([
+      {
+        deltas: [],
+        toolCalls: [{ id: "tu_speed2", name: "audit_url_speed", input: { url: "https://example.com/", strategy: "mobile" as const } }],
+        stop: "tool_use",
+      },
+      { deltas: ["Done"], stop: "end_turn" },
+    ]);
+
+    const events: any[] = [];
+    for await (const ev of runAgent({
+      messages: [{ role: "user", content: "audit my site" }],
+      wp: fakeWp,
+      signal: new AbortController().signal,
+      client,
+      tools,
+      tier: "pro",
+      // psiKey intentionally omitted
+    })) {
+      events.push(ev);
+    }
+
+    const toolResult = events.find((e: any) => e.type === "tool_result" && e.id === "tu_speed2");
+    expect(toolResult).toBeDefined();
+    expect((toolResult as any).result?.error).toMatch(/PSI key/i);
   });
 });

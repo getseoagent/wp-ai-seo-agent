@@ -17,7 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Options {
 
-	public const API_KEY     = 'seo_agent_api_key';        // encrypted (Settings)
+	public const API_KEY     = 'seo_agent_api_key';        // encrypted (Settings, Anthropic)
+	public const PSI_API_KEY = 'seo_agent_psi_api_key';    // encrypted (Settings, Google PSI)
 	public const LICENSE_KEY = 'seo_agent_license_key';    // encrypted (License)
 	public const JWT         = 'seo_agent_jwt';            // encrypted (License)
 	public const JWT_EXP     = 'seo_agent_jwt_exp';        // unix seconds (License)
@@ -26,6 +27,7 @@ final class Options {
 	/** Every option key this plugin writes. uninstall.php iterates this list. */
 	public const ALL = array(
 		self::API_KEY,
+		self::PSI_API_KEY,
 		self::LICENSE_KEY,
 		self::JWT,
 		self::JWT_EXP,

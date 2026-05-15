@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { RewriteCard } from "./RewriteCard";
 import { BulkSummaryCard } from "./BulkSummaryCard";
+import { SpeedAuditCard } from "./SpeedAuditCard";
 
 /**
  * Plan 4-B: apply_style_to_batch returns immediately with {status:"running"}
@@ -88,7 +89,9 @@ export function ToolCallCard({ call, onSendChat }: { call: ToolCall; onSendChat?
                   ? <BulkSummaryCard result={call.result} onSendChat={onSendChat} />
                   : call.name === "apply_style_to_batch"
                     ? renderApplyResult(call.result)
-                    : <div>{JSON.stringify(call.result, null, 2)}</div>}
+                    : call.name === "audit_url_speed"
+                      ? <SpeedAuditCard result={call.result} />
+                      : <div>{JSON.stringify(call.result, null, 2)}</div>}
             </>
           )}
         </div>

@@ -8,9 +8,33 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/en/
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-05-15
+
+First feature release after the wp.org 1.0.x compliance line was accepted (slug `getseoagent`, SVN `r3532525`). Adds Speed Audit (PageSpeed Insights) and broad SEO-adapter coverage (Yoast, AIOSEO, SEOPress) on top of RankMath.
+
+### Added — Speed Audit
+- Backend: `audit_url_speed` tool wraps Google PageSpeed Insights v5; cached for 60 minutes per (url, strategy).
+- Backend: `propose_speed_fixes` pure function maps Lighthouse opportunities → structured `SpeedFix[]` and `SpeedRec[]`.
+- Backend: `detect_template_type` and `detect_speed_optimizers` tools, both backed by new WP REST endpoints.
+- Backend: per-license daily PSI cap on Pro tier (500/day); Agency unlimited.
+- Plugin: `Template_Detector` and `Optimizer_Detector` classes; `/template-info` and `/speed-optimizers` REST routes.
+- Plugin: encrypted PSI API key option (`seo_agent_psi_api_key`); admin form alongside the Anthropic key.
+- Plugin-app: `SpeedAuditCard` component (CWV badges, reachable/unreachable lists, free-tier upgrade prompt).
+- Chat prompt: speed-flow conventions added.
+
+### Added — Multi-adapter coverage
+- Plugin: `Yoast` adapter (full read/write via `_yoast_wpseo_*` post-meta).
+- Plugin: `AIOSEO` adapter (table-backed `aioseo_posts` writes).
+- Plugin: `SEOPress` adapter with dynamic `og_title` handling.
+- Plugin: `Adapter_Factory::detect()` returns `string[]` of active SEO plugins; `make_primary()` chooses the primary write target.
+- Plugin: admin notice (`Multi_Seo_Notice`) + `MultiActiveBanner` component when ≥2 SEO plugins are active.
+
+### Tests
+- New PHPUnit suites: Yoast/AIOSEO/SEOPress adapters, MultiSeoNotice, OptimizerDetector, TemplateDetector, RestControllerSpeed, Settings.
+
 ## [1.0.1] — 2026-05-08
 
-wp.org Plugin Directory submission, fix-ups round 3 (carries forward the round-1/2 fixes that previously landed on the v1.2.x feature line; v1.0.x is the slim shipping line — no speed-audit, no multi-adapter — until the directory listing is approved).
+wp.org Plugin Directory submission, fix-ups round 3 (carries forward the round-1/2 fixes that previously landed on the v1.2.x feature line; v1.0.x was the slim shipping line — no speed-audit, no multi-adapter — until the directory listing was approved on 2026-05-14).
 
 ### Compliance
 - SSE chat-stream proxy (`REST_Controller::proxy_chat`) rewritten on top of `wp_remote_post()` plus the `http_api_curl` filter (the WP-documented setopt path: https://developer.wordpress.org/reference/hooks/http_api_curl/). All `curl_init` / `curl_setopt_array` / `curl_exec` / `curl_close` / `curl_error` calls have been removed from the plugin's own code. Chunk-by-chunk streaming is preserved by attaching `CURLOPT_WRITEFUNCTION` to the WP-managed handle inside the filter; the gate `is_chat_proxy_url()` keeps the filter scoped to the `/chat` endpoint so unrelated `wp_remote_*` calls (license check, JWT mint, third-party plugin HTTP) are untouched.
@@ -191,7 +215,10 @@ Plan 1 — walking skeleton.
 ### Tests
 - backend 11/11 bun, plugin 4/4 phpunit, plugin-app 4/4 vitest.
 
-[Unreleased]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.8.0-recurring-billing...HEAD
+[Unreleased]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v1.2.1...v1.2.2
+[1.2.1]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v1.1.0...v1.2.1
+[1.1.0]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.8.0-recurring-billing...v1.1.0
 [0.8.0-recurring-billing]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.7.0-jwt-auth...v0.8.0-recurring-billing
 [0.7.0-jwt-auth]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.6.0-bulk-decouple...v0.7.0-jwt-auth
 [0.6.0-bulk-decouple]: https://github.com/getseoagent/wp-ai-seo-agent/compare/v0.5.1-3c-polish...v0.6.0-bulk-decouple
