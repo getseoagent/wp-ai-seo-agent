@@ -11,9 +11,6 @@ if (!defined('ABSPATH')) {
 if (!defined('AUTH_KEY')) {
     define('AUTH_KEY', 'test-auth-key-do-not-use-in-prod');
 }
-if (!defined('DAY_IN_SECONDS')) {
-    define('DAY_IN_SECONDS', 86400);
-}
 
 require_once dirname(__DIR__) . '/includes/class-options.php';
 require_once dirname(__DIR__) . '/includes/class-settings.php';

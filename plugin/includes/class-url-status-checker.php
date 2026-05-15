@@ -22,14 +22,14 @@ require_once __DIR__ . '/class-url-status.php';
  */
 final class URL_Status_Checker {
 
-	private const TTL_SECONDS    = DAY_IN_SECONDS;
+	private const TTL_SECONDS    = 86400; // DAY_IN_SECONDS — inlined so class loads without WP core constants
 	private const CACHE_PREFIX   = 'seoagent_url_status_';
 	private const USER_AGENT     = 'Mozilla/5.0 (compatible; SEOAgent/1.1; +https://getseoagent.app)';
 	private const FETCH_TIMEOUT  = 10;
 	private const RETRY_DELAY_MS = 500;
 
 	/**
-	 * @param callable(string, array<string, mixed>): array<string, mixed> $http  Closure returning a wp_remote_request-shaped array.
+	 * @param callable(string, array<string, mixed>): array<string, mixed>|\WP_Error $http  Closure returning a wp_remote_request-shaped array, or WP_Error on transport failure.
 	 * @param array{get: callable(string): mixed, set: callable(string, mixed, int): bool} $cache  Get/set pair, returns false on cache miss.
 	 */
 	public function __construct(
@@ -43,7 +43,7 @@ final class URL_Status_Checker {
 	 */
 	public static function wire_with_wordpress(): self {
 		return new self(
-			http: static fn ( string $url, array $args ): array
+			http: static fn ( string $url, array $args ): array|\WP_Error
 				=> wp_remote_request( $url, $args ),
 			cache: array(
 				'get' => static fn ( string $key ): mixed => get_transient( $key ),
