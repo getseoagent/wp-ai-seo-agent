@@ -68,17 +68,7 @@ final class URL_Status_Checker {
 			);
 		}
 
-		$response = ( $this->http )(
-			$url,
-			array(
-				'method'     => 'HEAD',
-				'timeout'    => self::FETCH_TIMEOUT,
-				'user-agent' => self::USER_AGENT,
-				'redirection' => 0, // don't follow — we want to see the 301/302 itself
-			)
-		);
-
-		[ $http_code, $error ] = self::parse_response( $response );
+		[ $http_code, $error ] = $this->probe( $url );
 
 		$now    = time();
 		$status = new URL_Status(
@@ -101,6 +91,42 @@ final class URL_Status_Checker {
 		);
 
 		return $status;
+	}
+
+	/**
+	 * HEAD first; if the server says "method not allowed" (405) or "not
+	 * implemented" (501), retry as a one-byte GET. Any other HEAD response —
+	 * including 404, 403, 5xx — is returned verbatim.
+	 *
+	 * @return array{0: ?int, 1: ?string}  [http_code, error]
+	 */
+	private function probe( string $url ): array {
+		$head_response = ( $this->http )(
+			$url,
+			array(
+				'method'      => 'HEAD',
+				'timeout'     => self::FETCH_TIMEOUT,
+				'user-agent'  => self::USER_AGENT,
+				'redirection' => 0,
+			)
+		);
+		[ $head_code, $head_error ] = self::parse_response( $head_response );
+
+		if ( $head_code !== 405 && $head_code !== 501 ) {
+			return array( $head_code, $head_error );
+		}
+
+		$get_response = ( $this->http )(
+			$url,
+			array(
+				'method'      => 'GET',
+				'timeout'     => self::FETCH_TIMEOUT,
+				'user-agent'  => self::USER_AGENT,
+				'redirection' => 0,
+				'headers'     => array( 'Range' => 'bytes=0-0' ),
+			)
+		);
+		return self::parse_response( $get_response );
 	}
 
 	/**

@@ -138,6 +138,57 @@ final class UrlStatusCheckerTest extends TestCase
         $this->assertSame( 'malformed response', $status->error );
     }
 
+    public function test_check_single_falls_back_to_get_range_on_405(): void
+    {
+        $calls = array();
+        $http  = static function ( string $url, array $args ) use ( &$calls ): array {
+            $calls[] = $args['method'] . ' ' . ( $args['headers']['Range'] ?? '' );
+            if ( $args['method'] === 'HEAD' ) {
+                return array( 'response' => array( 'code' => 405 ), 'body' => '' );
+            }
+            return array( 'response' => array( 'code' => 200 ), 'body' => 'a' );
+        };
+
+        $checker = new URL_Status_Checker( $http, self::null_cache() );
+        $status  = $checker->check_single( 'https://example.com/page' );
+
+        $this->assertSame( array( 'HEAD ', 'GET bytes=0-0' ), $calls );
+        $this->assertSame( 200, $status->http_code );
+    }
+
+    public function test_check_single_falls_back_to_get_range_on_501(): void
+    {
+        $get_called = false;
+        $http       = static function ( string $url, array $args ) use ( &$get_called ): array {
+            if ( $args['method'] === 'HEAD' ) {
+                return array( 'response' => array( 'code' => 501 ), 'body' => '' );
+            }
+            $get_called = true;
+            return array( 'response' => array( 'code' => 200 ), 'body' => 'a' );
+        };
+
+        $checker = new URL_Status_Checker( $http, self::null_cache() );
+        $status  = $checker->check_single( 'https://example.com/page' );
+
+        $this->assertTrue( $get_called );
+        $this->assertSame( 200, $status->http_code );
+    }
+
+    public function test_check_single_does_not_fallback_on_2xx_3xx_4xx_other_than_405(): void
+    {
+        $http_calls = 0;
+        $http = static function ( string $url, array $args ) use ( &$http_calls ): array {
+            $http_calls++;
+            return array( 'response' => array( 'code' => 404 ), 'body' => '' );
+        };
+
+        $checker = new URL_Status_Checker( $http, self::null_cache() );
+        $status  = $checker->check_single( 'https://example.com/missing' );
+
+        $this->assertSame( 1, $http_calls, 'HEAD-only — 404 means the page genuinely doesnt exist, no GET retry' );
+        $this->assertSame( 404, $status->http_code );
+    }
+
     /**
      * Cache fake that never has a hit and silently accepts writes. Used by
      * tests that want to bypass caching entirely and just exercise the HTTP
