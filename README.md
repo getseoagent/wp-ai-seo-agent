@@ -105,7 +105,7 @@ This is an open-core project:
 
 ## Links
 
-- **Plugin on WordPress.org** — *coming with the v1.0 launch*
+- **Plugin on WordPress.org** — [wordpress.org/plugins/getseoagent](https://wordpress.org/plugins/getseoagent/) *(v1.1.0 — Speed Audit + Yoast/AIOSEO/SEOPress adapters)*
 - **Product website** — [getseoagent.app](https://getseoagent.app)
 - **Self-hosting guide** — [docs/self-hosting.md](docs/self-hosting.md)
 - **Contributing** — [CONTRIBUTING.md](CONTRIBUTING.md)
