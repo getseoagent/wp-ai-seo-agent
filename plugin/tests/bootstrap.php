@@ -11,6 +11,9 @@ if (!defined('ABSPATH')) {
 if (!defined('AUTH_KEY')) {
     define('AUTH_KEY', 'test-auth-key-do-not-use-in-prod');
 }
+if (!defined('DAY_IN_SECONDS')) {
+    define('DAY_IN_SECONDS', 86400);
+}
 
 require_once dirname(__DIR__) . '/includes/class-options.php';
 require_once dirname(__DIR__) . '/includes/class-settings.php';
@@ -26,6 +29,7 @@ require_once dirname(__DIR__) . '/includes/class-template-detector.php';
 require_once dirname(__DIR__) . '/includes/class-optimizer-detector.php';
 require_once dirname(__DIR__) . '/includes/class-multi-seo-notice.php';
 require_once dirname(__DIR__) . '/includes/class-url-status.php';
+require_once dirname(__DIR__) . '/includes/class-url-status-checker.php';
 
 foreach (glob(dirname(__DIR__) . '/includes/adapters/interface-*.php') as $adapter_file) {
     require_once $adapter_file;
