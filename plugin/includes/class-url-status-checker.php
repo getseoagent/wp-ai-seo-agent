@@ -52,4 +52,68 @@ final class URL_Status_Checker {
 			)
 		);
 	}
+
+	public function check_single( string $url ): URL_Status {
+		$cache_key = self::CACHE_PREFIX . md5( $url );
+
+		$cached = ( $this->cache['get'] )( $cache_key );
+		if ( is_array( $cached ) && isset( $cached['http_code'] ) ) {
+			return new URL_Status(
+				url:        $url,
+				http_code:  is_int( $cached['http_code'] ) ? $cached['http_code'] : null,
+				error:      is_string( $cached['error'] ?? null ) ? $cached['error'] : null,
+				from_cache: true,
+				checked_at: (int) ( $cached['checked_at'] ?? 0 )
+			);
+		}
+
+		$response = ( $this->http )(
+			$url,
+			array(
+				'method'     => 'HEAD',
+				'timeout'    => self::FETCH_TIMEOUT,
+				'user-agent' => self::USER_AGENT,
+				'redirection' => 0, // don't follow — we want to see the 301/302 itself
+			)
+		);
+
+		[ $http_code, $error ] = self::parse_response( $response );
+
+		$now    = time();
+		$status = new URL_Status(
+			url:        $url,
+			http_code:  $http_code,
+			error:      $error,
+			from_cache: false,
+			checked_at: $now
+		);
+
+		( $this->cache['set'] )(
+			$cache_key,
+			array(
+				'url'        => $url,
+				'http_code'  => $http_code,
+				'error'      => $error,
+				'checked_at' => $now,
+			),
+			self::TTL_SECONDS
+		);
+
+		return $status;
+	}
+
+	/**
+	 * @param array<string, mixed>|\WP_Error $response
+	 * @return array{0: ?int, 1: ?string}  [http_code, error]
+	 */
+	private static function parse_response( mixed $response ): array {
+		if ( $response instanceof \WP_Error ) {
+			return array( null, $response->get_error_message() );
+		}
+		if ( is_array( $response ) && isset( $response['response']['code'] ) ) {
+			$code = $response['response']['code'];
+			return is_int( $code ) ? array( $code, null ) : array( null, 'malformed response' );
+		}
+		return array( null, 'unexpected http return shape' );
+	}
 }
