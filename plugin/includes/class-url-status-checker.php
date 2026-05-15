@@ -99,6 +99,19 @@ final class URL_Status_Checker {
 	}
 
 	/**
+	 * @param list<string> $urls
+	 * @return array<string, URL_Status>  keyed by URL, deduplicated
+	 */
+	public function check_batch( array $urls ): array {
+		$unique = array_values( array_unique( $urls ) );
+		$out    = array();
+		foreach ( $unique as $url ) {
+			$out[ $url ] = $this->check_single( $url );
+		}
+		return $out;
+	}
+
+	/**
 	 * Run a probe; on 5xx wait 500ms and run one more probe. 4xx and 2xx/3xx
 	 * are returned verbatim with no retry. WP_Error transports are returned
 	 * verbatim — a 500ms wait won't fix a DNS or TLS failure.

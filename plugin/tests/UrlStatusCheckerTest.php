@@ -261,6 +261,55 @@ final class UrlStatusCheckerTest extends TestCase
         $this->assertNull( $status->http_code );
     }
 
+    public function test_check_batch_returns_statuses_keyed_by_url(): void
+    {
+        $http = static function ( string $url ): array {
+            $code = $url === 'https://e.com/a' ? 200 : 404;
+            return array( 'response' => array( 'code' => $code ), 'body' => '' );
+        };
+
+        $checker = new URL_Status_Checker( $http, self::null_cache(), static fn ( int $ms ): null => null );
+        $result  = $checker->check_batch( array( 'https://e.com/a', 'https://e.com/b' ) );
+
+        $this->assertCount( 2, $result );
+        $this->assertArrayHasKey( 'https://e.com/a', $result );
+        $this->assertArrayHasKey( 'https://e.com/b', $result );
+        $this->assertSame( 200, $result['https://e.com/a']->http_code );
+        $this->assertSame( 404, $result['https://e.com/b']->http_code );
+    }
+
+    public function test_check_batch_deduplicates_input_urls(): void
+    {
+        $call_count = 0;
+        $http = static function () use ( &$call_count ): array {
+            $call_count++;
+            return array( 'response' => array( 'code' => 200 ), 'body' => '' );
+        };
+
+        $checker = new URL_Status_Checker( $http, self::null_cache(), static fn ( int $ms ): null => null );
+        $result  = $checker->check_batch(
+            array( 'https://e.com/page', 'https://e.com/page', 'https://e.com/page' )
+        );
+
+        $this->assertCount( 1, $result );
+        $this->assertSame( 1, $call_count, 'duplicates collapsed before fetching' );
+    }
+
+    public function test_check_batch_returns_empty_array_for_empty_input(): void
+    {
+        $http_called = false;
+        $http        = static function () use ( &$http_called ): array {
+            $http_called = true;
+            return array( 'response' => array( 'code' => 200 ), 'body' => '' );
+        };
+
+        $checker = new URL_Status_Checker( $http, self::null_cache(), static fn ( int $ms ): null => null );
+        $result  = $checker->check_batch( array() );
+
+        $this->assertSame( array(), $result );
+        $this->assertFalse( $http_called );
+    }
+
     /**
      * Cache fake that never has a hit and silently accepts writes. Used by
      * tests that want to bypass caching entirely and just exercise the HTTP
