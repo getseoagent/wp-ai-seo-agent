@@ -25,6 +25,7 @@ require_once dirname(__DIR__) . '/includes/class-jobs-store.php';
 require_once dirname(__DIR__) . '/includes/class-template-detector.php';
 require_once dirname(__DIR__) . '/includes/class-optimizer-detector.php';
 require_once dirname(__DIR__) . '/includes/class-multi-seo-notice.php';
+require_once dirname(__DIR__) . '/includes/class-url-status.php';
 
 foreach (glob(dirname(__DIR__) . '/includes/adapters/interface-*.php') as $adapter_file) {
     require_once $adapter_file;
