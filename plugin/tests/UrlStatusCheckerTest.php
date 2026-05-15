@@ -10,10 +10,11 @@ final class UrlStatusCheckerTest extends TestCase
 {
     public function test_constructor_accepts_http_and_cache_closures(): void
     {
-        $http  = static fn ( string $url, array $args ): array => [ 'response' => [ 'code' => 200 ], 'body' => '' ];
-        $cache = self::null_cache();
+        $http    = static fn ( string $url, array $args ): array => [ 'response' => [ 'code' => 200 ], 'body' => '' ];
+        $cache   = self::null_cache();
+        $sleeper = static fn ( int $ms ): null => null;
 
-        $checker = new URL_Status_Checker( $http, $cache );
+        $checker = new URL_Status_Checker( $http, $cache, $sleeper );
 
         $this->assertInstanceOf( URL_Status_Checker::class, $checker );
     }
@@ -187,6 +188,77 @@ final class UrlStatusCheckerTest extends TestCase
 
         $this->assertSame( 1, $http_calls, 'HEAD-only — 404 means the page genuinely doesnt exist, no GET retry' );
         $this->assertSame( 404, $status->http_code );
+    }
+
+    public function test_check_single_retries_once_on_5xx_then_succeeds(): void
+    {
+        $attempt   = 0;
+        $sleep_ms  = null;
+        $http      = static function ( string $url, array $args ) use ( &$attempt ): array {
+            $attempt++;
+            if ( $attempt === 1 ) {
+                return array( 'response' => array( 'code' => 503 ), 'body' => '' );
+            }
+            return array( 'response' => array( 'code' => 200 ), 'body' => '' );
+        };
+        $sleeper = static function ( int $ms ) use ( &$sleep_ms ): void {
+            $sleep_ms = $ms;
+        };
+
+        $checker = new URL_Status_Checker( $http, self::null_cache(), $sleeper );
+        $status  = $checker->check_single( 'https://example.com/page' );
+
+        $this->assertSame( 200, $status->http_code );
+        $this->assertSame( 2, $attempt );
+        $this->assertSame( 500, $sleep_ms );
+    }
+
+    public function test_check_single_returns_5xx_after_one_retry_still_5xx(): void
+    {
+        $attempt = 0;
+        $http    = static function () use ( &$attempt ): array {
+            $attempt++;
+            return array( 'response' => array( 'code' => 502 ), 'body' => '' );
+        };
+
+        $checker = new URL_Status_Checker( $http, self::null_cache(), static fn ( int $ms ): null => null );
+        $status  = $checker->check_single( 'https://example.com/page' );
+
+        $this->assertSame( 502, $status->http_code );
+        $this->assertSame( 2, $attempt, 'one retry, no more' );
+        $this->assertFalse( $status->ok() );
+    }
+
+    public function test_check_single_does_not_retry_on_4xx(): void
+    {
+        $attempt = 0;
+        $http    = static function () use ( &$attempt ): array {
+            $attempt++;
+            return array( 'response' => array( 'code' => 404 ), 'body' => '' );
+        };
+
+        $checker = new URL_Status_Checker( $http, self::null_cache(), static fn ( int $ms ): null => null );
+        $status  = $checker->check_single( 'https://example.com/missing' );
+
+        $this->assertSame( 1, $attempt );
+        $this->assertSame( 404, $status->http_code );
+    }
+
+    public function test_check_single_does_not_retry_on_wp_error(): void
+    {
+        // A transport error (DNS, TLS, connect timeout) is unlikely to clear in
+        // 500ms — don't waste the budget. Re-test later when cache expires.
+        $attempt = 0;
+        $http    = static function () use ( &$attempt ): \WP_Error {
+            $attempt++;
+            return new \WP_Error( 'http_request_failed', 'cURL error 28: Operation timed out' );
+        };
+
+        $checker = new URL_Status_Checker( $http, self::null_cache(), static fn ( int $ms ): null => null );
+        $status  = $checker->check_single( 'https://slow.example' );
+
+        $this->assertSame( 1, $attempt );
+        $this->assertNull( $status->http_code );
     }
 
     /**

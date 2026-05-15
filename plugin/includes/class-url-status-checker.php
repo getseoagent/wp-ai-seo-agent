@@ -29,12 +29,14 @@ final class URL_Status_Checker {
 	private const RETRY_DELAY_MS = 500;
 
 	/**
-	 * @param callable(string, array<string, mixed>): array<string, mixed>|\WP_Error $http  Closure returning a wp_remote_request-shaped array, or WP_Error on transport failure.
-	 * @param array{get: callable(string): mixed, set: callable(string, mixed, int): bool} $cache  Get/set pair, returns false on cache miss.
+	 * @param callable(string, array<string, mixed>): array<string, mixed>|\WP_Error $http
+	 * @param array{get: callable(string): mixed, set: callable(string, mixed, int): bool} $cache
+	 * @param callable(int): void|null $sleeper  Receives milliseconds. Production uses usleep; tests pass a no-op or capturing closure.
 	 */
 	public function __construct(
 		private $http,
-		private array $cache
+		private array $cache,
+		private $sleeper = null
 	) {}
 
 	/**
@@ -49,7 +51,10 @@ final class URL_Status_Checker {
 				'get' => static fn ( string $key ): mixed => get_transient( $key ),
 				'set' => static fn ( string $key, mixed $value, int $ttl ): bool
 					=> set_transient( $key, $value, $ttl ),
-			)
+			),
+			sleeper: static function ( int $ms ): void {
+				usleep( $ms * 1000 );
+			}
 		);
 	}
 
@@ -94,13 +99,38 @@ final class URL_Status_Checker {
 	}
 
 	/**
-	 * HEAD first; if the server says "method not allowed" (405) or "not
-	 * implemented" (501), retry as a one-byte GET. Any other HEAD response —
-	 * including 404, 403, 5xx — is returned verbatim.
+	 * HEAD first; on 405/501 try a one-byte GET; on 5xx wait 500ms and retry
+	 * once (HEAD again, same fallback rules). 4xx and 2xx/3xx are returned
+	 * verbatim with no retry. WP_Error transports are returned verbatim — a
+	 * 500ms wait won't fix a DNS or TLS failure.
 	 *
 	 * @return array{0: ?int, 1: ?string}  [http_code, error]
 	 */
 	private function probe( string $url ): array {
+		$result = $this->probe_once( $url );
+		[ $code, $error ] = $result;
+
+		$is_transport_error = $code === null;
+		$is_5xx             = $code !== null && $code >= 500 && $code < 600;
+
+		if ( $is_transport_error || ! $is_5xx ) {
+			return $result;
+		}
+
+		if ( $this->sleeper !== null ) {
+			( $this->sleeper )( self::RETRY_DELAY_MS );
+		}
+
+		return $this->probe_once( $url );
+	}
+
+	/**
+	 * One HEAD attempt + optional GET-Range fallback. Returned shape matches
+	 * parse_response().
+	 *
+	 * @return array{0: ?int, 1: ?string}
+	 */
+	private function probe_once( string $url ): array {
 		$head_response = ( $this->http )(
 			$url,
 			array(
