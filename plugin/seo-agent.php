@@ -38,6 +38,7 @@ require_once SEO_AGENT_DIR . 'includes/class-history-store.php';
 require_once SEO_AGENT_DIR . 'includes/class-jobs-store.php';
 require_once SEO_AGENT_DIR . 'includes/class-backend-client.php';
 require_once SEO_AGENT_DIR . 'includes/class-template-detector.php';
+require_once SEO_AGENT_DIR . 'includes/class-url-status-checker.php';
 require_once SEO_AGENT_DIR . 'includes/class-optimizer-detector.php';
 require_once SEO_AGENT_DIR . 'includes/class-multi-seo-notice.php';
 
