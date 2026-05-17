@@ -119,7 +119,7 @@ final class URL_Status_Checker {
 	 * @return array{0: ?int, 1: ?string}  [http_code, error]
 	 */
 	private function probe_with_retry( string $url ): array {
-		$result = $this->probe( $url );
+		$result           = $this->probe( $url );
 		[ $code, $error ] = $result;
 
 		$is_transport_error = $code === null;
@@ -144,7 +144,7 @@ final class URL_Status_Checker {
 	 * @return array{0: ?int, 1: ?string}
 	 */
 	private function probe( string $url ): array {
-		$head_response = ( $this->http )(
+		$head_response              = ( $this->http )(
 			$url,
 			array(
 				'method'      => 'HEAD',
